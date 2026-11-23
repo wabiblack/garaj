@@ -24,7 +24,7 @@ export function dismissCoach(): void {
 export function coachTip(state: GameState): string | null {
   if (state.stage !== 1 || state.day > COACH_DAYS || state.hard) return null;
   if (state.stats.sales > 0 && state.day > 1) return null;
-  if (state.forSale.length > 0) return 'Satışa koydun. Sağ üstten “Günü bitir”e bas: akşam alıcılar teklif getirir.';
-  if (state.inventory.length > 0) return 'Garaj sekmesine geç. Temizle, kusurunu tamir et, sonra satışa koy.';
-  return 'Bir ilana dokun. İstenenin altında teklif ver; satıcı kabul etmezse karşı teklif yapar.';
+  if (state.forSale.length > 0) return 'Sağ üstten “Günü bitir”e bas; akşam alıcılar teklif getirir.';
+  if (state.inventory.length > 0) return 'Garaj’da temizle, tamir et, sonra satışa koy.';
+  return 'Bir ilana dokun, istenenin altında teklif ver.';
 }

@@ -14,6 +14,9 @@ test('ilanlarda kişilik rozeti, olay kartı ve görevler görünür', () => {
   const q = screen.getByRole('region', { name: 'Görevler' });
   expect(within(q).getByText('2 satış yap')).toBeInTheDocument();
   expect(within(q).getByText('1/2')).toBeInTheDocument();
+  // Varsayılan katlı: özet satırında biten/toplam ve kalan ödül görünür.
+  expect(q.querySelector('details')!.open).toBe(false);
+  expect(q.querySelector('.quests__meta')).toHaveTextContent('0/1 · +1.000 TL');
 });
 
 test('profilde rekorlar ve başarımlar', async () => {

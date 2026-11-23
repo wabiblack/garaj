@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { GameState, Quest } from '../../game/types';
 import { ItemCard } from '../components/ItemCard';
 import { PERSONALITY_LABEL, storageLimit } from '../../game/negotiation';
@@ -6,7 +7,6 @@ import { formatTL } from '../../game/format';
 import { orderTitle } from '../../game/orders';
 import { RIVAL } from '../../game/rival';
 import { expertLevel } from '../../game/expertise';
-import { useState } from 'react';
 import { coachDismissed, coachTip, dismissCoach } from '../coach';
 
 function Coach({ state }: { state: GameState }) {
@@ -41,6 +41,39 @@ function QuestRow({ q }: { q: Quest }) {
   );
 }
 
+const QUESTS_KEY = 'garaj.gorevler';
+
+/** Görevler tek satıra katlanır; açık/kapalı tercihi cihazda hatırlanır. */
+function Quests({ quests }: { quests: Quest[] }) {
+  const [open, setOpen] = useState(() => {
+    try { return window.localStorage.getItem(QUESTS_KEY) === 'acik'; } catch { return false; }
+  });
+  const done = quests.filter((q) => q.done).length;
+  const reward = quests.filter((q) => !q.done).reduce((sum, q) => sum + q.reward, 0);
+  return (
+    <section className="quests" aria-label="Görevler">
+      <details
+        open={open}
+        onToggle={(e) => {
+          const next = e.currentTarget.open;
+          setOpen(next);
+          try { window.localStorage.setItem(QUESTS_KEY, next ? 'acik' : 'kapali'); } catch { /* depolama kapalı */ }
+        }}
+      >
+        <summary className="quests__sum">
+          <span className="quests__head">Görevler</span>
+          <span className="quests__dots" aria-hidden="true">
+            {quests.map((q) => <span key={q.id} className={'quests__dot' + (q.done ? ' quests__dot--on' : '')} />)}
+          </span>
+          <span className="quests__meta">{done}/{quests.length}{reward > 0 ? <> · <span className="quest__reward">+{formatTL(reward)}</span></> : null}</span>
+          <svg className="quests__chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+        </summary>
+        <ul>{quests.map((q) => <QuestRow key={q.id} q={q} />)}</ul>
+      </details>
+    </section>
+  );
+}
+
 export function ListingsScreen({ state, onOpen }: { state: GameState; onOpen(id: string): void }) {
   return (
     <section>
@@ -56,12 +89,7 @@ export function ListingsScreen({ state, onOpen }: { state: GameState; onOpen(id:
           {state.summary.notes.map((n, i) => <p key={i}>{n}</p>)}
         </div>
       ) : null}
-      {state.quests.length > 0 ? (
-        <section className="quests" aria-label="Görevler">
-          <h2 className="quests__head">Görevler</h2>
-          <ul>{state.quests.map((q) => <QuestRow key={q.id} q={q} />)}</ul>
-        </section>
-      ) : null}
+      {state.quests.length > 0 ? <Quests quests={state.quests} /> : null}
       {state.orders.length > 0 ? (
         <section className="orders" aria-label="Siparişler">
           <h2 className="quests__head">Müşteri siparişleri</h2>
