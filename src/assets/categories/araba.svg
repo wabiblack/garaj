@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160"><defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#72a1e3"/><stop offset="0.55" stop-color="#3b7dd8"/><stop offset="1" stop-color="#26518c"/></linearGradient></defs><ellipse cx="120" cy="138" rx="100" ry="7" fill="#000" opacity=".35"/>
+  <path d="M20,112 Q18,96 34,92 L70,88 Q86,64 108,62 L150,62 Q170,62 186,86 L212,90 Q226,94 224,112 Z" fill="url(#g1)" stroke="#1e3f6c" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M90,86 Q100,70 112,69 L128,69 L128,86 Z" fill="#9fc6e8" stroke="#1b3861" stroke-width="1.2"/><path d="M90,86 Q100,70 112,69 L128,69 L128,86 Z" fill="url(#shine)" opacity=".5"/><path d="M134,69 L150,69 Q164,70 176,86 L134,86 Z" fill="#9fc6e8" stroke="#1b3861" stroke-width="1.2"/><path d="M134,69 L150,69 Q164,70 176,86 L134,86 Z" fill="url(#shine)" opacity=".5"/>
+  <defs><linearGradient id="shine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".8"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+  <path d="M30,104 L210,104" stroke="#234b82" stroke-width="1.2" opacity=".6"/>
+  
+  <ellipse cx="214" cy="100" rx="6" ry="4" fill="#fff3c4" stroke="#1e3f6c"/>
+  <rect x="21" y="96" width="7" height="7" rx="2" fill="#ff4d4f"/>
+  <rect x="16" y="110" width="208" height="6" rx="3" fill="#1b3861"/>
+  <circle cx="62" cy="116" r="23" fill="#183256"/><circle cx="178" cy="116" r="23" fill="#183256"/>
+  <defs><radialGradient id="rim2"><stop offset="0" stop-color="#eef1f5"/><stop offset="1" stop-color="#8b94a3"/></radialGradient></defs>
+  <circle cx="62" cy="116" r="19" fill="#14171c"/><circle cx="62" cy="116" r="11.02" fill="url(#rim2)"/>
+  <line x1="62" y1="116" x2="71.88" y2="116" stroke="#6b7482" stroke-width="2.2"/><line x1="62" y1="116" x2="65.05308790442449" y2="125.39643838099612" stroke="#6b7482" stroke-width="2.2"/><line x1="62" y1="116" x2="54.00691209557552" y2="121.80731829264964" stroke="#6b7482" stroke-width="2.2"/><line x1="62" y1="116" x2="54.006912095575515" y2="110.19268170735037" stroke="#6b7482" stroke-width="2.2"/><line x1="62" y1="116" x2="65.05308790442447" y2="106.60356161900388" stroke="#6b7482" stroke-width="2.2"/>
+  <circle cx="62" cy="116" r="3.04" fill="#3a404a"/><defs><radialGradient id="rim3"><stop offset="0" stop-color="#eef1f5"/><stop offset="1" stop-color="#8b94a3"/></radialGradient></defs>
+  <circle cx="178" cy="116" r="19" fill="#14171c"/><circle cx="178" cy="116" r="11.02" fill="url(#rim3)"/>
+  <line x1="178" y1="116" x2="187.88" y2="116" stroke="#6b7482" stroke-width="2.2"/><line x1="178" y1="116" x2="181.05308790442447" y2="125.39643838099612" stroke="#6b7482" stroke-width="2.2"/><line x1="178" y1="116" x2="170.00691209557553" y2="121.80731829264964" stroke="#6b7482" stroke-width="2.2"/><line x1="178" y1="116" x2="170.00691209557553" y2="110.19268170735037" stroke="#6b7482" stroke-width="2.2"/><line x1="178" y1="116" x2="181.05308790442447" y2="106.60356161900388" stroke="#6b7482" stroke-width="2.2"/>
+  <circle cx="178" cy="116" r="3.04" fill="#3a404a"/></svg>

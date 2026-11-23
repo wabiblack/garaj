@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { Item } from '../../game/types';
 import { CATEGORY_LABEL } from '../../game/catalog';
 import { itemName } from '../../game/selling';
@@ -15,16 +15,36 @@ export function modelSlug(item: Pick<Item, 'brand' | 'model'>): string {
     .replace(/^-|-$/g, '');
 }
 
-export function itemImage(item: Item): string {
-  return `${import.meta.env.BASE_URL}images/${item.category}.svg`;
+// Paketlenen çizimler: yalnız var olan dosyalar listelenir, bu yüzden 404 isteği olmaz.
+// PNG (ör. Grok görseli) aynı addaki SVG çizimin önüne geçer.
+const MODEL_FILES = import.meta.glob('../../assets/models/*.{png,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+const CATEGORY_FILES = import.meta.glob('../../assets/categories/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+
+function fileMap(files: Record<string, string>): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const [path, url] of Object.entries(files)) {
+    const [, name, ext] = path.match(/\/([^/]+)\.(png|svg)$/)!;
+    if (!map.has(name) || ext === 'png') map.set(name, url);
+  }
+  return map;
+}
+const MODELS = fileMap(MODEL_FILES);
+const CATEGORIES = fileMap(CATEGORY_FILES);
+
+export function hasModelArt(item: Pick<Item, 'brand' | 'model'>): boolean {
+  return MODELS.has(modelSlug(item));
 }
 
-/** Önce modele özel görseli dener (images/models/<slug>.png), yoksa kategori görseline düşer. */
+export function categoryImageUrl(category: Item['category']): string {
+  return CATEGORIES.get(category) ?? '';
+}
+
+export function itemImageUrl(item: Item): string {
+  return MODELS.get(modelSlug(item)) ?? categoryImageUrl(item.category);
+}
+
 export function ItemImage({ item, className }: { item: Item; className?: string }) {
-  const modelSrc = `${import.meta.env.BASE_URL}images/models/${modelSlug(item)}.png`;
-  const [failed, setFailed] = useState<string | null>(null);
-  const src = failed === modelSrc ? itemImage(item) : modelSrc;
-  return <img src={src} alt="" className={className} onError={() => setFailed(modelSrc)} />;
+  return <img src={itemImageUrl(item)} alt="" className={className} draggable={false} />;
 }
 
 export function ConditionBar({ value }: { value: number }) {

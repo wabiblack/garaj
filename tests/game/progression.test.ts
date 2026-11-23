@@ -56,3 +56,25 @@ test('restartStage sonrası en az bir ilan alınabilir', async () => {
     expect(s.listings.some((l) => l.minPrice <= STAGE_RESTART_MONEY[2])).toBe(true);
   }
 });
+
+describe('fix: ilk gün iflas', () => {
+  test('pahalı ilanlar varken 2.000 TL ile aşama 1de iflas sayılmaz', async () => {
+    const { isBankrupt } = await import('../../src/game/progression');
+    const { makeListing } = await import('../helpers');
+    expect(isBankrupt(makeState({ money: 2000, listings: [makeListing({ minPrice: 9000 })] }))).toBe(false);
+  });
+  test('yeni oyunda her zaman parası yeten bir ilan olur', async () => {
+    const { newGame } = await import('../../src/game/newGame');
+    for (let seed = 1; seed <= 300; seed++) {
+      const s = newGame(seed);
+      expect(s.listings.some((l) => l.minPrice <= s.money)).toBe(true);
+    }
+  });
+  test('eşyası olmayan oyuncuya yeni günde parası yeten bir ilan çıkar', async () => {
+    const { startNextDay } = await import('../../src/game/day');
+    for (let seed = 1; seed <= 200; seed++) {
+      const s = startNextDay(makeState({ phase: 'evening', rngState: seed, money: 2000 }));
+      expect(s.listings.some((l) => l.minPrice <= s.money)).toBe(true);
+    }
+  });
+});

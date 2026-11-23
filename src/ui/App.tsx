@@ -16,6 +16,7 @@ import { EveningScreen } from './screens/EveningScreen';
 import { TransitionScreen } from './screens/TransitionScreen';
 import { EndScreen } from './screens/EndScreen';
 import { BankruptScreen } from './screens/BankruptScreen';
+import { IntroScreen } from './screens/IntroScreen';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { isBankrupt } from '../game/progression';
 
@@ -28,14 +29,17 @@ export default function App() {
 }
 
 function Game() {
-  const { view, broken, dispatch, reset } = useGame();
+  const { view, broken, fresh, dispatch, reset } = useGame();
+  const [introDone, setIntroDone] = useState(false);
   const [tab, setTab] = useState<Tab>('ilanlar');
   const [listingId, setListingId] = useState<string | null>(null);
   const achievement = useFeedback(view);
 
   if (broken || !view) return <BrokenSaveScreen onReset={reset} />;
   const { state } = view;
-  const overlay = state.pendingTransition !== null
+  const overlay = fresh && !introDone && state.day === 1 && state.stats.sales === 0
+    ? <IntroScreen onStart={() => setIntroDone(true)} />
+    : state.pendingTransition !== null
     ? <TransitionScreen to={state.pendingTransition} onContinue={() => dispatch({ type: 'completeTransition' })} />
     : state.phase === 'evening'
       ? <EveningScreen view={view} dispatch={dispatch} />

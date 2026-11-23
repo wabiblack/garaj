@@ -10,7 +10,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['apple-touch-icon.png', 'images/*.svg'],
+      includeAssets: ['apple-touch-icon.png'],
       manifest: {
         name: 'Garaj',
         short_name: 'Garaj',

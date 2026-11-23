@@ -3,7 +3,7 @@ import { gameReducer, type Action, type GameView } from '../game/reducer';
 import { loadGame, saveGame } from '../game/save';
 import { newGame } from '../game/newGame';
 
-type Root = { view: GameView | null; broken: boolean };
+type Root = { view: GameView | null; broken: boolean; fresh: boolean };
 
 const randomSeed = () => (Date.now() ^ Math.floor(Math.random() * 2 ** 32)) >>> 0;
 
@@ -18,18 +18,18 @@ function storage(): Storage | null {
 function init(): Root {
   const st = storage();
   const res = st ? loadGame(st) : ({ kind: 'empty' } as const);
-  if (res.kind === 'ok') return { view: { state: res.state, message: null, lastOffer: null }, broken: false };
-  if (res.kind === 'broken') return { view: null, broken: true };
-  return { view: { state: newGame(randomSeed()), message: null, lastOffer: null }, broken: false };
+  if (res.kind === 'ok') return { view: { state: res.state, message: null, lastOffer: null }, broken: false, fresh: false };
+  if (res.kind === 'broken') return { view: null, broken: true, fresh: false };
+  return { view: { state: newGame(randomSeed()), message: null, lastOffer: null }, broken: false, fresh: true };
 }
 
 function rootReducer(root: Root, action: Action): Root {
-  if (action.type === 'newGame') return { view: { state: newGame(action.seed), message: null, lastOffer: null }, broken: false };
+  if (action.type === 'newGame') return { view: { state: newGame(action.seed), message: null, lastOffer: null }, broken: false, fresh: true };
   if (!root.view) return root;
-  return { view: gameReducer(root.view, action), broken: false };
+  return { view: gameReducer(root.view, action), broken: false, fresh: root.fresh };
 }
 
-export function useGame(): { view: GameView | null; broken: boolean; dispatch(a: Action): void; reset(): void } {
+export function useGame(): { view: GameView | null; broken: boolean; fresh: boolean; dispatch(a: Action): void; reset(): void } {
   const [root, dispatch] = useReducer(rootReducer, undefined, init);
   const state = root.view?.state;
   useEffect(() => {
@@ -37,5 +37,5 @@ export function useGame(): { view: GameView | null; broken: boolean; dispatch(a:
     if (state && st) saveGame(st, state);
   }, [state]);
   const reset = useCallback(() => dispatch({ type: 'newGame', seed: randomSeed() }), []);
-  return { view: root.view, broken: root.broken, dispatch, reset };
+  return { view: root.view, broken: root.broken, fresh: root.fresh, dispatch, reset };
 }

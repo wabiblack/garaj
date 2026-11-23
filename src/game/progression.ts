@@ -1,7 +1,7 @@
 import type { GameState } from './types';
 import { createRng } from './rng';
 import { marketValue, round10 } from './pricing';
-import { generateListings } from './day';
+import { generateListings, listingsFor } from './day';
 import { generateQuests } from './career';
 
 export const STAGE_GOALS: Record<1 | 2, number> = { 1: 50000, 2: 500000 };
@@ -48,21 +48,21 @@ export function completeTransition(state: GameState): GameState {
 /** Aşama yeniden başlarken verilen sermaye. */
 export const STAGE_RESTART_MONEY: Record<1 | 2 | 3, number> = { 1: 2000, 2: STAGE_GOALS[1], 3: STAGE_GOALS[2] };
 
-/** Elinde eşya yok, bugünkü hiçbir ilana parası yetmiyor ve kredi de alamıyor: ilerleyemez. */
+/** Bu paranın altında aşamanın en ucuz eşyası bile alınamaz. */
+export const BANKRUPT_FLOOR: Record<1 | 2 | 3, number> = { 1: 300, 2: 5000, 3: 40000 };
+
+/** Elinde eşya yok, parası aşamanın en ucuz eşyasına bile yetmiyor ve kredi de alamıyor: ilerleyemez. */
 export function isBankrupt(state: GameState): boolean {
   if (state.phase !== 'day' || state.pendingTransition !== null) return false;
   if (state.inventory.length > 0 || state.forSale.length > 0) return false;
   if (state.stage === 3 && state.loan === null) return false;
-  if (state.listings.length === 0) return false;
-  return state.listings.every((l) => state.money < l.minPrice);
+  return state.money < BANKRUPT_FLOOR[state.stage];
 }
 
 export function restartStage(state: GameState): GameState {
   const rng = createRng(state.rngState);
   const money = STAGE_RESTART_MONEY[state.stage];
-  // Yeniden başlayan oyuncu en az bir ilana yetmeli; yoksa hemen yine iflas eder.
-  let listings = generateListings(state, rng);
-  for (let i = 0; i < 50 && listings.every((l) => money < l.minPrice); i++) listings = generateListings(state, rng);
+  const listings = listingsFor({ ...state, money, inventory: [] }, rng);
   return {
     ...state,
     money,

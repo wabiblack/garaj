@@ -1,7 +1,6 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../src/ui/App';
-import { ItemCard } from '../../src/ui/components/ItemCard';
 import { makeItem, makeListing, makeState } from '../helpers';
 import { seedSave } from './uiHelpers';
 
@@ -50,16 +49,37 @@ test('ses ayarı profilde açılıp kapanır ve hatırlanır', async () => {
   expect(localStorage.getItem('garaj.ses')).toBe('kapali');
 });
 
-test('model görseli yoksa kategori görseline düşer', () => {
-  const { container } = render(<ItemCard item={makeItem()} price={1} />);
-  const img = container.querySelector('img')!;
-  expect(img.getAttribute('src')).toBe('/images/models/serce-sehir-26.png');
-  fireEvent.error(img);
-  expect(img.getAttribute('src')).toBe('/images/bisiklet.svg');
+test('modelin görseli varsa o, yoksa kategori görseli kullanılır', async () => {
+  const { itemImageUrl, hasModelArt, categoryImageUrl } = await import('../../src/ui/components/ItemCard');
+  const known = makeItem();
+  const unknown = makeItem({ brand: 'Yok', model: 'Böyle' });
+  expect(hasModelArt(known)).toBe(true);
+  expect(hasModelArt(unknown)).toBe(false);
+  expect(categoryImageUrl('bisiklet')).toBeTruthy();
+  expect(itemImageUrl(unknown)).toBe(categoryImageUrl('bisiklet'));
+  expect(itemImageUrl(known)).not.toBe(categoryImageUrl('bisiklet'));
+});
+
+test('katalogdaki her modelin çizimi var', async () => {
+  const { hasModelArt } = await import('../../src/ui/components/ItemCard');
+  const { CATALOG } = await import('../../src/game/catalog');
+  for (const t of Object.values(CATALOG)) for (const [brand, model] of t.models) expect(hasModelArt({ brand, model }), `${brand} ${model}`).toBe(true);
+  expect(hasModelArt({ brand: 'Doruk', model: 'Klasik 1972' })).toBe(true);
+  expect(hasModelArt({ brand: 'Marmara', model: 'Klasik Coupe 1968' })).toBe(true);
 });
 
 test('şapkalı harfler de çevrilir', async () => {
   const { modelSlug } = await import('../../src/ui/components/ItemCard');
   expect(modelSlug({ brand: 'Rüzgârgülü', model: 'Yarış 28' })).toBe('ruzgargulu-yaris-28');
   expect(modelSlug({ brand: 'Hünkâri', model: 'Gösteri' })).toBe('hunkari-gosteri');
+});
+
+test('yeni oyunda giriş ekranı çıkar, Başla ile kapanır; kayıtlı oyunda çıkmaz', async () => {
+  const { unmount } = render(<App />);
+  expect(screen.getByRole('dialog', { name: 'Hikâye' })).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Başla' }));
+  expect(screen.queryByRole('dialog', { name: 'Hikâye' })).toBeNull();
+  unmount();
+  render(<App />);
+  expect(screen.queryByRole('dialog', { name: 'Hikâye' })).toBeNull();
 });

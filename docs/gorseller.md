@@ -1,6 +1,6 @@
 # Görsel listesi
 
-Grok'tan (ya da başka bir yerden) görsel getirdiğinde dosyayı aşağıdaki adla `public/images/models/` klasörüne koy. Bir modelin görseli yoksa oyun kategori çizimini kullanır.
+Her modelin hazır bir SVG çizimi var: `src/assets/models/<ad>.svg` (`node scripts/make-art.mjs` ile üretilir). Daha gerçekçi bir görsel istersen aynı adla bir **PNG** dosyasını `src/assets/models/` klasörüne koy (ör. `serce-sehir-26.png`): PNG, çizimin yerine otomatik geçer. Sonra `npm run deploy` çalıştır.
 
 **Görsel kuralları:** PNG, kare (512×512 önerilir), şeffaf ya da koyu arka plan, tüm görseller aynı tarzda (ör. yandan görünüş, aynı ışık). Gerçek marka logosu olmasın.
 
@@ -60,4 +60,4 @@ Grok için örnek istem: *"Hayali bir şehir bisikleti, yandan görünüş, sade
 - Doruk Klasik 1972 → `doruk-klasik-1972.png`
 - Marmara Klasik Coupe 1968 → `marmara-klasik-coupe-1968.png`
 
-Kategori çizimlerini değiştirmek istersen `public/images/` içindeki `bisiklet.svg`, `guvercin.svg`, `konsol.svg`, `telefon.svg`, `motor.svg`, `araba.svg` dosyalarını aynı adla değiştir.
+Listede olmayan bir model için oyun `src/assets/categories/` içindeki kategori çizimini kullanır.

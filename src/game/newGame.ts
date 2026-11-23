@@ -1,6 +1,6 @@
 import type { GameState } from './types';
 import { createRng } from './rng';
-import { emptySummary, generateListings } from './day';
+import { emptySummary, listingsFor } from './day';
 import { emptyStats, generateQuests } from './career';
 
 export function newGame(seed: number): GameState {
@@ -12,7 +12,7 @@ export function newGame(seed: number): GameState {
     pendingCatch: [], summary: emptySummary(1), pendingTransition: null, won: false, wonSeen: false,
     event: null, quests: [], stats: emptyStats(), achievements: [],
   };
-  const listings = generateListings(base, rng);
+  const listings = listingsFor(base, rng);
   const quests = generateQuests(base, rng);
   return { ...base, listings, quests, rngState: rng.state() };
 }

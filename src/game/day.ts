@@ -47,6 +47,17 @@ export function generateListings(state: Pick<GameState, 'stage' | 'season'>, rng
   return listings;
 }
 
+/**
+ * Elinde eşya olmayan oyuncuya en az bir parasının yettiği ilan çıkar (en çok 30 deneme).
+ * Böylece talihsiz bir gün oyuncuyu kilitlemez.
+ */
+export function listingsFor(state: Pick<GameState, 'stage' | 'season' | 'money' | 'inventory'>, rng: RNG): Listing[] {
+  let listings = generateListings(state, rng);
+  if (state.inventory.length > 0) return listings;
+  for (let i = 0; i < 30 && listings.every((l) => l.minPrice > state.money); i++) listings = generateListings(state, rng);
+  return listings;
+}
+
 export function endDay(state: GameState): GameState {
   if (state.phase !== 'day') return state;
   const rng = createRng(state.rngState);
@@ -81,7 +92,7 @@ export function startNextDay(state: GameState): GameState {
     summary: { ...emptySummary(day), notes },
   });
   const rng = createRng(state.rngState);
-  let listings = generateListings(next, rng);
+  let listings = listingsFor(next, rng);
   let money = next.money;
   const dayNotes = [...next.summary.notes];
   const event: GameEventId | null = rng.chance(EVENT_CHANCE) ? rng.pick<GameEventId>(['fuar', 'durgun', 'firsat', 'hediye', 'ceza']) : null;

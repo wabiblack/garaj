@@ -54,8 +54,8 @@ export function NegotiationSheet({ listingId, view, dispatch, onClose, onGoGarag
 
   return (
     <Sheet open title="Pazarlık" onClose={onClose}>
+      <div className="neg__banner"><ItemImage item={item} /></div>
       <div className="neg__hero">
-        <ItemImage item={item} className="neg__img" />
         <div className="neg__info">
           <div className="neg__name">{itemName(item)}</div>
           <div className="neg__seller">Satıcı: {listing.sellerName}{listing.special === 'mezat' ? ' · Pazarlık yok' : listing.personality !== 'normal' ? ` · ${PERSONALITY_LABEL[listing.personality]}` : ''}</div>

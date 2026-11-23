@@ -340,3 +340,20 @@ h1 { font-size: 24px; font-weight: 800; }
 .result--good { animation: pop .35s cubic-bezier(.2, .9, .3, 1.4); }
 @keyframes drop { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
 @keyframes pop { 0% { transform: scale(.94); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+/* ---------- Çizimler için düzen ---------- */
+.card__media { width: 92px; height: 66px; border-radius: 14px; padding: 4px; }
+.card__media img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .35)); }
+.neg__banner {
+  height: 150px; border-radius: 18px; margin-bottom: 12px; display: grid; place-items: center;
+  background: radial-gradient(ellipse at 50% 35%, #2f394a, #171c25 75%); border: 1px solid var(--line);
+}
+.neg__banner { overflow: hidden; padding: 10px; grid-template-rows: 100%; }
+.neg__banner img { width: 100%; height: 100%; min-height: 0; object-fit: contain; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .45)); }
+.intro { gap: 14px; }
+.intro__steps { list-style: none; padding: 0; margin: 6px 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.intro__step { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 8px 12px; }
+.intro__art { width: 96px; height: 64px; flex: none; }
+.intro__art img { width: 100%; height: 100%; object-fit: contain; }
+.intro__age { color: var(--accent); font-weight: 800; font-size: 13px; }
+.intro__text { font-weight: 600; font-size: 14px; }
