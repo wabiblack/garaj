@@ -28,7 +28,7 @@ export function TopBar({ state, onEndDay }: { state: GameState; onEndDay(): void
     <header className="topbar">
       <div className="topbar__row">
         <div>
-          <div className="topbar__who">Kerem · {state.age} yaş · {STAGE_LABEL[state.stage]}</div>
+          <div className="topbar__who">{state.player.name} · {state.age} yaş · {STAGE_LABEL[state.stage]}</div>
           <div className="topbar__day">Gün {state.day} · {SEASON_LABEL[state.season]}</div>
         </div>
         <div className="topbar__money"><AnimatedMoney value={state.money} /></div>

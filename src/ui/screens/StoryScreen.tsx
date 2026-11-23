@@ -3,6 +3,7 @@ import { STORIES, canChoose } from '../../game/story';
 import { formatTL } from '../../game/format';
 import { Button } from '../components/Button';
 import { portraitUrl } from '../art';
+import { dative } from '../../game/turkish';
 
 function effect(money?: number, reputation?: number, skill?: number): string {
   const parts: string[] = [];
@@ -17,9 +18,9 @@ export function StoryScreen({ id, state, onChoose }: { id: StoryId; state: GameS
   return (
     <div className="overlay overlay--center" role="dialog" aria-modal="true" aria-label="Hikâye">
       <div className="overlay__inner overlay__inner--center">
-        <img className="story__face" src={portraitUrl(state.age)} alt="" />
-        <p className="overlay__kicker">{story.who}, Kerem’e:</p>
-        <h1 className="story__text">“{story.text}”</h1>
+        <img className="story__face" src={portraitUrl(state.age, state.player.look)} alt="" />
+        <p className="overlay__kicker">{story.who}, {dative(state.player.name)}:</p>
+        <h1 className="story__text">“{story.text.replaceAll('{ad}', state.player.name)}”</h1>
         <div className="story__choices">
           {story.choices.map((c, i) => (
             <Button key={i} block variant={i === 0 ? 'primary' : 'secondary'} disabled={!canChoose(state, c)} onClick={() => onChoose(i)}>

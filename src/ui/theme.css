@@ -538,3 +538,21 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   .rotate-hint p { margin: 0; color: var(--text); }
 }
 @keyframes rotate-nudge { 0%, 30% { transform: rotate(-90deg); } 60%, 100% { transform: rotate(0); } }
+
+/* ---------- Karakter oluşturma ---------- */
+.chip--on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.chips--center { justify-content: center; margin: 12px 0 4px; }
+.creator { z-index: 55; }
+.creator__title { margin: 0 0 8px; font-size: 26px; }
+.creator__preview { text-align: center; margin: 8px 0 4px; }
+.creator__face { width: 148px; height: 148px; border-radius: 50%; border: 3px solid var(--accent); background: var(--surface-2); }
+.creator__name { font-size: 22px; font-weight: 800; margin-top: 8px; overflow-wrap: anywhere; }
+.creator__actions .chips { justify-content: center; margin-bottom: 0; }
+.swatches { border: 0; padding: 0; margin: 16px 0 0; min-width: 0; }
+.swatches__row { display: flex; flex-wrap: wrap; gap: 10px; }
+.swatch { position: relative; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; border: 2px solid transparent; }
+.swatch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.swatch__dot { width: 34px; height: 34px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--text) 25%, transparent); }
+.swatch--on { border-color: var(--accent); }
+.swatch:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.creator .switch { margin-top: 16px; }

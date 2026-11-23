@@ -34,7 +34,7 @@ export function completeTransition(state: GameState): GameState {
     };
   }
   const sellOff = state.inventory.reduce((sum, i) => sum + round10(marketValue(i, state.season) * 0.8), 0);
-  const notes = state.inventory.length > 0 ? [...state.summary.notes, 'Kerem eski eşyalarını elden çıkardı'] : state.summary.notes;
+  const notes = state.inventory.length > 0 ? [...state.summary.notes, `${state.player.name} eski eşyalarını elden çıkardı`] : state.summary.notes;
   const rng = createRng(state.rngState);
   const listings = generateListings({ ...state, stage }, rng);
   const quests = generateQuests({ ...state, stage }, rng);

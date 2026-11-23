@@ -1,10 +1,8 @@
-// Garaj sahne çizimleri: Kerem'in yaşlara göre portresi ve büyüyen işyeri.
-// Çalıştır: node scripts/make-scenes.mjs → src/assets/portraits/*.svg ve src/assets/places/*.svg
+// Garaj sahne çizimleri: büyüyen işyeri. Karakter portresi oyun içinde çizilir (src/ui/portrait.ts).
+// Çalıştır: node scripts/make-scenes.mjs → src/assets/places/*.svg
 import { mkdirSync, writeFileSync } from 'node:fs';
 
-const PORTRAITS = 'src/assets/portraits';
 const PLACES = 'src/assets/places';
-mkdirSync(PORTRAITS, { recursive: true });
 mkdirSync(PLACES, { recursive: true });
 
 let uid = 0;
@@ -14,75 +12,6 @@ const lin = (a, b, dir = 'v') => {
   const g = id('g');
   const xy = dir === 'v' ? 'x1="0" y1="0" x2="0" y2="1"' : 'x1="0" y1="0" x2="1" y2="0"';
   return { url: `url(#${g})`, def: `<linearGradient id="${g}" ${xy}><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>` };
-};
-
-/* ============================== PORTRELER ============================== */
-const SKIN = '#e2a77f', SKIN_D = '#c98a63', HAIR = '#2b1d16';
-
-function face({ y = 0, jaw = 1, brows = 'soft', stubble = false, smile = 'grin' }) {
-  const cy = 52 + y;
-  const browY = cy - 7;
-  const browPath = brows === 'soft'
-    ? `M45,${browY} q5,-3 10,0 M65,${browY} q5,-3 10,0`
-    : `M44,${browY + 1} l11,-2 M65,${browY - 1} l11,2`;
-  const mouth = smile === 'grin'
-    ? `<path d="M52,${cy + 13} q8,7 16,0" fill="#8a3b2c" stroke="#6b2a1f" stroke-width="1.2"/><path d="M54,${cy + 13.5} q6,3 12,0" fill="#fff" opacity=".9"/>`
-    : `<path d="M52,${cy + 14} q8,4 16,0" fill="none" stroke="#6b2a1f" stroke-width="2" stroke-linecap="round"/>`;
-  const g = lin(SKIN, SKIN_D);
-  return `<defs>${g.def}</defs>
-  <rect x="53" y="${cy + 18}" width="14" height="14" fill="${SKIN_D}"/>
-  <ellipse cx="38" cy="${cy + 2}" rx="5" ry="7" fill="${SKIN_D}"/><ellipse cx="82" cy="${cy + 2}" rx="5" ry="7" fill="${SKIN_D}"/>
-  <path d="M40,${cy - 10} Q40,${cy - 28} 60,${cy - 28} Q80,${cy - 28} 80,${cy - 10} L80,${cy + 4} Q80,${cy + 22 * jaw} 60,${cy + 26 * jaw} Q40,${cy + 22 * jaw} 40,${cy + 4} Z" fill="${g.url}"/>
-  ${stubble ? `<path d="M44,${cy + 8} Q46,${cy + 24} 60,${cy + 26} Q74,${cy + 24} 76,${cy + 8} Q70,${cy + 18} 60,${cy + 19} Q50,${cy + 18} 44,${cy + 8} Z" fill="#3a2a22" opacity=".18"/>` : ''}
-  <ellipse cx="50" cy="${cy}" rx="3.6" ry="4.2" fill="#fff"/><ellipse cx="70" cy="${cy}" rx="3.6" ry="4.2" fill="#fff"/>
-  <circle cx="50.6" cy="${cy + 0.6}" r="2.4" fill="#3b2516"/><circle cx="70.6" cy="${cy + 0.6}" r="2.4" fill="#3b2516"/>
-  <circle cx="51.4" cy="${cy - 0.4}" r=".8" fill="#fff"/><circle cx="71.4" cy="${cy - 0.4}" r=".8" fill="#fff"/>
-  <path d="${browPath}" stroke="${HAIR}" stroke-width="2.6" stroke-linecap="round" fill="none"/>
-  <path d="M60,${cy + 2} q-3,6 0,8" stroke="${SKIN_D}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-  <ellipse cx="46" cy="${cy + 9}" rx="4" ry="2.4" fill="#e7836b" opacity=".35"/><ellipse cx="74" cy="${cy + 9}" rx="4" ry="2.4" fill="#e7836b" opacity=".35"/>
-  ${mouth}`;
-}
-
-function portrait(bg, inner) {
-  const b = lin(bg[0], bg[1]);
-  const clip = id('pc');
-  return svg(`<defs>${b.def}<clipPath id="${clip}"><circle cx="60" cy="60" r="60"/></clipPath></defs>
-  <g clip-path="url(#${clip})"><rect width="120" height="120" fill="${b.url}"/>
-  <circle cx="60" cy="60" r="44" fill="#fff" opacity=".06"/>${inner}</g>`, 120, 120);
-}
-
-const shirt = (color, extra = '') => {
-  const g = lin(color, '#000000');
-  return `<defs>${lin(color, color).def}</defs><path d="M18,120 Q20,92 46,86 L60,94 L74,86 Q100,92 102,120 Z" fill="${color}"/><path d="M18,120 Q20,92 46,86 L60,94 L74,86 Q100,92 102,120 Z" fill="${g.url}" opacity=".18"/><defs>${g.def}</defs>${extra}`;
-};
-
-const PORTRAIT = {
-  // 12 yaş: ters şapka, çizgili tişört
-  'kerem-12': portrait(['#3d6fd8', '#1f3d8a'], `
-    ${shirt('#f2b134', '<path d="M24,104 L96,104 M21,113 L99,113" stroke="#d8452f" stroke-width="4"/><path d="M50,88 Q60,98 70,88" fill="none" stroke="#c98a2c" stroke-width="3"/>')}
-    ${face({ y: 6, jaw: 0.9 })}
-    <path d="M38,46 Q38,24 60,24 Q82,24 82,46 Q74,38 60,38 Q46,38 38,46 Z" fill="#d8452f"/>
-    <path d="M78,40 Q92,40 96,46 Q88,48 80,46 Z" fill="#b4361f"/>
-    <circle cx="60" cy="25" r="2.4" fill="#b4361f"/>
-    <path d="M40,46 q-2,4 0,8 M80,46 q2,4 0,8" stroke="${HAIR}" stroke-width="4" stroke-linecap="round"/>`),
-  // 16 yaş: dağınık saç, deri ceket
-  'kerem-16': portrait(['#e0603a', '#8a2a18'], `
-    ${shirt('#2b2f36', '<path d="M46,86 L60,108 L74,86 L68,86 L60,98 L52,86 Z" fill="#e8ecf2"/><path d="M40,90 L52,120 M80,90 L68,120" stroke="#15181d" stroke-width="2"/><circle cx="86" cy="104" r="1.6" fill="#b9c0ca"/><path d="M28,96 l10,6" stroke="#b9c0ca" stroke-width="1.6"/>')}
-    ${face({ y: 4, jaw: 1, brows: 'soft', smile: 'grin' })}
-    <path d="M38,44 Q34,20 56,18 Q64,12 72,20 Q86,22 84,42 L80,40 Q78,30 70,32 L66,26 L62,32 L54,28 L50,34 Q42,34 40,44 Z" fill="${HAIR}"/>
-    <path d="M54,18 l-4,-6 M64,16 l2,-7 M72,20 l6,-5" stroke="${HAIR}" stroke-width="4" stroke-linecap="round"/>`),
-  // 18 yaş: tulum, alında yağ lekesi, anahtar
-  'kerem-18': portrait(['#2bc48a', '#11704c'], `
-    ${shirt('#3a6db0', '<path d="M42,92 L42,120 M78,92 L78,120" stroke="#2a5288" stroke-width="5"/><rect x="66" y="100" width="14" height="10" rx="2" fill="#2a5288"/><path d="M50,104 l12,-10" stroke="#b9c0ca" stroke-width="4" stroke-linecap="round"/><circle cx="62" cy="94" r="4" fill="none" stroke="#b9c0ca" stroke-width="3"/><path d="M46,86 L60,94 L74,86" fill="none" stroke="#e8ecf2" stroke-width="3"/>')}
-    ${face({ y: 3, jaw: 1.05, brows: 'strong', smile: 'grin' })}
-    <path d="M38,44 Q36,20 60,19 Q84,20 82,44 Q80,32 70,30 Q60,34 48,30 Q40,32 38,44 Z" fill="${HAIR}"/>
-    <path d="M66,40 q5,2 8,-1" stroke="#2b2f36" stroke-width="2.4" stroke-linecap="round" opacity=".6"/>`),
-  // 25 yaş: takım elbise, kravat, sakal
-  'kerem-25': portrait(['#f5b700', '#a86d00'], `
-    ${shirt('#1f2530', '<path d="M46,86 L60,104 L74,86 Z" fill="#f4f6f9"/><path d="M57,92 L63,92 L65,118 L60,122 L55,118 Z" fill="#c2412d"/><path d="M57,92 L63,92 L61,97 L59,97 Z" fill="#9a2f20"/><path d="M46,86 L54,110 L44,96 Z M74,86 L66,110 L76,96 Z" fill="#2c3443"/><rect x="80" y="100" width="10" height="3" rx="1" fill="#f4f6f9"/>')}
-    ${face({ y: 2, jaw: 1.08, brows: 'strong', stubble: true, smile: 'calm' })}
-    <path d="M38,42 Q38,18 62,18 Q84,20 82,42 Q80,30 66,28 Q50,26 40,40 Z" fill="${HAIR}"/>
-    <path d="M40,40 Q48,26 70,28" stroke="#4a3a30" stroke-width="2" fill="none" opacity=".6"/>`),
 };
 
 /* ============================== MEKÂNLAR ============================== */
@@ -177,6 +106,5 @@ const PLACE = {
     ${tinyCar(30, 104, '#d8452f')}${tinyCar(230, 104, '#f5b700')}`, W, H),
 };
 
-for (const [n, s] of Object.entries(PORTRAIT)) writeFileSync(`${PORTRAITS}/${n}.svg`, s);
 for (const [n, s] of Object.entries(PLACE)) writeFileSync(`${PLACES}/${n}.svg`, s);
-console.log(`${Object.keys(PORTRAIT).length} portre, ${Object.keys(PLACE).length} mekân yazıldı`);
+console.log(`${Object.keys(PLACE).length} mekân yazıldı`);

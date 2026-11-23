@@ -8,7 +8,7 @@ export interface Story { stage: Stage; who: string; text: string; choices: Story
 export const STORIES: Record<StoryId, Story> = {
   okul: {
     stage: 1, who: 'Öğretmen Nermin Hanım',
-    text: 'Kerem, karne yaklaşıyor. Bu hafta pazara gideceğine biraz ders çalışsan?',
+    text: '{ad}, karne yaklaşıyor. Bu hafta pazara gideceğine biraz ders çalışsan?',
     choices: [
       { label: 'Derse çalış', reputation: 3, note: 'Ders çalıştın; mahallede “akıllı çocuk” diye anılıyorsun' },
       { label: 'Pazara git', money: 300, note: 'Pazarda ufak bir iş çevirdin' },
@@ -72,7 +72,7 @@ export const STORIES: Record<StoryId, Story> = {
   },
   'cevdet-ortak': {
     stage: 3, who: 'Rakibin Cevdet',
-    text: 'Kerem, mahalleden beri yarışıyoruz. Gel ortak olalım; payına 300.000 TL veririm.',
+    text: '{ad}, mahalleden beri yarışıyoruz. Gel ortak olalım; payına 300.000 TL veririm.',
     choices: [
       { label: 'Parayı al, ortak ol', money: 300000, reputation: -5, note: 'Cevdet’le ortak oldun; müşteriler kafası karıştı' },
       { label: 'Kendi yolumdan giderim', reputation: 6, note: 'Bağımsız kaldın; sanayi seni takdir etti' },

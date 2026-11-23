@@ -11,12 +11,13 @@ import { SellSheet } from './SellSheet';
 import { RepairSheet } from './RepairSheet';
 import { orderMatches, orderPrice } from '../../game/orders';
 import { placeUrl } from '../art';
+import { genitive } from '../../game/turkish';
 import type { GameState } from '../../game/types';
 
-export function placeName(state: Pick<GameState, 'stage' | 'locationLevel'>): string {
-  if (state.stage === 1) return 'Kerem’in odası';
+export function placeName(state: Pick<GameState, 'stage' | 'locationLevel' | 'player'>): string {
+  if (state.stage === 1) return `${genitive(state.player.name)} odası`;
   if (state.stage === 2) return 'Apartman altı';
-  if (state.stage === 4) return 'Kerem Holding';
+  if (state.stage === 4) return `${state.player.name} Holding`;
   return LOCATIONS[state.locationLevel];
 }
 

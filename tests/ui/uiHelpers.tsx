@@ -13,5 +13,7 @@ beforeEach(() => localStorage.clear());
 export function renderGame() {
   const r = render(<App />);
   fireEvent.click(screen.getByRole('button', { name: /^(Devam et|Oyuna başla)/ }));
+  const create = screen.queryByRole('button', { name: 'Hikâyeye başla' });
+  if (create) fireEvent.click(create);
   return r;
 }

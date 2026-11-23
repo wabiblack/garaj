@@ -2,6 +2,7 @@ import { useCallback, useEffect, useReducer } from 'react';
 import { gameReducer, type Action, type GameView } from '../game/reducer';
 import { loadGame, saveGame } from '../game/save';
 import { newGame } from '../game/newGame';
+import type { Player } from '../game/player';
 
 type Root = { view: GameView | null; broken: boolean; fresh: boolean };
 
@@ -26,19 +27,19 @@ function init(): Root {
 function rootReducer(root: Root, action: Action): Root {
   if (action.type === 'newGame') {
     const keep = action.hard && root.view ? { hard: true, achievements: root.view.state.achievements } : {};
-    return { view: { state: newGame(action.seed, keep), message: null, lastOffer: null }, broken: false, fresh: true };
+    return { view: { state: newGame(action.seed, { ...keep, player: action.player }), message: null, lastOffer: null }, broken: false, fresh: true };
   }
   if (!root.view) return root;
   return { view: gameReducer(root.view, action), broken: false, fresh: root.fresh };
 }
 
-export function useGame(): { view: GameView | null; broken: boolean; fresh: boolean; dispatch(a: Action): void; reset(hard?: boolean): void } {
+export function useGame(): { view: GameView | null; broken: boolean; fresh: boolean; dispatch(a: Action): void; reset(hard?: boolean, player?: Player): void } {
   const [root, dispatch] = useReducer(rootReducer, undefined, init);
   const state = root.view?.state;
   useEffect(() => {
     const st = storage();
     if (state && st) saveGame(st, state);
   }, [state]);
-  const reset = useCallback((hard = false) => dispatch({ type: 'newGame', seed: randomSeed(), hard }), []);
+  const reset = useCallback((hard = false, player?: Player) => dispatch({ type: 'newGame', seed: randomSeed(), hard, player }), []);
   return { view: root.view, broken: root.broken, fresh: root.fresh, dispatch, reset };
 }

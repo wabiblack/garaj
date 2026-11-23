@@ -23,7 +23,9 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { isBankrupt } from '../game/progression';
 import { AuctionSheet } from './screens/AuctionSheet';
 import { StoryScreen } from './screens/StoryScreen';
-import { MenuScreen } from './screens/MenuScreen';
+import { MenuScreen, hasProgress } from './screens/MenuScreen';
+import { CharacterScreen } from './screens/CharacterScreen';
+import type { Player } from '../game/player';
 import type { Listing } from '../game/types';
 
 export default function App() {
@@ -38,31 +40,55 @@ function Game() {
   const { view, broken, fresh, dispatch, reset } = useGame();
   const [introDone, setIntroDone] = useState(false);
   const [inMenu, setInMenu] = useState(true);
+  /** Karakter ekranı: yeni oyun öncesi (hard) ya da görünüm düzenleme (edit). */
+  const [creator, setCreator] = useState<null | { hard: boolean } | 'edit'>(null);
   const [tab, setTab] = useState<Tab>('ilanlar');
   const [listingId, setListingId] = useState<string | null>(null);
   const [auction, setAuction] = useState<Listing | null>(null);
   const achievement = useFeedback(view);
   useDailyStreak(view !== null, dispatch);
 
-  const newGame = (hard: boolean) => {
-    reset(hard);
+  const newGame = (hard: boolean, player?: Player) => {
+    setCreator(null);
+    reset(hard, player);
     setIntroDone(false);
     setTab('ilanlar');
     setInMenu(false);
   };
   if (broken || !view) return <BrokenSaveScreen onReset={() => newGame(false)} />;
   const { state } = view;
+  if (creator) {
+    const editing = creator === 'edit';
+    return (
+      <CharacterScreen
+        initial={state.player}
+        editing={editing}
+        onCancel={() => setCreator(null)}
+        onDone={(player) => {
+          if (creator === 'edit') { dispatch({ type: 'setPlayer', player }); setCreator(null); }
+          else newGame(creator.hard, player);
+        }}
+      />
+    );
+  }
   if (inMenu) {
-    return <MenuScreen state={state} dispatch={dispatch} onPlay={() => setInMenu(false)} onNewGame={newGame} />;
+    return (
+      <MenuScreen
+        state={state}
+        dispatch={dispatch}
+        onPlay={() => (hasProgress(state) || !fresh || introDone ? setInMenu(false) : setCreator({ hard: false }))}
+        onNewGame={(hard) => setCreator({ hard })}
+      />
+    );
   }
   const overlay = fresh && !introDone && state.day === 1 && state.stats.sales === 0
-    ? <IntroScreen onStart={() => setIntroDone(true)} />
+    ? <IntroScreen name={state.player.name} money={state.money} onStart={() => setIntroDone(true)} />
     : state.pendingTransition !== null
-    ? <TransitionScreen to={state.pendingTransition} onContinue={() => dispatch({ type: 'completeTransition' })} />
+    ? <TransitionScreen to={state.pendingTransition} player={state.player} onContinue={() => dispatch({ type: 'completeTransition' })} />
     : state.phase === 'evening'
       ? <EveningScreen view={view} dispatch={dispatch} />
       : (state.won && !state.wonSeen) || (state.stage === 4 && state.branches >= 3 && !state.finalSeen)
-        ? <EndScreen state={state} onContinue={() => dispatch({ type: 'dismissWin' })} onHardMode={() => newGame(true)} />
+        ? <EndScreen state={state} onContinue={() => dispatch({ type: 'dismissWin' })} onHardMode={() => setCreator({ hard: true })} />
         : state.story.pending
           ? <StoryScreen id={state.story.pending} state={state} onChoose={(index) => dispatch({ type: 'storyChoice', index })} />
           : isBankrupt(state)
@@ -85,7 +111,7 @@ function Game() {
         ) : null}
         {tab === 'garaj' ? <GarageScreen view={view} dispatch={dispatch} /> : null}
         {tab === 'satis' ? <SalesScreen view={view} dispatch={dispatch} /> : null}
-        {tab === 'profil' ? <ProfileScreen view={view} dispatch={dispatch} onMenu={() => setInMenu(true)} /> : null}
+        {tab === 'profil' ? <ProfileScreen view={view} dispatch={dispatch} onMenu={() => setInMenu(true)} onEditLook={() => setCreator('edit')} /> : null}
       </main>
       <TabBar active={tab} onChange={setTab} badges={{ satis: state.forSale.length }} />
       {listingId ? (

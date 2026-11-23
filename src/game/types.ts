@@ -1,3 +1,5 @@
+import type { Player } from './player';
+
 export type Stage = 1 | 2 | 3 | 4;
 export type Season = 'ilkbahar' | 'yaz' | 'sonbahar' | 'kis';
 export type Category = 'bisiklet' | 'guvercin' | 'konsol' | 'telefon' | 'motor' | 'araba';
@@ -135,4 +137,6 @@ export interface GameState {
   hard: boolean;
   /** Model başına oyuncunun son satışları (en çok 5). */
   prices: Record<string, { day: number; price: number }[]>;
+  /** Oyuncunun karakteri (isim, görünüm). */
+  player: Player;
 }

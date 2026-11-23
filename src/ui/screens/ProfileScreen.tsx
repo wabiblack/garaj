@@ -34,7 +34,7 @@ const ROLE_HELP: Record<keyof Employees, string> = {
   satis: 'Her gün +1 alıcı',
 };
 
-export function ProfileScreen({ view, dispatch, onMenu }: { view: GameView; dispatch(a: Action): void; onMenu(): void }) {
+export function ProfileScreen({ view, dispatch, onMenu, onEditLook }: { view: GameView; dispatch(a: Action): void; onMenu(): void; onEditLook(): void }) {
   const { state } = view;
   const [shareMsg, setShareMsg] = useState<string | null>(null);
   const { stats } = state;
@@ -43,10 +43,11 @@ export function ProfileScreen({ view, dispatch, onMenu }: { view: GameView; disp
   return (
     <section>
       <div className="profile">
-        <img className="avatar" src={portraitUrl(state.age)} alt="" />
+        <img className="avatar" src={portraitUrl(state.age, state.player.look)} alt="" />
         <div>
-          <h1>Kerem</h1>
+          <h1>{state.player.name}</h1>
           <div className="muted">{state.age} yaş · {STAGE_LABEL[state.stage]} · Gün {state.day}{state.hard ? ' · Zor mod' : ''}</div>
+          <Button small variant="ghost" className="mt8" onClick={onEditLook}>Görünümü değiştir</Button>
         </div>
       </div>
       <div className="panel">
@@ -201,7 +202,7 @@ export function ProfileScreen({ view, dispatch, onMenu }: { view: GameView; disp
         </>
       ) : (
         <div className="panel panel--muted">
-          <p className="muted">{state.stage === 1 ? 'Çırak motor işinde; garajı büyütme, usta ve kredi Kerem galerici olunca açılır.' : 'Garajı büyütme, usta ve kredi Kerem galerici olunca açılır.'}</p>
+          <p className="muted">{state.stage === 1 ? 'Çırak motor işinde; garajı büyütme, usta ve kredi galerici olunca açılır.' : 'Garajı büyütme, usta ve kredi galerici olunca açılır.'}</p>
         </div>
       )}
 

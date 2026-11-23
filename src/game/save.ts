@@ -1,6 +1,7 @@
 import type { GameState, Listing } from './types';
 import { createRng } from './rng';
 import { emptyStats, generateQuests } from './career';
+import { cleanPlayer } from './player';
 
 export const SAVE_KEY = 'garaj.save';
 export type LoadResult = { kind: 'ok'; state: GameState } | { kind: 'empty' } | { kind: 'broken' };
@@ -82,6 +83,7 @@ function fillV3(s: GameState): GameState {
     stats: { ...s.stats, categorySales: { ...emptyStats().categorySales, ...s.stats.categorySales } },
     hard: s.hard ?? false,
     prices: s.prices ?? {},
+    player: cleanPlayer(s.player),
   };
 }
 

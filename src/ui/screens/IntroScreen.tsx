@@ -1,4 +1,5 @@
 import { Button } from '../components/Button';
+import { formatTL } from '../../game/format';
 import { ItemImage } from '../components/ItemCard';
 import type { Item } from '../../game/types';
 
@@ -13,12 +14,12 @@ const STEPS = [
   { item: art('araba', 'Marmara', 'GT Coupe'), age: '18 yaş', text: 'Arabalar ve kendi galerin' },
 ];
 
-export function IntroScreen({ onStart }: { onStart(): void }) {
+export function IntroScreen({ name, money, onStart }: { name: string; money: number; onStart(): void }) {
   return (
     <div className="overlay overlay--center" role="dialog" aria-modal="true" aria-label="Hikâye">
       <div className="overlay__inner overlay__inner--center intro">
         <p className="overlay__kicker">Garaj</p>
-        <h1 className="transition__title">Kerem 12 yaşında. Cebinde 2.000 TL var.</h1>
+        <h1 className="transition__title">{name} 12 yaşında. Cebinde {formatTL(money)} var.</h1>
         <p className="muted">Ucuza al, temizle, tamir et, kârla sat. Biriktirdikçe büyü: mahalleden şehrin en büyük galerisine.</p>
         <ol className="intro__steps">
           {STEPS.map((s) => (

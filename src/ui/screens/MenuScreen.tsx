@@ -51,7 +51,7 @@ export function MenuScreen({ state, dispatch, onPlay, onNewGame }: {
       <div className="menu__shade" aria-hidden="true" />
       <div className="menu__inner">
         <Logo />
-        <img className="menu__kerem" src={portraitUrl(progress ? state.age : 12)} alt="" />
+        <img className="menu__kerem" src={portraitUrl(progress ? state.age : 12, state.player.look)} alt="" />
         <nav className="menu__buttons" aria-label="Ana menü">
           {progress ? (
             <button type="button" className="menu-btn menu-btn--primary" style={rise()} onClick={onPlay}>
@@ -88,7 +88,7 @@ export function MenuScreen({ state, dispatch, onPlay, onNewGame }: {
           <p>
             {panel === 'zor'
               ? '1.000 TL ile başlarsın. Satıcılar daha sert, alıcılar daha az. Başarımların kalır.'
-              : 'Kerem yeniden 12 yaşında, cebinde 2.000 TL ile başlar.'}
+              : 'Yeniden 12 yaşında, cebinde 2.000 TL ile başlarsın.'}
           </p>
           {progress ? <p className="hint">Şu anki ilerlemen silinir. Bu geri alınamaz. İstersen önce Ayarlar’dan yedek kodu al.</p> : null}
           <div className="chips">
