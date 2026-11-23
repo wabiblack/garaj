@@ -7,6 +7,7 @@ export type OfferResult =
   | { kind: 'counter'; price: number; patienceLeft: number }
   | { kind: 'walked' };
 
+export const ASK_MIN = 1.0, ASK_MAX = 1.25, MIN_LO = 0.55, MIN_HI = 0.75;
 const SELLERS = ['Ahmet', 'Ayşe', 'Mehmet', 'Fatma', 'Hasan', 'Zeynep', 'Murat', 'Elif', 'Mustafa', 'Emine', 'Hüseyin', 'Selin', 'Kadir', 'Deniz', 'Osman'];
 
 export function makeListing(item: Item, season: Season, rng: RNG, special: SpecialKind | null): Listing {
@@ -16,8 +17,8 @@ export function makeListing(item: Item, season: Season, rng: RNG, special: Speci
   if (special === 'mezat') {
     askPrice = minPrice = round10(mv * 0.7);
   } else {
-    askPrice = round10(mv * rng.range(1.05, 1.3));
-    minPrice = Math.min(askPrice, round10(trueValue(item, season) * rng.range(0.8, 1.0)));
+    askPrice = round10(mv * rng.range(ASK_MIN, ASK_MAX));
+    minPrice = Math.min(askPrice, round10(trueValue(item, season) * rng.range(MIN_LO, MIN_HI)));
   }
   return {
     id: rng.id('l'), item, askPrice, minPrice, patience: 3, inspected: false, special,

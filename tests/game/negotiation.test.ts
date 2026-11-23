@@ -1,4 +1,4 @@
-import { makeListing as buildListing, respondToOffer, storageLimit, canBuy, inspect, inspectionCost } from '../../src/game/negotiation';
+import { ASK_MIN, ASK_MAX, MIN_LO, MIN_HI, makeListing as buildListing, respondToOffer, storageLimit, canBuy, inspect, inspectionCost } from '../../src/game/negotiation';
 import { marketValue, trueValue } from '../../src/game/pricing';
 import { createRng } from '../../src/game/rng';
 import { makeItem, makeListing, makeState } from '../helpers';
@@ -12,10 +12,10 @@ describe('makeListing', () => {
       const item = makeItem({ defects: [defect(false)] });
       const l = buildListing(item, 'ilkbahar', r, null);
       const mv = marketValue(item, 'ilkbahar'), tv = trueValue(item, 'ilkbahar');
-      expect(l.askPrice).toBeGreaterThanOrEqual(Math.floor(mv * 1.05) - 10);
-      expect(l.askPrice).toBeLessThanOrEqual(Math.ceil(mv * 1.3) + 10);
-      expect(l.minPrice).toBeGreaterThanOrEqual(Math.floor(tv * 0.8) - 10);
-      expect(l.minPrice).toBeLessThanOrEqual(Math.ceil(tv * 1.0) + 10);
+      expect(l.askPrice).toBeGreaterThanOrEqual(Math.floor(mv * ASK_MIN) - 10);
+      expect(l.askPrice).toBeLessThanOrEqual(Math.ceil(mv * ASK_MAX) + 10);
+      expect(l.minPrice).toBeGreaterThanOrEqual(Math.floor(tv * MIN_LO) - 10);
+      expect(l.minPrice).toBeLessThanOrEqual(Math.ceil(tv * MIN_HI) + 10);
       expect(l.minPrice).toBeLessThanOrEqual(l.askPrice);
       expect(l.patience).toBe(3);
       expect(l.sellerName).toBeTruthy();

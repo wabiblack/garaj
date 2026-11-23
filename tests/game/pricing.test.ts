@@ -38,8 +38,8 @@ test('generateItem kategoriye uygun ve değer aralığında', () => {
   for (let i = 0; i < 50; i++) {
     const it = generateItem('bisiklet', r);
     expect(it.category).toBe('bisiklet');
-    expect(it.baseValue).toBeGreaterThanOrEqual(800);
-    expect(it.baseValue).toBeLessThanOrEqual(4000);
+    expect(it.baseValue).toBeGreaterThanOrEqual(500);
+    expect(it.baseValue).toBeLessThanOrEqual(8000);
     expect(it.condition).toBeGreaterThanOrEqual(30);
     expect(it.condition).toBeLessThanOrEqual(90);
     expect(it.defects.length).toBeLessThanOrEqual(2);

@@ -1,12 +1,12 @@
-import { buyerCount, generateOffers, counterOffer, settleSale } from '../../src/game/selling';
+import { OFFER_LO, OFFER_HI, buyerCount, generateOffers, counterOffer, settleSale } from '../../src/game/selling';
 import { createRng } from '../../src/game/rng';
 import { makeItem, makeState } from '../helpers';
 
 const emp = (o: Partial<{ usta: boolean; boyaci: boolean; satis: boolean }>) => ({ usta: false, boyaci: false, satis: false, ...o });
 
 test('buyerCount', () => {
-  expect(buyerCount(makeState())).toBe(1);
-  expect(buyerCount(makeState({ reputation: 61, locationLevel: 2, employees: emp({ satis: true }) }))).toBe(5);
+  expect(buyerCount(makeState())).toBe(2);
+  expect(buyerCount(makeState({ reputation: 61, locationLevel: 2, employees: emp({ satis: true }) }))).toBe(6);
 });
 
 describe('generateOffers', () => {
@@ -17,8 +17,8 @@ describe('generateOffers', () => {
     expect(offers.length).toBeGreaterThan(0);
     for (const o of offers) {
       expect(o.itemId).toBe(item.id);
-      expect(o.amount).toBeGreaterThanOrEqual(2000 * 0.85 * 1.06 - 10);
-      expect(o.amount).toBeLessThanOrEqual(2000 * 1.06 + 10);
+      expect(o.amount).toBeGreaterThanOrEqual(2000 * OFFER_LO * 1.06 - 10);
+      expect(o.amount).toBeLessThanOrEqual(2000 * OFFER_HI * 1.06 + 10);
       expect(o.buyerName).toBeTruthy();
     }
   });
@@ -36,7 +36,7 @@ describe('generateOffers', () => {
     const r = createRng(8);
     const all = Array.from({ length: 50 }, () => generateOffers(s, r)).flat();
     expect(all.length).toBeGreaterThan(0);
-    for (const o of all) expect(o.amount).toBeGreaterThanOrEqual(2000 * 0.85 * 1.15 - 10);
+    for (const o of all) expect(o.amount).toBeGreaterThanOrEqual(2000 * OFFER_LO * 1.15 - 10);
   });
 });
 

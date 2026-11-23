@@ -27,22 +27,22 @@ interface Template {
 /** Tüm markalar hayalidir. */
 export const CATALOG: Record<Category, Template> = {
   bisiklet: {
-    min: 800, max: 4000,
+    min: 500, max: 8000,
     models: [['Serçe', 'Şehir 26'], ['Serçe', 'Dağ Pro'], ['Kanat', 'BMX'], ['Kanat', 'Katlanır'], ['Rüzgârgülü', 'Yarış 28']],
     defects: [['Zincir paslı', 0.12, 0.06], ['Fren tutmuyor', 0.2, 0.1], ['Lastik patlak', 0.1, 0.05], ['Jant eğri', 0.25, 0.15]],
   },
   guvercin: {
-    min: 300, max: 3000,
+    min: 300, max: 6000,
     models: [['Taklacı', 'Ankara'], ['Dönek', 'Edirne'], ['Posta', 'Belçika tipi'], ['Hünkâri', 'Gösteri'], ['Kelebek', 'Konya']],
     defects: [['Hasta', 0.35, 0.15], ['Tüy dökümü', 0.15, 0.08]],
   },
   konsol: {
-    min: 2000, max: 8000,
+    min: 2000, max: 20000,
     models: [['Oynat', 'Box 4'], ['Oynat', 'Box 5 Slim'], ['Piksel', 'Go'], ['Piksel', 'Station'], ['Tuşla', 'Mini']],
     defects: [['Kol arızalı', 0.15, 0.08], ['Fan sesli', 0.12, 0.06], ['Disk okumuyor', 0.3, 0.18]],
   },
   telefon: {
-    min: 1500, max: 10000,
+    min: 1500, max: 25000,
     models: [['Pırıl', 'P12'], ['Pırıl', 'P14 Pro'], ['Nokta', 'Mini 5'], ['Nokta', 'Max'], ['Ekran', 'Lite']],
     defects: [['Ekran çizik', 0.15, 0.08], ['Pil şişmiş', 0.25, 0.1], ['Kamera bulanık', 0.18, 0.12]],
   },
