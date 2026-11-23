@@ -4,26 +4,36 @@ import { Button } from '../components/Button';
 import { portraitUrl } from '../portrait';
 
 const AGES = [12, 16, 18, 25] as const;
+type Age = (typeof AGES)[number];
 const SKIN_NAMES = ['Açık', 'Buğday', 'Esmer', 'Koyu'];
+type Part = 'ten' | 'sac' | 'renk' | 'gozluk';
+const PARTS: { id: Part; label: string }[] = [
+  { id: 'ten', label: 'Ten' },
+  { id: 'sac', label: 'Saç' },
+  { id: 'renk', label: 'Renk' },
+  { id: 'gozluk', label: 'Gözlük' },
+];
 
-function Swatches({ label, options, value, onChange }: {
-  label: string;
-  options: readonly { name: string; hex: string }[];
-  value: number;
-  onChange(i: number): void;
-}) {
+/** Her seçenek, o seçenek uygulanmış küçük bir portreyle gösterilir. */
+function Options({ part, look, age, onPick }: { part: Part; look: Look; age: Age; onPick(patch: Partial<Look>): void }) {
+  const items: { name: string; patch: Partial<Look>; on: boolean; dot?: string }[] =
+    part === 'ten' ? SKIN_TONES.map(([hex], i) => ({ name: SKIN_NAMES[i], patch: { skin: i }, on: look.skin === i, dot: hex }))
+    : part === 'sac' ? HAIR_COLORS.map((c, i) => ({ name: c.name, patch: { hair: i }, on: look.hair === i, dot: c.hex }))
+    : part === 'renk' ? FAV_COLORS.map((c, i) => ({ name: c.name, patch: { color: i }, on: look.color === i, dot: c.hex }))
+    : [{ name: 'Gözlüksüz', patch: { glasses: false }, on: !look.glasses }, { name: 'Gözlüklü', patch: { glasses: true }, on: look.glasses }];
   return (
-    <fieldset className="swatches">
-      <legend className="field__label">{label}</legend>
-      <div className="swatches__row">
-        {options.map((o, i) => (
-          <label key={o.name} className={'swatch' + (i === value ? ' swatch--on' : '')} title={o.name}>
-            <input type="radio" name={label} aria-label={o.name} checked={i === value} onChange={() => onChange(i)} />
-            <span className="swatch__dot" style={{ background: o.hex }} aria-hidden="true" />
-          </label>
-        ))}
-      </div>
-    </fieldset>
+    <div className="opts" role="radiogroup" aria-label={PARTS.find((p) => p.id === part)!.label}>
+      {items.map((o) => (
+        <label key={o.name} className={'opt' + (o.on ? ' opt--on' : '')}>
+          <input type="radio" name={part} aria-label={o.name} checked={o.on} onChange={() => onPick(o.patch)} />
+          <img className="opt__face" src={portraitUrl(age, { ...look, ...o.patch })} alt="" />
+          <span className="opt__name">
+            {o.dot ? <span className="opt__dot" style={{ background: o.dot }} aria-hidden="true" /> : null}
+            {o.name}
+          </span>
+        </label>
+      ))}
+    </div>
   );
 }
 
@@ -37,50 +47,55 @@ export function CharacterScreen({ initial, editing, onDone, onCancel }: {
 }) {
   const [name, setName] = useState(initial.name);
   const [look, setLook] = useState<Look>(initial.look);
-  const [age, setAge] = useState<(typeof AGES)[number]>(12);
+  const [age, setAge] = useState<Age>(12);
+  const [part, setPart] = useState<Part>('ten');
+  const [spin, setSpin] = useState(0);
   const set = (patch: Partial<Look>) => setLook((l) => ({ ...l, ...patch }));
   const shown = cleanName(name);
-  const random = () => setLook({
-    skin: pick(SKIN_TONES.length), hair: pick(HAIR_COLORS.length), color: pick(FAV_COLORS.length), glasses: Math.random() < 0.3,
-  });
+  const random = () => {
+    setLook({ skin: pick(SKIN_TONES.length), hair: pick(HAIR_COLORS.length), color: pick(FAV_COLORS.length), glasses: Math.random() < 0.3 });
+    setSpin((n) => n + 1);
+  };
 
   return (
-    <div className="overlay creator" role="dialog" aria-modal="true" aria-label="Karakter">
-      <div className="overlay__inner">
-        <p className="overlay__kicker">{editing ? 'Görünümü değiştir' : 'Yeni oyun'}</p>
-        <h1 className="creator__title">Karakterini oluştur</h1>
+    <div className="creator" role="dialog" aria-modal="true" aria-label="Karakter">
+      <header className="creator__bar">
+        <button type="button" className="creator__back" onClick={onCancel}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          Vazgeç
+        </button>
+        <span className="creator__kicker">{editing ? 'Görünümü değiştir' : 'Karakterini oluştur'}</span>
+        <button type="button" className="creator__dice" aria-label="Rastgele görünüm" onClick={random}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="9" cy="9" r="1.3" /><circle cx="15" cy="15" r="1.3" /><circle cx="15" cy="9" r="1.3" /><circle cx="9" cy="15" r="1.3" /></svg>
+        </button>
+      </header>
 
-        <div className="creator__preview">
-          <img className="creator__face" src={portraitUrl(age, look)} alt={`${shown} ${age} yaşında`} />
-          <div className="creator__name">{shown}</div>
-          <div className="chips chips--center" role="group" aria-label="Yaşa göre önizle">
-            {AGES.map((a) => (
-              <button key={a} type="button" className={'chip' + (a === age ? ' chip--on' : '')} aria-pressed={a === age} onClick={() => setAge(a)}>{a} yaş</button>
-            ))}
-          </div>
+      <section className="creator__stage" aria-label="Önizleme">
+        <img key={spin} className="creator__face" src={portraitUrl(age, look)} alt={`${shown} ${age} yaşında`} />
+        <div className="creator__name">{shown}</div>
+        <div className="seg" role="group" aria-label="Yaşa göre önizle">
+          {AGES.map((a) => (
+            <button key={a} type="button" className={'seg__btn' + (a === age ? ' seg__btn--on' : '')} aria-pressed={a === age} onClick={() => setAge(a)}>{a} yaş</button>
+          ))}
         </div>
+      </section>
 
-        <label className="field">
+      <section className="creator__panel">
+        <label className="creator__field">
           <span className="field__label">Adı</span>
-          <input className="field__input" value={name} maxLength={NAME_MAX} autoComplete="off" autoCapitalize="words" onChange={(e) => setName(e.target.value)} />
+          <input className="field__input" value={name} maxLength={NAME_MAX} autoComplete="off" autoCapitalize="words" enterKeyHint="done" onChange={(e) => setName(e.target.value)} />
         </label>
-        <Swatches label="Ten rengi" options={SKIN_TONES.map(([hex], i) => ({ name: SKIN_NAMES[i], hex }))} value={look.skin} onChange={(skin) => set({ skin })} />
-        <Swatches label="Saç rengi" options={HAIR_COLORS} value={look.hair} onChange={(hair) => set({ hair })} />
-        <Swatches label="Sevdiği renk" options={FAV_COLORS} value={look.color} onChange={(color) => set({ color })} />
-        <label className="switch switch--flat">
-          <input type="checkbox" aria-label="Gözlük" checked={look.glasses} onChange={(e) => set({ glasses: e.target.checked })} />
-          <span className="switch__track" aria-hidden="true" />
-          <span><span className="switch__label">Gözlük</span></span>
-        </label>
-
-        <div className="overlay__footer creator__actions">
-          <Button variant="primary" block onClick={() => onDone({ name: shown, look })}>{editing ? 'Kaydet' : 'Hikâyeye başla'}</Button>
-          <div className="chips">
-            <Button small variant="ghost" onClick={random}>Rastgele görünüm</Button>
-            <Button small variant="ghost" onClick={onCancel}>Vazgeç</Button>
-          </div>
+        <div className="tabs" role="tablist" aria-label="Görünüm">
+          {PARTS.map((p) => (
+            <button key={p.id} type="button" role="tab" aria-selected={p.id === part} className={'tabs__btn' + (p.id === part ? ' tabs__btn--on' : '')} onClick={() => setPart(p.id)}>{p.label}</button>
+          ))}
         </div>
-      </div>
+        <Options part={part} look={look} age={age} onPick={set} />
+      </section>
+
+      <footer className="creator__foot">
+        <Button variant="primary" block onClick={() => onDone({ name: shown, look })}>{editing ? 'Kaydet' : 'Hikâyeye başla'}</Button>
+      </footer>
     </div>
   );
 }

@@ -7,6 +7,7 @@ export function Place({ state, className, label }: { state: GameState; className
   return (
     <svg className={className} viewBox="0 0 320 140" preserveAspectRatio="xMidYMid slice" role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
       <image href={placeUrl(state)} width="320" height="140" />
+      {sign?.plate ? <rect x={sign.x} y={sign.y} width={sign.w} height={sign.size + 8} rx={3} fill={sign.plate} /> : null}
       {sign ? (
         <text
           x={sign.x + sign.w / 2} y={sign.y + sign.size + 2} textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight={800}

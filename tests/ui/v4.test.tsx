@@ -97,8 +97,11 @@ test('karakter oluşturma: isim ve görünüm oyuna geçer, hikâyede doğru ekl
   const name = within(creator).getByLabelText('Adı');
   await userEvent.clear(name);
   await userEvent.type(name, 'Ali');
+  await userEvent.click(within(creator).getByRole('tab', { name: 'Saç' }));
   await userEvent.click(within(creator).getByLabelText('Kızıl'));
-  await userEvent.click(within(creator).getByLabelText('Gözlük'));
+  await userEvent.click(within(creator).getByRole('tab', { name: 'Gözlük' }));
+  await userEvent.click(within(creator).getByLabelText('Gözlüklü'));
+  expect(within(creator).getByLabelText('Gözlüklü')).toBeChecked();
   await userEvent.click(within(creator).getByRole('button', { name: 'Hikâyeye başla' }));
   expect(screen.getByRole('heading', { name: /Ali 12 yaşında/ })).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Başla' }));

@@ -16,15 +16,15 @@ export function modelSlug(item: Pick<Item, 'brand' | 'model'>): string {
 }
 
 // Paketlenen çizimler: yalnız var olan dosyalar listelenir, bu yüzden 404 isteği olmaz.
-// PNG (ör. Grok görseli) aynı addaki SVG çizimin önüne geçer.
-const MODEL_FILES = import.meta.glob('../../assets/models/*.{png,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
-const CATEGORY_FILES = import.meta.glob('../../assets/categories/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+// PNG/WebP (ör. yapay zekâ görseli) aynı addaki SVG çizimin önüne geçer. Bkz. docs/gorsel-istegi.md
+const MODEL_FILES = import.meta.glob('../../assets/models/*.{png,webp,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+const CATEGORY_FILES = import.meta.glob('../../assets/categories/*.{png,webp,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
 
 function fileMap(files: Record<string, string>): Map<string, string> {
   const map = new Map<string, string>();
   for (const [path, url] of Object.entries(files)) {
-    const [, name, ext] = path.match(/\/([^/]+)\.(png|svg)$/)!;
-    if (!map.has(name) || ext === 'png') map.set(name, url);
+    const [, name, ext] = path.match(/\/([^/]+)\.(png|webp|svg)$/)!;
+    if (!map.has(name) || ext !== 'svg') map.set(name, url);
   }
   return map;
 }
