@@ -106,3 +106,10 @@ test('tamir: ibre yeşilin kenarına değiyorsa paylı isabet sayılır', async 
   expect(isHit(HIT_ZONE[0] - 0.02, HIT_GRACE)).toBe(true);
   expect(isHit(HIT_ZONE[1] + 0.05, HIT_GRACE)).toBe(false);
 });
+
+test('ana ekran uygulaması yüksekliği: dikeyde ekranın uzun kenarı, yatayda pencere', async () => {
+  const { appHeight } = await import('../../src/ui/viewport');
+  expect(appHeight(894, 440, 956, true)).toBe(956);
+  expect(appHeight(960, 440, 956, true)).toBe(960);
+  expect(appHeight(400, 440, 956, false)).toBe(400);
+});

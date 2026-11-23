@@ -3,8 +3,10 @@ import { createRoot } from 'react-dom/client'
 import './ui/theme.css'
 import App from './ui/App.tsx'
 import { applySettings, loadSettings } from './ui/settings'
+import { fitStandaloneHeight } from './ui/viewport'
 
 applySettings(loadSettings())
+fitStandaloneHeight()
 
 // Android'de ana ekrandan açılınca yönü dikeye kilitler (manifest de portrait). Desteklemeyen tarayıcı sessizce geçer.
 try {

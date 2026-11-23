@@ -29,6 +29,10 @@ html, body { margin: 0; background: var(--bg); color: var(--text); }
 /* Sayfanın kendisi kaymaz (aşağı çekince yenileme ve lastik esneme olmaz); yalnız oyun alanı kayar. */
 html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 body { position: fixed; inset: 0; -webkit-tap-highlight-color: transparent; }
+/* iPhone ana ekran uygulamasında sayfa, üstteki durum çubuğu kadar kısa ölçülebiliyor (altta siyah bant).
+   main.tsx gerçek ekran yüksekliğini --app-h olarak verir; tam ekran katmanlar bu yüksekliği kullanır. */
+html, body, .sheet-backdrop, .overlay, .menu, .creator, .rotate-hint { height: var(--app-h, 100%); }
+.sheet-backdrop, .overlay, .menu, .creator, .rotate-hint { bottom: auto; }
 #root { height: 100%; }
 button { font: inherit; color: inherit; }
 
@@ -43,16 +47,14 @@ button { font: inherit; color: inherit; }
 
 .screen {
   flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
-  padding: 12px 16px calc(24px + var(--tabbar-h) + env(safe-area-inset-bottom));
+  padding: 12px 16px 24px;
 }
 
+/* Alt menü sabit (fixed) değil, sayfanın akışında en altta durur. */
 .tabbar {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
+  flex: none;
   width: 100%;
-  max-width: 430px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   background: var(--glass);
@@ -101,8 +103,7 @@ h1 { font-size: 24px; font-weight: 800; }
 .topbar {
   position: sticky; top: 0; z-index: 9;
   padding: calc(10px + env(safe-area-inset-top)) 16px 12px;
-  background: linear-gradient(180deg, var(--bg) 70%, var(--topbar-fade));
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
 .topbar__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
