@@ -72,7 +72,7 @@ function Game() {
   return (
     <div className="app">
       <TopBar state={state} onEndDay={() => dispatch({ type: 'endDay' })} />
-      <main className="screen">
+      <main className="screen" key={tab}>
         {tab === 'ilanlar' ? (
           <ListingsScreen
             state={state}
