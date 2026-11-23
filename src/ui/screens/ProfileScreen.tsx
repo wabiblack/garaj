@@ -7,6 +7,7 @@ import {
 import { CATEGORIES_BY_STAGE, CATEGORY_LABEL } from '../../game/catalog';
 import { EXPERT_DISCOUNT, EXPERT_MAX, EXPERT_STEP, expertLevel } from '../../game/expertise';
 import { shareRecordCard } from '../shareCard';
+import { extraImage } from '../images';
 import { SettingsPanel } from '../components/SettingsPanel';
 import { formatTL } from '../../game/format';
 import { STAGE_LABEL } from '../components/TopBar';
@@ -98,7 +99,9 @@ export function ProfileScreen({ view, dispatch, onMenu, onEditLook }: { view: Ga
             const got = state.achievements.includes(id);
             return (
               <li key={id} className={'badge' + (got ? ' badge--got' : '')}>
-                <span className="badge__icon" aria-hidden="true">{got ? '★' : '☆'}</span>
+                {extraImage(`badges/${id}`)
+                  ? <img className="badge__img" src={extraImage(`badges/${id}`)} alt="" />
+                  : <span className="badge__icon" aria-hidden="true">{got ? '★' : '☆'}</span>}
                 <span className="badge__title">{ACHIEVEMENTS[id].title}</span>
                 <span className="badge__desc">{got ? ACHIEVEMENTS[id].desc : 'Kilitli'}</span>
               </li>

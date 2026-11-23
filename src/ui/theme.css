@@ -693,3 +693,17 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .opt--on .opt__name { color: var(--text); }
 .opt__dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--text) 30%, transparent); }
 .creator__foot { flex: none; padding: 10px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--surface); }
+
+/* ---------- İsteğe bağlı hazır görseller ---------- */
+.overlay--scene {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 25%, transparent) 0%, color-mix(in srgb, var(--bg) 70%, transparent) 45%, var(--bg) 78%),
+    var(--scene) center top / cover no-repeat, var(--bg);
+}
+.menu__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; animation: menu-fade 1.2s ease-out both; }
+.menu__bg + .menu__shade {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 40%, transparent) 0%, transparent 35%, color-mix(in srgb, var(--bg) 85%, transparent) 70%, var(--bg) 100%);
+}
+.badge__img { width: 44px; height: 44px; object-fit: contain; margin-bottom: 4px; }
+.badge:not(.badge--got) .badge__img { filter: grayscale(1) brightness(.6); }
+.menu__bg ~ .menu__inner .logo__word, .menu__bg ~ .menu__inner .logo__tag { text-shadow: 0 2px 12px rgba(0, 0, 0, .6); }

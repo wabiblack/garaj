@@ -3,6 +3,8 @@ import { STORIES, canChoose } from '../../game/story';
 import { formatTL } from '../../game/format';
 import { Button } from '../components/Button';
 import { portraitUrl } from '../art';
+import { extraImage } from '../images';
+import type { CSSProperties } from 'react';
 import { dative } from '../../game/turkish';
 
 function effect(money?: number, reputation?: number, skill?: number): string {
@@ -15,8 +17,13 @@ function effect(money?: number, reputation?: number, skill?: number): string {
 
 export function StoryScreen({ id, state, onChoose }: { id: StoryId; state: GameState; onChoose(index: number): void }) {
   const story = STORIES[id];
+  const scene = extraImage(`scenes/hikaye-${id}`);
   return (
-    <div className="overlay overlay--center" role="dialog" aria-modal="true" aria-label="Hikâye">
+    <div
+      className={'overlay overlay--center' + (scene ? ' overlay--scene' : '')}
+      style={scene ? ({ '--scene': `url("${scene}")` } as CSSProperties) : undefined}
+      role="dialog" aria-modal="true" aria-label="Hikâye"
+    >
       <div className="overlay__inner overlay__inner--center">
         <img className="story__face" src={portraitUrl(state.age, state.player.look)} alt="" />
         <p className="overlay__kicker">{story.who}, {dative(state.player.name)}:</p>

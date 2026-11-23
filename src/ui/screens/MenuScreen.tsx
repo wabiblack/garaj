@@ -9,6 +9,7 @@ import { SettingsPanel } from '../components/SettingsPanel';
 import { HowToPlay } from './HowToPlay';
 import { portraitUrl } from '../art';
 import { Place } from '../components/Place';
+import { extraImage } from '../images';
 
 type Panel = null | 'ayarlar' | 'nasil' | 'yeni' | 'zor';
 
@@ -39,6 +40,7 @@ export function MenuScreen({ state, dispatch, onPlay, onNewGame }: {
   onNewGame(hard: boolean): void;
 }) {
   const [panel, setPanel] = useState<Panel>(null);
+  const menuBg = extraImage('ui/menu');
   const progress = hasProgress(state);
   const hardOpen = state.achievements.includes('sampiyon');
   const close = () => setPanel(null);
@@ -48,7 +50,7 @@ export function MenuScreen({ state, dispatch, onPlay, onNewGame }: {
 
   return (
     <div className="menu" role="dialog" aria-modal="true" aria-label="Ana menü">
-      <Place state={state} className="menu__scene" />
+      {menuBg ? <img className="menu__bg" src={menuBg} alt="" /> : <Place state={state} className="menu__scene" />}
       <div className="menu__shade" aria-hidden="true" />
       <div className="menu__inner">
         <Logo />

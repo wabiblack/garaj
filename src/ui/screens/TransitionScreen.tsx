@@ -2,6 +2,8 @@ import type { Stage } from '../../game/types';
 import type { Player } from '../../game/player';
 import { Button } from '../components/Button';
 import { portraitUrl } from '../art';
+import { extraImage } from '../images';
+import type { CSSProperties } from 'react';
 
 const AGE = { 2: 16, 3: 18, 4: 25 } as const;
 const TEXT: Record<2 | 3 | 4, { when: string; body(name: string): string; next: string }> = {
@@ -25,8 +27,13 @@ const TEXT: Record<2 | 3 | 4, { when: string; body(name: string): string; next: 
 export function TransitionScreen({ to, player, onContinue }: { to: Stage; player: Player; onContinue(): void }) {
   const key = to === 1 ? 2 : to;
   const t = TEXT[key];
+  const scene = extraImage(`scenes/donem-${key}`);
   return (
-    <div className="overlay overlay--center" role="dialog" aria-modal="true" aria-label="Yeni dönem">
+    <div
+      className={'overlay overlay--center' + (scene ? ' overlay--scene' : '')}
+      style={scene ? ({ '--scene': `url("${scene}")` } as CSSProperties) : undefined}
+      role="dialog" aria-modal="true" aria-label="Yeni dönem"
+    >
       <div className="overlay__inner overlay__inner--center">
         <img className="story__face" src={portraitUrl(AGE[key], player.look)} alt={`${player.name} ${AGE[key]} yaşında`} />
         <p className="overlay__kicker">{t.when}</p>
