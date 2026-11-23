@@ -4,6 +4,7 @@ import { CATEGORIES_BY_STAGE, generateItem } from './catalog';
 import { makeListing } from './negotiation';
 import { seasonForDay } from './pricing';
 import { generateOffers } from './selling';
+import { applyDailyCosts } from './growth';
 
 export function emptySummary(day: number): DaySummary {
   return { day, bought: 0, sold: 0, spent: 0, earned: 0, notes: [] };
@@ -33,7 +34,7 @@ export function startNextDay(state: GameState): GameState {
   if (state.phase !== 'evening') return state;
   const day = state.day + 1;
   const notes = state.pendingCatch.map((c) => `${c.itemName} satışında gizlenen kusur ortaya çıktı`);
-  const next: GameState = {
+  const next: GameState = applyDailyCosts({
     ...state,
     day,
     phase: 'day',
@@ -43,7 +44,7 @@ export function startNextDay(state: GameState): GameState {
     pendingCatch: [],
     inventory: state.inventory.map((i) => (i.caredToday ? { ...i, caredToday: false } : i)),
     summary: { ...emptySummary(day), notes },
-  };
+  });
   const rng = createRng(state.rngState);
   return { ...next, listings: generateListings(next, rng), rngState: rng.state() };
 }
