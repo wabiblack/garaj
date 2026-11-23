@@ -10,16 +10,19 @@ export function makeItem(over: Partial<Item> = {}): Item {
 export function makeListing(over: Partial<Listing> = {}): Listing {
   return {
     id: 'l-1', item: makeItem(), askPrice: 2400, minPrice: 1800, patience: 3, inspected: false,
-    special: null, sellerName: 'Ahmet', ...over,
+    special: null, sellerName: 'Ahmet', personality: 'normal', ...over,
   };
 }
 
 export function makeState(over: Partial<GameState> = {}): GameState {
   return {
-    version: 1, rngState: 1, day: 1, phase: 'day', stage: 1, age: 12, money: 2000, season: 'ilkbahar',
+    version: 2, rngState: 1, day: 1, phase: 'day', stage: 1, age: 12, money: 2000, season: 'ilkbahar',
     inventory: [], listings: [], forSale: [], offers: [], reputation: 50, skill: 0,
     capacityLevel: 0, locationLevel: 0, employees: { usta: false, boyaci: false, satis: false }, loan: null,
     pendingCatch: [], summary: { day: 1, bought: 0, sold: 0, spent: 0, earned: 0, notes: [] },
-    pendingTransition: null, won: false, wonSeen: false, ...over,
+    pendingTransition: null, won: false, wonSeen: false,
+    event: null, quests: [], achievements: [],
+    stats: { sales: 0, profit: 0, bestProfit: 0, bestItem: null, disclosedSales: 0, stageDay: { 2: null, 3: null } },
+    ...over,
   };
 }

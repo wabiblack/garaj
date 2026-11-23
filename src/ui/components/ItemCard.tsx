@@ -1,11 +1,30 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { Item } from '../../game/types';
 import { CATEGORY_LABEL } from '../../game/catalog';
 import { itemName } from '../../game/selling';
 import { Money } from './Money';
 
+const TR: Record<string, string> = { ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u', â: 'a', î: 'i', û: 'u' };
+
+/** "Serçe Şehir 26" → "serce-sehir-26": modele özel görselin dosya adı. */
+export function modelSlug(item: Pick<Item, 'brand' | 'model'>): string {
+  return `${item.brand} ${item.model}`
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[çğıöşüâîû]/g, (c) => TR[c])
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 export function itemImage(item: Item): string {
   return `${import.meta.env.BASE_URL}images/${item.category}.svg`;
+}
+
+/** Önce modele özel görseli dener (images/models/<slug>.png), yoksa kategori görseline düşer. */
+export function ItemImage({ item, className }: { item: Item; className?: string }) {
+  const modelSrc = `${import.meta.env.BASE_URL}images/models/${modelSlug(item)}.png`;
+  const [failed, setFailed] = useState<string | null>(null);
+  const src = failed === modelSrc ? itemImage(item) : modelSrc;
+  return <img src={src} alt="" className={className} onError={() => setFailed(modelSrc)} />;
 }
 
 export function ConditionBar({ value }: { value: number }) {
@@ -18,12 +37,14 @@ export function ConditionBar({ value }: { value: number }) {
   );
 }
 
+const TAG_LABEL = { klasik: 'Klasik', cabrio: 'Üstü açık', '4x4': '4x4', nadir: 'Nadir' } as const;
+
 export function TagRow({ item }: { item: Item }) {
   const known = item.defects.filter((d) => d.known);
   if (known.length === 0 && item.tags.length === 0) return null;
   return (
     <div className="tags">
-      {item.tags.map((t) => <span key={t} className="tag tag--info">{t === 'klasik' ? 'Klasik' : t === 'cabrio' ? 'Üstü açık' : '4x4'}</span>)}
+      {item.tags.map((t) => <span key={t} className={'tag ' + (t === 'nadir' || t === 'klasik' ? 'tag--accent' : 'tag--info')}>{TAG_LABEL[t]}</span>)}
       {known.map((d) => <span key={d.id} className="tag tag--bad">{d.name}</span>)}
     </div>
   );
@@ -41,7 +62,7 @@ export function ItemCard({ item, price, priceLabel, subtitle, onClick, badge, ch
   const name = itemName(item);
   const body = (
     <>
-      <div className="card__media"><img src={itemImage(item)} alt="" /></div>
+      <div className="card__media"><ItemImage item={item} /></div>
       <div className="card__main">
         <div className="card__top">
           <span className="card__kicker">{CATEGORY_LABEL[item.category]}</span>

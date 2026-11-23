@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { cue } from './feedback';
+import { ACHIEVEMENTS } from '../game/career';
+import type { GameView } from '../game/reducer';
 import { TabBar, type Tab } from './components/TabBar';
 import { TopBar } from './components/TopBar';
 import { Toast } from './components/Toast';
@@ -28,6 +31,7 @@ function Game() {
   const { view, broken, dispatch, reset } = useGame();
   const [tab, setTab] = useState<Tab>('ilanlar');
   const [listingId, setListingId] = useState<string | null>(null);
+  const achievement = useFeedback(view);
 
   if (broken || !view) return <BrokenSaveScreen onReset={reset} />;
   const { state } = view;
@@ -63,6 +67,32 @@ function Game() {
       ) : null}
       {overlay}
       {!listingId && !overlay ? <Toast message={view.message} stamp={view} /> : null}
+      {achievement ? <div className="achievement-toast" role="status"><span aria-hidden="true">★</span>{achievement}</div> : null}
     </div>
   );
+}
+
+/** Oyun olaylarına ses/titreşimle karşılık verir; yeni başarımı birkaç saniye gösterir. */
+function useFeedback(view: GameView | null): string | null {
+  const prev = useRef(view);
+  const [achievement, setAchievement] = useState<string | null>(null);
+  useEffect(() => {
+    const before = prev.current;
+    prev.current = view;
+    if (!view || !before || before === view) return;
+    const a = before.state, b = view.state;
+    const fresh = b.achievements.filter((id) => !a.achievements.includes(id));
+    if (fresh.length > 0) {
+      setAchievement(`Başarım: ${ACHIEVEMENTS[fresh[fresh.length - 1]].title}`);
+      cue('achievement');
+    } else if (b.stats.sales > a.stats.sales) cue('coin');
+    else if (view.lastOffer?.kind === 'accepted' && view.lastOffer !== before.lastOffer) cue('deal');
+    else if (view.message && view.message !== before.message && /yetmiyor|dolu|vazgeçti/.test(view.message)) cue('error');
+  }, [view]);
+  useEffect(() => {
+    if (!achievement) return;
+    const t = setTimeout(() => setAchievement(null), 3200);
+    return () => clearTimeout(t);
+  }, [achievement]);
+  return achievement;
 }

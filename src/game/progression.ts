@@ -2,6 +2,7 @@ import type { GameState } from './types';
 import { createRng } from './rng';
 import { marketValue, round10 } from './pricing';
 import { generateListings } from './day';
+import { generateQuests } from './career';
 
 export const STAGE_GOALS: Record<1 | 2, number> = { 1: 50000, 2: 500000 };
 const STAGE_AGE = { 2: 16, 3: 18 } as const;
@@ -26,6 +27,7 @@ export function completeTransition(state: GameState): GameState {
   const notes = state.inventory.length > 0 ? [...state.summary.notes, 'Kerem eski eşyalarını elden çıkardı'] : state.summary.notes;
   const rng = createRng(state.rngState);
   const listings = generateListings({ stage, season: state.season }, rng);
+  const quests = generateQuests({ ...state, stage }, rng);
   return {
     ...state,
     stage,
@@ -36,6 +38,8 @@ export function completeTransition(state: GameState): GameState {
     offers: [],
     listings,
     pendingTransition: null,
+    quests,
+    event: null,
     summary: { ...state.summary, notes },
     rngState: rng.state(),
   };

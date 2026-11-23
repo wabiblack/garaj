@@ -8,7 +8,8 @@ import { itemName } from '../../game/selling';
 import { Sheet } from '../components/Sheet';
 import { Button } from '../components/Button';
 import { Money } from '../components/Money';
-import { ConditionBar, TagRow, itemImage } from '../components/ItemCard';
+import { ConditionBar, ItemImage, TagRow } from '../components/ItemCard';
+import { PERSONALITY_LABEL } from '../../game/negotiation';
 
 export const parseAmount = (s: string) => Number(s.replace(/\D/g, ''));
 
@@ -54,10 +55,10 @@ export function NegotiationSheet({ listingId, view, dispatch, onClose, onGoGarag
   return (
     <Sheet open title="Pazarlık" onClose={onClose}>
       <div className="neg__hero">
-        <img src={itemImage(item)} alt="" className="neg__img" />
+        <ItemImage item={item} className="neg__img" />
         <div className="neg__info">
           <div className="neg__name">{itemName(item)}</div>
-          <div className="neg__seller">Satıcı: {listing.sellerName}{listing.special === 'mezat' ? ' · Pazarlık yok' : ''}</div>
+          <div className="neg__seller">Satıcı: {listing.sellerName}{listing.special === 'mezat' ? ' · Pazarlık yok' : listing.personality !== 'normal' ? ` · ${PERSONALITY_LABEL[listing.personality]}` : ''}</div>
           <ConditionBar value={item.condition} />
         </div>
       </div>

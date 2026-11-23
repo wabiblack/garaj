@@ -1,7 +1,7 @@
 import type { GameState } from '../../game/types';
 import { STAGE_GOALS } from '../../game/progression';
 import { LOCATIONS } from '../../game/growth';
-import { Money } from './Money';
+import { AnimatedMoney } from './AnimatedMoney';
 import { formatTL } from '../../game/format';
 
 export const STAGE_LABEL = { 1: 'Mahalle çocuğu', 2: 'Motorcu', 3: 'Galerici' } as const;
@@ -25,7 +25,7 @@ export function TopBar({ state, onEndDay }: { state: GameState; onEndDay(): void
           <div className="topbar__who">Kerem · {state.age} yaş · {STAGE_LABEL[state.stage]}</div>
           <div className="topbar__day">Gün {state.day} · {SEASON_LABEL[state.season]}</div>
         </div>
-        <div className="topbar__money"><Money value={state.money} /></div>
+        <div className="topbar__money"><AnimatedMoney value={state.money} /></div>
       </div>
       <div className="topbar__row topbar__row--goal">
         <div className="goal">

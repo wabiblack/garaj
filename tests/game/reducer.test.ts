@@ -171,3 +171,18 @@ describe('fix I3: iflas', () => {
     expect(gameReducer(start, { type: 'restartStage' }).state).toBe(start.state);
   });
 });
+
+describe('kariyer entegrasyonu', () => {
+  test('teklif kabulü satışı kaydeder ve görev ilerletir', () => {
+    const it = makeItem({ boughtFor: 1000 });
+    const quest = { id: 'q', kind: 'sat' as const, target: 1, progress: 0, reward: 1000, done: false, title: '1 eşya sat' };
+    const v = gameReducer(view({ phase: 'evening', money: 0, inventory: [it], quests: [quest], offers: [{ id: 'o', itemId: it.id, amount: 2000, buyerName: 'A' }] }), { type: 'acceptOffer', offerId: 'o' });
+    expect(v.state.money).toBe(3000);
+    expect(v.state.stats.sales).toBe(1);
+    expect(v.state.achievements).toContain('ilk-satis');
+  });
+  test('kredi kapatmak borçsuz başarımı verir', () => {
+    const v = gameReducer(view({ stage: 3, money: 2e6, loan: { principal: 1e6, dailyRate: 0.01 } }), { type: 'repayLoan' });
+    expect(v.state.achievements).toContain('borcsuz');
+  });
+});

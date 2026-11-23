@@ -8,7 +8,8 @@ export const OFFER_CAP = 1.1;
 const BUYERS = ['Ali', 'Burak', 'Can', 'Derya', 'Ece', 'Ferhat', 'Gül', 'İsmail', 'Kemal', 'Leyla', 'Nihat', 'Oya', 'Serkan', 'Tuğba', 'Volkan', 'Yasemin'];
 
 export function buyerCount(state: GameState): number {
-  return 2 + (state.reputation > 60 ? 1 : 0) + state.locationLevel + (state.employees.satis ? 1 : 0);
+  const event = state.event === 'fuar' ? 2 : state.event === 'durgun' ? -1 : 0;
+  return Math.max(1, 2 + (state.reputation > 60 ? 1 : 0) + state.locationLevel + (state.employees.satis ? 1 : 0) + event);
 }
 
 /** Alıcının gözündeki değer: kusurlar belirtildiyse bilinenler düşülür, değilse kusursuz sanılır. */

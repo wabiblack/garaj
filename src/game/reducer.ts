@@ -7,6 +7,8 @@ import { endDay, startNextDay } from './day';
 import { checkProgress, completeTransition, isBankrupt, restartStage } from './progression';
 import { fire, hire, repayLoan, takeLoan, upgradeCapacity, upgradeLocation, type GrowthBlock } from './growth';
 import { newGame } from './newGame';
+import { checkAchievements, recordPurchase, recordSale, unlockAchievement } from './career';
+import type { RNG } from './rng';
 
 export type Action =
   | { type: 'offer'; listingId: string; amount: number }
@@ -46,6 +48,14 @@ function replaceItem(s: GameState, item: Item): GameState {
   return { ...s, inventory: s.inventory.map((i) => (i.id === item.id ? item : i)) };
 }
 
+/** Satışı tamamlar ve kariyere (istatistik, görev, başarım) işler. */
+function sell(s: GameState, itemId: string, amount: number, rng: RNG): GameState {
+  const item = s.inventory.find((i) => i.id === itemId);
+  if (!item) return s;
+  const disclosed = s.forSale.find((f) => f.itemId === itemId)?.disclosed ?? false;
+  return recordSale(settleSale(s, itemId, amount, rng), item, amount, disclosed);
+}
+
 function step(view: GameView, action: Action): GameView {
   const s = view.state;
   const same = (message: string | null = null): GameView => ({ ...view, message });
@@ -70,7 +80,8 @@ function step(view: GameView, action: Action): GameView {
           },
           result.price,
         );
-        return { state: { ...bought, summary: { ...bought.summary, bought: bought.summary.bought + 1 } }, message: null, lastOffer: result };
+        const counted = { ...bought, summary: { ...bought.summary, bought: bought.summary.bought + 1 } };
+        return { state: recordPurchase(counted, listing, result.price), message: null, lastOffer: result };
       }
       const listings = result.kind === 'walked'
         ? s.listings.filter((l) => l.id !== listing.id)
@@ -116,7 +127,7 @@ function step(view: GameView, action: Action): GameView {
       const offer = s.offers.find((o) => o.id === action.offerId);
       if (!offer) return same();
       const rng = createRng(s.rngState);
-      return to({ ...settleSale(s, offer.itemId, offer.amount, rng), rngState: rng.state() });
+      return to({ ...sell(s, offer.itemId, offer.amount, rng), rngState: rng.state() });
     }
     case 'counterOffer': {
       const offer = s.offers.find((o) => o.id === action.offerId);
@@ -124,7 +135,7 @@ function step(view: GameView, action: Action): GameView {
       const rng = createRng(s.rngState);
       const res = counterOffer(offer, Math.round(action.amount), rng);
       if (res.kind === 'accepted') {
-        return to({ ...settleSale(s, offer.itemId, res.amount, rng), rngState: rng.state() }, `${offer.buyerName} kabul etti`);
+        return to({ ...sell(s, offer.itemId, res.amount, rng), rngState: rng.state() }, `${offer.buyerName} kabul etti`);
       }
       return to({ ...s, offers: s.offers.filter((o) => o.id !== offer.id), rngState: rng.state() }, `${offer.buyerName} vazgeçti`);
     }
@@ -152,7 +163,7 @@ function step(view: GameView, action: Action): GameView {
         : repayLoan(s);
       if (res === null) return same();
       if (typeof res === 'string') return same(BLOCK_MESSAGE[res]);
-      return to(res);
+      return to(action.type === 'repayLoan' ? unlockAchievement(res, 'borcsuz') : res);
     }
     case 'fire':
       return to(fire(s, action.role));
@@ -166,5 +177,5 @@ function step(view: GameView, action: Action): GameView {
 export function gameReducer(view: GameView, action: Action): GameView {
   const next = step(view, action);
   if (next.state === view.state) return next;
-  return { ...next, state: checkProgress(next.state) };
+  return { ...next, state: checkAchievements(checkProgress(next.state)) };
 }

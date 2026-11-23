@@ -7,6 +7,9 @@ import {
 import { formatTL } from '../../game/format';
 import { STAGE_LABEL } from '../components/TopBar';
 import { Button } from '../components/Button';
+import { ACHIEVEMENTS } from '../../game/career';
+import type { AchievementId } from '../../game/types';
+import { isSoundOn, setSoundOn } from '../feedback';
 
 function Meter({ label, value }: { label: string; value: number }) {
   return (
@@ -26,6 +29,8 @@ const ROLE_HELP: Record<keyof Employees, string> = {
 export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; dispatch(a: Action): void; onNewGame(): void }) {
   const { state } = view;
   const [confirm, setConfirm] = useState(false);
+  const [sound, setSound] = useState(isSoundOn);
+  const { stats } = state;
   const capCost = CAPACITY_COST[state.capacityLevel];
   const locCost = LOCATION_COST[state.locationLevel];
   return (
@@ -41,6 +46,34 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
         <Meter label="İtibar" value={state.reputation} />
         <Meter label="Tamir becerisi" value={state.skill} />
       </div>
+
+      <h2 className="h2">Rekorlar</h2>
+      <div className="panel">
+        <div className="stats stats--flat">
+          <div className="stat"><span>Toplam satış</span><strong>{stats.sales}</strong></div>
+          <div className="stat"><span>Toplam kâr</span><strong>{formatTL(stats.profit)}</strong></div>
+          <div className="stat"><span>En kârlı satış</span><strong>{formatTL(stats.bestProfit)}</strong></div>
+          <div className="stat"><span>Hangi parça</span><strong className="ellipsis">{stats.bestItem ?? '—'}</strong></div>
+          <div className="stat"><span>Motora geçiş</span><strong>{stats.stageDay[2] ? `Gün ${stats.stageDay[2]}` : '—'}</strong></div>
+          <div className="stat"><span>Galeriye geçiş</span><strong>{stats.stageDay[3] ? `Gün ${stats.stageDay[3]}` : '—'}</strong></div>
+        </div>
+      </div>
+
+      <section aria-label="Başarımlar">
+        <h2 className="h2">Başarımlar <span className="muted">{state.achievements.length}/{Object.keys(ACHIEVEMENTS).length}</span></h2>
+        <ul className="badges">
+          {(Object.keys(ACHIEVEMENTS) as AchievementId[]).map((id) => {
+            const got = state.achievements.includes(id);
+            return (
+              <li key={id} className={'badge' + (got ? ' badge--got' : '')}>
+                <span className="badge__icon" aria-hidden="true">{got ? '★' : '☆'}</span>
+                <span className="badge__title">{ACHIEVEMENTS[id].title}</span>
+                <span className="badge__desc">{got ? ACHIEVEMENTS[id].desc : 'Kilitli'}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
 
       {state.stage === 3 ? (
         <>
@@ -116,6 +149,23 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
           <p className="muted">Garajı büyütme, çalışan ve kredi Kerem galerici olunca açılır.</p>
         </div>
       )}
+
+      <h2 className="h2">Ayarlar</h2>
+      <div className="panel">
+        <label className="switch switch--flat">
+          <input
+            type="checkbox"
+            aria-label="Ses ve titreşim"
+            checked={sound}
+            onChange={(e) => { setSound(e.target.checked); setSoundOn(e.target.checked); }}
+          />
+          <span className="switch__track" aria-hidden="true" />
+          <span>
+            <span className="switch__label">Ses ve titreşim</span>
+            <span className="switch__hint">Titreşim yalnız Android telefonlarda çalışır.</span>
+          </span>
+        </label>
+      </div>
 
       <div className="danger-zone">
         {confirm ? (

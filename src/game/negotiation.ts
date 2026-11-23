@@ -1,4 +1,4 @@
-import type { GameState, Item, Listing, Season, SpecialKind, Stage } from './types';
+import type { GameState, Item, Listing, Personality, Season, SpecialKind, Stage } from './types';
 import type { RNG } from './rng';
 import { marketValue, round10, trueValue } from './pricing';
 
@@ -10,7 +10,10 @@ export type OfferResult =
 export const ASK_MIN = 1.0, ASK_MAX = 1.25, MIN_LO = 0.55, MIN_HI = 0.75;
 const SELLERS = ['Ahmet', 'Ayşe', 'Mehmet', 'Fatma', 'Hasan', 'Zeynep', 'Murat', 'Elif', 'Mustafa', 'Emine', 'Hüseyin', 'Selin', 'Kadir', 'Deniz', 'Osman'];
 
-export function makeListing(item: Item, season: Season, rng: RNG, special: SpecialKind | null): Listing {
+export const PERSONALITY_LABEL: Record<Personality, string> = { normal: 'Normal', acele: 'Acelesi var', inatci: 'İnatçı', kurnaz: 'Kurnaz' };
+const PATIENCE: Record<Personality, number> = { normal: 3, acele: 2, inatci: 4, kurnaz: 3 };
+
+export function makeListing(item: Item, season: Season, rng: RNG, special: SpecialKind | null, personality: Personality = 'normal'): Listing {
   const mv = marketValue(item, season);
   let askPrice: number;
   let minPrice: number;
@@ -18,10 +21,14 @@ export function makeListing(item: Item, season: Season, rng: RNG, special: Speci
     askPrice = minPrice = round10(mv * 0.7);
   } else {
     askPrice = round10(mv * rng.range(ASK_MIN, ASK_MAX));
-    minPrice = Math.min(askPrice, round10(trueValue(item, season) * rng.range(MIN_LO, MIN_HI)));
+    minPrice = round10(trueValue(item, season) * rng.range(MIN_LO, MIN_HI));
+    if (personality === 'acele') minPrice = round10(minPrice * 0.85);
+    if (personality === 'inatci') minPrice = round10(minPrice * 1.1);
+    if (personality === 'kurnaz') askPrice = round10(askPrice * 1.1);
+    minPrice = Math.min(askPrice, minPrice);
   }
   return {
-    id: rng.id('l'), item, askPrice, minPrice, patience: 3, inspected: false, special,
+    id: rng.id('l'), item, askPrice, minPrice, patience: PATIENCE[personality], inspected: false, special, personality,
     sellerName: special === 'mezat' ? 'Mezat' : special === 'hurdalik' ? 'Hurdacı ' + rng.pick(SELLERS) : rng.pick(SELLERS),
   };
 }
@@ -30,7 +37,8 @@ export function respondToOffer(listing: Listing, amount: number): { result: Offe
   if (amount >= listing.minPrice) return { result: { kind: 'accepted', price: Math.min(amount, listing.askPrice) }, listing };
   const patience = listing.patience - (amount < listing.minPrice * 0.5 ? 2 : 1);
   if (patience <= 0) return { result: { kind: 'walked' }, listing: { ...listing, patience: 0 } };
-  const price = Math.max(listing.minPrice, round10((listing.askPrice + amount) / 2));
+  const step = listing.personality === 'inatci' ? 0.25 : 0.5;
+  const price = Math.max(listing.minPrice, round10(listing.askPrice * (1 - step) + amount * step));
   return {
     result: { kind: 'counter', price, patienceLeft: patience },
     listing: { ...listing, askPrice: price, patience, lastRejected: amount },

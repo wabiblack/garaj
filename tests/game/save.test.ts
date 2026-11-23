@@ -21,8 +21,8 @@ test('kaydet ve geri yükle', () => {
 });
 test('kayıt yoksa empty', () => expect(loadGame(memStorage())).toEqual({ kind: 'empty' }));
 test('bozuk JSON → broken', () => expect(loadGame(memStorage({ [SAVE_KEY]: '{oops' }))).toEqual({ kind: 'broken' }));
-test('farklı sürüm → broken', () => {
-  expect(loadGame(memStorage({ [SAVE_KEY]: JSON.stringify({ ...newGame(1), version: 2 }) }))).toEqual({ kind: 'broken' });
+test('bilinmeyen sürüm → broken', () => {
+  expect(loadGame(memStorage({ [SAVE_KEY]: JSON.stringify({ ...newGame(1), version: 99 }) }))).toEqual({ kind: 'broken' });
 });
 test('eksik alanlı kayıt → broken', () => {
   expect(loadGame(memStorage({ [SAVE_KEY]: JSON.stringify({ version: 1, money: 5 }) }))).toEqual({ kind: 'broken' });
@@ -38,4 +38,18 @@ test('fix M1: phase veya summary.notes bozuksa broken', () => {
   const g = newGame(2);
   expect(loadGame(memStorage({ [SAVE_KEY]: JSON.stringify({ ...g, phase: undefined }) }))).toEqual({ kind: 'broken' });
   expect(loadGame(memStorage({ [SAVE_KEY]: JSON.stringify({ ...g, summary: { day: 1 } }) }))).toEqual({ kind: 'broken' });
+});
+
+test('sürüm 1 kaydı sürüm 2ye taşınır', () => {
+  const g = newGame(4);
+  const { event: _e, quests: _q, stats: _s, achievements: _a, ...v1 } = { ...g, version: 1 } as Record<string, unknown>;
+  const res = loadGame(memStorage({ [SAVE_KEY]: JSON.stringify(v1) }));
+  expect(res.kind).toBe('ok');
+  if (res.kind !== 'ok') return;
+  expect(res.state.version).toBe(2);
+  expect(res.state.quests).toHaveLength(3);
+  expect(res.state.stats.sales).toBe(0);
+  expect(res.state.achievements).toEqual([]);
+  expect(res.state.event).toBeNull();
+  expect(res.state.listings.every((l) => l.personality)).toBe(true);
 });

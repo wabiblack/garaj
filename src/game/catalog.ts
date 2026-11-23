@@ -76,6 +76,8 @@ export function generateItem(category: Category, rng: RNG, opts: { special?: Spe
     else if (rng.chance(0.15)) tags.add('4x4');
     else if (rng.chance(0.1)) tags.add('cabrio');
     if (rng.chance(0.05)) tags.add('klasik');
+  } else if (rng.chance(0.04)) {
+    tags.add('nadir');
   }
   let baseValue = round10(rng.range(t.min, t.max));
   let condition = rng.int(30, 90);
@@ -98,4 +100,12 @@ export function generateItem(category: Category, rng: RNG, opts: { special?: Spe
     id: rng.id('it'), category, brand, model, baseValue, condition, defects, tags: [...tags],
     cleaned: false, painted: false, careCount: 0, caredToday: false, boughtFor: 0,
   };
+}
+
+/** Kurnaz satıcı: eşyaya gizli bir kusur ekler (yoksa yerine en ağırını gizler). */
+export function addHiddenDefect(item: Item, rng: RNG): Item {
+  if (item.defects.some((d) => !d.known)) return item;
+  const d = makeDefect(CATALOG[item.category], item.baseValue, rng, item.defects);
+  if (d) return { ...item, defects: [...item.defects, { ...d, known: false }] };
+  return { ...item, defects: item.defects.map((x, i) => (i === 0 ? { ...x, known: false } : x)) };
 }
