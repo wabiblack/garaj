@@ -2,7 +2,7 @@ import { cue } from '../feedback';
 import { useEffect, useRef, useState } from 'react';
 import type { Action } from '../../game/reducer';
 import type { Defect, Item } from '../../game/types';
-import { HIT_ZONE, isHit, repairDiscount } from '../../game/prep';
+import { HIT_GRACE, HIT_ZONE, isHit, repairDiscount } from '../../game/prep';
 import { formatTL } from '../../game/format';
 import { round10 } from '../../game/pricing';
 import { itemName } from '../../game/selling';
@@ -24,6 +24,8 @@ export function RepairSheet({ item, defect, cost, money, dispatch, onClose }: {
 }) {
   const [results, setResults] = useState<boolean[]>([]);
   const [pos, setPos] = useState(0);
+  /** Ekranda son çizilen ibre konumu: oyuncu buna bakarak basar. */
+  const shown = useRef(0);
   const start = useRef(performance.now());
   const done = results.length >= TRIES;
   const hits = results.filter(Boolean).length;
@@ -34,15 +36,20 @@ export function RepairSheet({ item, defect, cost, money, dispatch, onClose }: {
     start.current = performance.now();
     let raf = 0;
     const tick = () => {
-      setPos(needleAt(performance.now() - start.current, SWEEP_MS[results.length]));
+      shown.current = needleAt(performance.now() - start.current, SWEEP_MS[results.length]);
+      setPos(shown.current);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [done, results.length]);
 
+  // Parmak değdiği anda (pointerdown) değerlendirilir; dokunmatikte click parmak kalkınca gelir ve ibre kaçmış olur.
+  // Ekranda görülen konum ya da o anki konum yeşildeyse isabet.
   const strike = () => {
-    const hit = isHit(needleAt(performance.now() - start.current, SWEEP_MS[results.length]));
+    if (done) return;
+    const now = needleAt(performance.now() - start.current, SWEEP_MS[results.length]);
+    const hit = isHit(shown.current, HIT_GRACE) || isHit(now, HIT_GRACE);
     cue(hit ? 'hit' : 'miss');
     setResults((r) => [...r, hit]);
   };
@@ -74,7 +81,13 @@ export function RepairSheet({ item, defect, cost, money, dispatch, onClose }: {
         <Button variant="primary" block disabled={money < finalCost} onClick={() => finish(hits)}>{`Tamiri bitir · ${formatTL(finalCost)}`}</Button>
       ) : (
         <>
-          <Button variant="primary" block onClick={strike}>Vur!</Button>
+          <Button
+            variant="primary"
+            block
+            className="strike"
+            onPointerDown={(e) => { e.preventDefault(); strike(); }}
+            onClick={(e) => { if (e.detail === 0) strike(); }}
+          >Vur!</Button>
           <Button variant="ghost" block className="mt8" disabled={money < cost} onClick={() => finish(0)}>{`Ustaya bırak · ${formatTL(cost)}`}</Button>
         </>
       )}

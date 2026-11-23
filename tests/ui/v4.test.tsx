@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../src/ui/App';
 import { makeItem, makeListing, makeState } from '../helpers';
@@ -123,4 +123,17 @@ test('Profil’den görünüm değiştirilir', async () => {
   await userEvent.type(name, 'Umut');
   await userEvent.click(screen.getByRole('button', { name: 'Kaydet' }));
   expect(screen.getByRole('heading', { name: 'Umut' })).toBeInTheDocument();
+});
+
+test('tamir oyunu: Vur! parmak değdiği anda sayılır, bir basış tek deneme', () => {
+  const d = { id: 'd1', name: 'Zincir paslı', repairCost: 300, valueHit: 0.1, known: true };
+  seedSave(makeState({ day: 5, money: 2000, inventory: [makeItem({ defects: [d] })] }));
+  renderGame();
+  fireEvent.click(screen.getByRole('tab', { name: 'Garaj' }));
+  fireEvent.click(screen.getByRole('button', { name: /Tamir et: Zincir paslı/ }));
+  const dialog = screen.getByRole('dialog', { name: 'Tamir' });
+  const vur = within(dialog).getByRole('button', { name: 'Vur!' });
+  fireEvent.pointerDown(vur);
+  fireEvent.click(vur, { detail: 1 });
+  expect(within(dialog).getAllByText(/[✓✗]/)).toHaveLength(1);
 });

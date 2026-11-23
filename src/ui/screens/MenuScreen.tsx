@@ -7,7 +7,8 @@ import { Sheet } from '../components/Sheet';
 import { Button } from '../components/Button';
 import { SettingsPanel } from '../components/SettingsPanel';
 import { HowToPlay } from './HowToPlay';
-import { placeUrl, portraitUrl } from '../art';
+import { portraitUrl } from '../art';
+import { Place } from '../components/Place';
 
 type Panel = null | 'ayarlar' | 'nasil' | 'yeni' | 'zor';
 
@@ -47,7 +48,7 @@ export function MenuScreen({ state, dispatch, onPlay, onNewGame }: {
 
   return (
     <div className="menu" role="dialog" aria-modal="true" aria-label="Ana menü">
-      <img className="menu__scene" src={placeUrl(state)} alt="" />
+      <Place state={state} className="menu__scene" />
       <div className="menu__shade" aria-hidden="true" />
       <div className="menu__inner">
         <Logo />

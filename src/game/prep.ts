@@ -33,7 +33,9 @@ export function paint(item: Item, state: GameState): PrepResult {
 
 /** Tamir oyunu: ibre bu aralıkta durursa isabet. */
 export const HIT_ZONE = [0.38, 0.62] as const;
-export const isHit = (pos: number) => pos >= HIT_ZONE[0] && pos <= HIT_ZONE[1];
+/** İbre çizgisinin kalınlığı kadar pay: kenara değen ibre de isabet sayılır. */
+export const HIT_GRACE = 0.03;
+export const isHit = (pos: number, grace = 0) => pos >= HIT_ZONE[0] - grace && pos <= HIT_ZONE[1] + grace;
 /** Her isabet tamiri %10 ucuzlatır (en çok 3 isabet). */
 export function repairDiscount(hits: number): number {
   return Math.max(0, Math.min(3, Math.floor(Number.isFinite(hits) ? hits : 0))) * 0.1;

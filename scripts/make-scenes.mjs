@@ -22,6 +22,7 @@ function sky(top, bottom, ground = '#2a2f37') {
   return `<defs>${s.def}${g.def}</defs><rect width="${W}" height="${H}" fill="${s.url}"/><rect y="112" width="${W}" height="28" fill="${g.url}"/>`;
 }
 const win = (x, y, w, h, lit = true) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="${lit ? '#ffd27a' : '#2c3443'}"/><path d="M${x + w / 2},${y} V${y + h} M${x},${y + h / 2} H${x + w}" stroke="#1b1f27" stroke-width="1.2"/>`;
+/** Tabela: yazısı boş bırakılırsa oyuncunun adı oyun içinde üstüne yazılır (src/ui/art.ts PLACE_SIGN). */
 const sign = (x, y, w, text, bg = '#f5b700', ink = '#1a1400', size = 12) =>
   `<rect x="${x}" y="${y}" width="${w}" height="${size + 8}" rx="3" fill="${bg}"/><text x="${x + w / 2}" y="${y + size + 2}" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="${size}" fill="${ink}">${text}</text>`;
 const tinyCar = (x, y, color) => `<g transform="translate(${x} ${y})"><path d="M0,10 Q2,2 12,2 L22,0 Q30,0 34,6 L42,8 Q46,9 46,14 L46,16 L0,16 Z" fill="${color}"/><path d="M14,3 L22,1.5 Q28,1.5 31,6 L14,6 Z" fill="#9fd3ff" opacity=".8"/><circle cx="10" cy="16" r="4.5" fill="#15181d"/><circle cx="36" cy="16" r="4.5" fill="#15181d"/><circle cx="10" cy="16" r="2" fill="#9aa3b0"/><circle cx="36" cy="16" r="2" fill="#9aa3b0"/></g>`;
@@ -72,7 +73,7 @@ const PLACE = {
   // 3. aşama, seviye 1: mahalle galerisi
   galeri: svg(`${sky('#4f8fd8', '#cde6ff')}
     <rect x="24" y="34" width="272" height="78" fill="#e8ecf2"/><rect x="24" y="30" width="272" height="10" fill="#f5b700"/>
-    ${sign(100, 42, 120, 'KEREM OTO', '#1f2530', '#f5b700', 13)}
+    ${sign(100, 42, 120, '', '#1f2530', '#f5b700', 13)}
     <rect x="40" y="68" width="240" height="44" fill="#9fd3ff" opacity=".55"/><path d="M100,68 V112 M160,68 V112 M220,68 V112" stroke="#e8ecf2" stroke-width="3"/>
     ${tinyCar(50, 92, '#d8452f')}${tinyCar(112, 92, '#2bc48a')}${tinyCar(172, 92, '#f4f6f9')}${tinyCar(230, 92, '#1f2530')}
     ${flag(30, 34, '#d8452f')}${flag(292, 34, '#3d6fd8')}
@@ -86,7 +87,7 @@ const PLACE = {
     <rect x="8" y="18" width="40" height="94" fill="#2c3443"/>${[26, 42, 58, 74, 90].map((y) => win(14, y, 10, 8, y % 32 !== 10) + win(30, y, 10, 8, true)).join('')}
     <path d="M60,112 V30 L260,18 V112 Z" fill="#1f2530"/>
     <path d="M70,108 V44 L250,34 V108 Z" fill="#9fd3ff" opacity=".35"/><path d="M130,108 V40 M190,108 V37" stroke="#3a4558" stroke-width="2"/>
-    ${sign(96, 20, 128, 'KEREM MOTORS', '#f5b700', '#1a1400', 13)}
+    ${sign(96, 20, 128, '', '#f5b700', '#1a1400', 13)}
     ${tinyCar(78, 92, '#d8452f')}${tinyCar(140, 92, '#f4f6f9')}${tinyCar(200, 92, '#2bc48a')}
     <ellipse cx="160" cy="108" rx="90" ry="3" fill="#fff" opacity=".18"/>
     <rect x="272" y="40" width="40" height="72" fill="#2c3443"/>${[48, 64, 80, 96].map((y) => win(278, y, 12, 9, true) + win(294, y, 12, 9, y !== 64)).join('')}
@@ -101,7 +102,7 @@ const PLACE = {
     ${[[10, 60, 30], [44, 44, 26], [214, 52, 30], [248, 70, 28], [280, 56, 36]].map(([x, y, w]) => `<rect x="${x}" y="${y}" width="${w}" height="${116 - y}" fill="#232a3d"/>${Array.from({ length: Math.floor((116 - y) / 12) }, (_, r) => win(x + 5, y + 6 + r * 12, w - 10, 6, (x + r) % 3 !== 0)).join('')}`).join('')}
     <path d="M110,116 V22 L160,8 L210,22 V116 Z" fill="#2c3550"/><path d="M160,8 V116" stroke="#3a4766" stroke-width="2"/>
     ${Array.from({ length: 8 }, (_, r) => [118, 136, 166, 184].map((x) => win(x, 28 + r * 10, 14, 6, (x + r) % 4 !== 0)).join('')).join('')}
-    ${sign(118, 4, 84, 'KEREM HOLDİNG', '#f5b700', '#1a1400', 9)}
+    ${sign(118, 4, 84, '', '#f5b700', '#1a1400', 9)}
     <path d="M160,4 V-4" stroke="#d8452f" stroke-width="2"/>
     ${tinyCar(30, 104, '#d8452f')}${tinyCar(230, 104, '#f5b700')}`, W, H),
 };

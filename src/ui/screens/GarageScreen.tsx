@@ -10,7 +10,7 @@ import { Button } from '../components/Button';
 import { SellSheet } from './SellSheet';
 import { RepairSheet } from './RepairSheet';
 import { orderMatches, orderPrice } from '../../game/orders';
-import { placeUrl } from '../art';
+import { Place } from '../components/Place';
 import { genitive } from '../../game/turkish';
 import type { GameState } from '../../game/types';
 
@@ -31,7 +31,7 @@ export function GarageScreen({ view, dispatch }: { view: GameView; dispatch(a: A
   const place = placeName(state);
   return (
     <section>
-      <div className="place"><img src={placeUrl(state)} alt={place} /></div>
+      <div className="place"><Place state={state} label={place} /></div>
       <div className="section-head">
         <h1>Garaj</h1>
         <span className="muted">{place} · {state.inventory.length}/{storageLimit(state)}</span>

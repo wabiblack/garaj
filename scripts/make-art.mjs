@@ -44,13 +44,13 @@ function chromeGrad() {
 }
 
 /* ============================== ARABALAR ============================== */
-function carWheel(cx, cy, r, rimColor = '#c9ced6') {
+function carWheel(cx, cy, r, rimColor = '#c9ced6', offroad = false) {
   const rim = id('rim');
   const tire = id('tire');
   const spokes = [0, 72, 144, 216, 288]
     .map((a) => {
       const a1 = rad(a - 9), a2 = rad(a + 9);
-      const ri = r * 0.16, ro = r * 0.56;
+      const ri = r * 0.16, ro = r * 0.62;
       return `<path d="M${r1(cx + Math.cos(a1) * ri)},${r1(cy + Math.sin(a1) * ri)} L${r1(cx + Math.cos(a1) * ro)},${r1(cy + Math.sin(a1) * ro)} L${r1(cx + Math.cos(a2) * ro)},${r1(cy + Math.sin(a2) * ro)} L${r1(cx + Math.cos(a2) * ri)},${r1(cy + Math.sin(a2) * ri)} Z" fill="url(#${rim})"/>`;
     })
     .join('');
@@ -59,20 +59,20 @@ function carWheel(cx, cy, r, rimColor = '#c9ced6') {
     <radialGradient id="${rim}" cx=".35" cy=".3"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="${rimColor}"/><stop offset="1" stop-color="${shade(rimColor, -0.45)}"/></radialGradient>
     <radialGradient id="${tire}"><stop offset=".7" stop-color="#2a2e35"/><stop offset="1" stop-color="#0d0f12"/></radialGradient></defs>
   <circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#${tire})"/>
-  <circle cx="${cx}" cy="${cy}" r="${r - 1.6}" fill="none" stroke="#3a3f47" stroke-width="2" stroke-dasharray="2.2 2.4"/>
-  <circle cx="${cx}" cy="${cy}" r="${r * 0.64}" fill="#1b1f25"/>
-  <circle cx="${cx}" cy="${cy}" r="${r * 0.5}" fill="#5b6470"/>
-  <circle cx="${cx}" cy="${cy}" r="${r * 0.44}" fill="none" stroke="#7d8692" stroke-width="1" stroke-dasharray="1.2 1.6"/>
+  ${offroad ? `<circle cx="${cx}" cy="${cy}" r="${r - 1.6}" fill="none" stroke="#3a3f47" stroke-width="2" stroke-dasharray="2.2 2.4"/>` : `<circle cx="${cx}" cy="${cy}" r="${r - 0.8}" fill="none" stroke="#454b55" stroke-width=".8" opacity=".8"/><path d="M${r1(cx - r * 0.82)},${r1(cy + r * 0.3)} A${r * 0.86},${r * 0.86} 0 0 0 ${r1(cx + r * 0.3)},${r1(cy + r * 0.82)}" stroke="#000" stroke-width="2" fill="none" opacity=".35"/>`}
+  <circle cx="${cx}" cy="${cy}" r="${r * 0.7}" fill="#1b1f25"/>
+  <circle cx="${cx}" cy="${cy}" r="${r * 0.56}" fill="#5b6470"/>
+  <circle cx="${cx}" cy="${cy}" r="${r * 0.5}" fill="none" stroke="#7d8692" stroke-width="1" stroke-dasharray="1.2 1.6"/>
   <rect x="${r1(cx - r * 0.5)}" y="${r1(cy - r * 0.62)}" width="${r1(r * 0.34)}" height="${r1(r * 0.22)}" rx="1.5" fill="#c2412d" transform="rotate(-30 ${cx} ${cy})"/>
   ${spokes}
-  <circle cx="${cx}" cy="${cy}" r="${r * 0.6}" fill="none" stroke="${shade(rimColor, -0.2)}" stroke-width="1.6"/>
+  <circle cx="${cx}" cy="${cy}" r="${r * 0.66}" fill="none" stroke="${shade(rimColor, -0.2)}" stroke-width="1.6"/>
   <circle cx="${cx}" cy="${cy}" r="${r * 0.17}" fill="url(#${rim})" stroke="#5b6470" stroke-width=".8"/>${lugs}
   <path d="M${r1(cx - r * 0.55)},${r1(cy - r * 0.2)} A${r * 0.58},${r * 0.58} 0 0 1 ${r1(cx + r * 0.1)},${r1(cy - r * 0.58)}" stroke="#fff" stroke-width="1.4" fill="none" opacity=".45"/>`;
 }
 
 function car({
   color, body, windows, wheelR = 19, wheels = [62, 178], wy = 116, extra = '', front = [214, 100], rear = [24, 100],
-  chrome = false, doors = [], handles = [], mirror = null, beltY = 94, rimColor, roofRails = null, open = false,
+  chrome = false, doors = [], handles = [], mirror = null, beltY = 94, rimColor, roofRails = null, open = false, offroad = false,
 }) {
   const g = grad(color);
   const clip = id('clip');
@@ -87,7 +87,7 @@ function car({
     <radialGradient id="${glow}"><stop offset="0" stop-color="#fffbe6"/><stop offset=".5" stop-color="#ffe7a0" stop-opacity=".9"/><stop offset="1" stop-color="#ffd25a" stop-opacity="0"/></radialGradient>
   </defs>
   ${groundShadow(120, 138, 108)}
-  ${wheels.map((x) => `<circle cx="${x}" cy="${wy}" r="${wheelR + 5}" fill="#0b0d10"/>`).join('')}
+  ${wheels.map((x) => `<circle cx="${x}" cy="${wy}" r="${wheelR + 3}" fill="#0b0d10"/>`).join('')}
   <path d="${body}" fill="url(#${g.id})" stroke="${dark}" stroke-width="1.4" stroke-linejoin="round"/>
   <g clip-path="url(#${clip})">
     <rect x="0" y="${beltY + 12}" width="240" height="30" fill="#000" opacity=".22"/>
@@ -111,7 +111,7 @@ function car({
     ? `<rect x="8" y="106" width="24" height="6" rx="3" fill="url(#${cg.id})"/><rect x="208" y="106" width="26" height="6" rx="3" fill="url(#${cg.id})"/>`
     : `<path d="M14,110 L226,110 L224,117 L18,117 Z" fill="${shade(color, -0.6)}"/>`}
   <path d="M30,117 Q20,118 18,122 L24,122" stroke="#3a404a" stroke-width="2.5" fill="none"/><ellipse cx="17" cy="121" rx="2" ry="1.6" fill="#15181d"/>
-  ${wheels.map((x) => carWheel(x, wy, wheelR, rimColor)).join('')}`);
+  ${wheels.map((x) => carWheel(x, wy, wheelR, rimColor, offroad)).join('')}`);
 }
 
 const CARS = {
@@ -133,7 +133,7 @@ const CARS = {
     color: '#3e8e5a',
     body: 'M18,112 L18,90 Q20,80 34,78 L62,76 L80,50 Q84,46 92,46 L180,46 Q192,46 198,58 L208,78 Q222,80 222,94 L222,112 Z',
     windows: ['M86,74 L98,54 L132,54 L132,74 Z', 'M138,54 L174,54 Q182,54 186,62 L192,74 L138,74 Z'],
-    wheelR: 22, wy: 114, doors: [135, 84, 196], handles: [116, 160], mirror: [190, 74], beltY: 82, rimColor: '#9aa3b0',
+    wheelR: 22, wy: 114, offroad: true, doors: [135, 84, 196], handles: [116, 160], mirror: [190, 74], beltY: 82, rimColor: '#9aa3b0',
     roofRails: [92, 40, 88],
     extra: '<rect x="212" y="84" width="12" height="18" rx="2" fill="#2b2f36"/><path d="M214,88 L222,88 M214,93 L222,93 M214,98 L222,98" stroke="#555c66" stroke-width="1.2"/><rect x="10" y="80" width="10" height="24" rx="4" fill="#2b2f36"/><circle cx="15" cy="92" r="6" fill="#1b1f25" stroke="#3a404a" stroke-width="1.5"/><path d="M24,104 L216,104" stroke="#1b1f25" stroke-width="3" opacity=".35"/>',
     front: [214, 90],

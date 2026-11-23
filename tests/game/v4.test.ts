@@ -99,3 +99,10 @@ test('yeni alanları olmayan eski sürüm 3 kaydı doldurulur', () => {
   expect(loaded).toMatchObject({ hard: false, prices: {}, employees: { usta: true, cirak: false } });
   expect(loaded.stats.categorySales.araba).toBe(0);
 });
+
+test('tamir: ibre yeşilin kenarına değiyorsa paylı isabet sayılır', async () => {
+  const { isHit, HIT_ZONE, HIT_GRACE } = await import('../../src/game/prep');
+  expect(isHit(HIT_ZONE[0] - 0.02)).toBe(false);
+  expect(isHit(HIT_ZONE[0] - 0.02, HIT_GRACE)).toBe(true);
+  expect(isHit(HIT_ZONE[1] + 0.05, HIT_GRACE)).toBe(false);
+});
