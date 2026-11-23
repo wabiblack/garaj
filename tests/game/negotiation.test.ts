@@ -93,3 +93,12 @@ describe('inspect', () => {
     expect(inspectionCost(makeListing(), 1, 'ilkbahar')).toBe(0);
   });
 });
+
+describe('fix M3 ve I1', () => {
+  test('istenenden fazla teklif istenen fiyattan kabul edilir', () => {
+    expect(respondToOffer(makeListing(), 5000).result).toEqual({ kind: 'accepted', price: 2400 });
+  });
+  test('karşı teklif sonrası ilan reddedilen tutarı hatırlar', () => {
+    expect(respondToOffer(makeListing(), 1600).listing.lastRejected).toBe(1600);
+  });
+});

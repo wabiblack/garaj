@@ -41,7 +41,9 @@ export function NegotiationSheet({ listingId, view, dispatch, onClose, onGoGarag
   const done = result?.kind === 'accepted' || result?.kind === 'walked';
   const cost = inspectionCost(listing, state.stage, state.season);
   const inspectLabel = state.stage === 1 ? 'Bir bakayım' : `Ekspertiz (${formatTL(cost)})`;
-  const hiddenUnknown = listing.inspected && item.defects.every((d) => d.known);
+  const allKnown = item.defects.every((d) => d.known);
+  const cantInspect = state.money < cost;
+  const sameAsRejected = listing.lastRejected === parseAmount(amount);
 
   const submit = () => {
     setSubmitted(true);
@@ -70,15 +72,19 @@ export function NegotiationSheet({ listingId, view, dispatch, onClose, onGoGarag
       {!done ? (
         <>
           {!listing.inspected ? (
-            <Button block onClick={() => dispatch({ type: 'inspect', listingId: listing.id })}>{inspectLabel}</Button>
+            <>
+              <Button block disabled={cantInspect} onClick={() => dispatch({ type: 'inspect', listingId: listing.id })}>{inspectLabel}</Button>
+              {cantInspect ? <p className="hint">Ekspertize paran yetmiyor</p> : null}
+            </>
           ) : (
-            <p className="hint">{hiddenUnknown ? 'İnceledin. Görünen kusurlar yukarıda.' : 'Baktın; gözden kaçan bir şey olabilir.'}</p>
+            <p className="hint">{state.stage === 1 ? 'Baktın; gözden kaçan bir şey olabilir.' : allKnown ? 'Ekspertiz yapıldı. Tüm kusurlar yukarıda.' : ''}</p>
           )}
           <label className="field">
             <span className="field__label">Teklifin (TL)</span>
             <input
               className="field__input"
               inputMode="numeric"
+              maxLength={10}
               value={amount}
               onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
             />
@@ -88,7 +94,7 @@ export function NegotiationSheet({ listingId, view, dispatch, onClose, onGoGarag
             <button type="button" className="chip" onClick={() => quick(0.9)}>−%10</button>
             <button type="button" className="chip" onClick={() => quick(1)}>İstenen fiyat</button>
           </div>
-          <Button variant="primary" block onClick={submit} disabled={parseAmount(amount) <= 0}>Teklif ver</Button>
+          <Button variant="primary" block onClick={submit} disabled={parseAmount(amount) <= 0 || sameAsRejected}>Teklif ver</Button>
         </>
       ) : null}
 

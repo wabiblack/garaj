@@ -48,3 +48,11 @@ describe('completeTransition', () => {
     expect(completeTransition(s)).toBe(s);
   });
 });
+
+test('restartStage sonrası en az bir ilan alınabilir', async () => {
+  const { restartStage, STAGE_RESTART_MONEY } = await import('../../src/game/progression');
+  for (let seed = 1; seed <= 40; seed++) {
+    const s = restartStage(makeState({ stage: 2, rngState: seed, money: 0 }));
+    expect(s.listings.some((l) => l.minPrice <= STAGE_RESTART_MONEY[2])).toBe(true);
+  }
+});

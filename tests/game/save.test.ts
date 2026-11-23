@@ -33,3 +33,9 @@ test('getItem hata fırlatırsa broken, setItem hata fırlatırsa sessiz', () =>
   expect(loadGame(bad)).toEqual({ kind: 'broken' });
   expect(() => saveGame(bad, newGame(1))).not.toThrow();
 });
+
+test('fix M1: phase veya summary.notes bozuksa broken', () => {
+  const g = newGame(2);
+  expect(loadGame(memStorage({ [SAVE_KEY]: JSON.stringify({ ...g, phase: undefined }) }))).toEqual({ kind: 'broken' });
+  expect(loadGame(memStorage({ [SAVE_KEY]: JSON.stringify({ ...g, summary: { day: 1 } }) }))).toEqual({ kind: 'broken' });
+});

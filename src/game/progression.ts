@@ -40,3 +40,33 @@ export function completeTransition(state: GameState): GameState {
     rngState: rng.state(),
   };
 }
+
+/** Aşama yeniden başlarken verilen sermaye. */
+export const STAGE_RESTART_MONEY: Record<1 | 2 | 3, number> = { 1: 2000, 2: STAGE_GOALS[1], 3: STAGE_GOALS[2] };
+
+/** Elinde eşya yok, bugünkü hiçbir ilana parası yetmiyor ve kredi de alamıyor: ilerleyemez. */
+export function isBankrupt(state: GameState): boolean {
+  if (state.phase !== 'day' || state.pendingTransition !== null) return false;
+  if (state.inventory.length > 0 || state.forSale.length > 0) return false;
+  if (state.stage === 3 && state.loan === null) return false;
+  if (state.listings.length === 0) return false;
+  return state.listings.every((l) => state.money < l.minPrice);
+}
+
+export function restartStage(state: GameState): GameState {
+  const rng = createRng(state.rngState);
+  const money = STAGE_RESTART_MONEY[state.stage];
+  // Yeniden başlayan oyuncu en az bir ilana yetmeli; yoksa hemen yine iflas eder.
+  let listings = generateListings(state, rng);
+  for (let i = 0; i < 50 && listings.every((l) => money < l.minPrice); i++) listings = generateListings(state, rng);
+  return {
+    ...state,
+    money,
+    loan: null,
+    employees: { usta: false, boyaci: false, satis: false },
+    listings,
+    offers: [],
+    summary: { ...state.summary, notes: [...state.summary.notes, 'İflastan sonra yeniden başladın'] },
+    rngState: rng.state(),
+  };
+}

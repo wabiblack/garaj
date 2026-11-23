@@ -1,4 +1,5 @@
 import { gameReducer, type GameView } from '../../src/game/reducer';
+import { isBankrupt } from '../../src/game/progression';
 import { makeItem, makeListing, makeState } from '../helpers';
 import type { GameState } from '../../src/game/types';
 
@@ -140,4 +141,33 @@ test('büyüme engeli mesaj verir', () => {
 test('yeni oyun', () => {
   const v = gameReducer(view({ money: 5 }), { type: 'newGame', seed: 3 });
   expect(v.state.money).toBe(2000);
+});
+
+describe('fix I1: aynı reddedilen teklif tekrar sabır yemez', () => {
+  test('aynı tutar ikinci kez gönderilince durum değişmez', () => {
+    const a = gameReducer(view({ listings: [makeListing()] }), { type: 'offer', listingId: 'l-1', amount: 800 });
+    expect(a.state.listings[0].patience).toBe(1);
+    const b = gameReducer(a, { type: 'offer', listingId: 'l-1', amount: 800 });
+    expect(b.state).toBe(a.state);
+  });
+});
+
+describe('fix I3: iflas', () => {
+  test('eşyasız, parası en ucuz ilana yetmeyen ve kredi alamayan oyuncu iflas eder', () => {
+    expect(isBankrupt(makeState({ stage: 3, money: 1000, loan: { principal: 1e6, dailyRate: 0.01 }, listings: [makeListing({ minPrice: 90000 })] }))).toBe(true);
+    expect(isBankrupt(makeState({ stage: 3, money: 1000, loan: null, listings: [makeListing({ minPrice: 90000 })] }))).toBe(false);
+    expect(isBankrupt(makeState({ stage: 2, money: 1000, listings: [makeListing({ minPrice: 9000 })] }))).toBe(true);
+    expect(isBankrupt(makeState({ stage: 2, money: 1000, inventory: [makeItem()], listings: [makeListing({ minPrice: 9000 })] }))).toBe(false);
+    expect(isBankrupt(makeState({ stage: 2, money: 9000, listings: [makeListing({ minPrice: 9000 })] }))).toBe(false);
+    expect(isBankrupt(makeState({ stage: 1, money: 2000, listings: [makeListing()] }))).toBe(false);
+  });
+  test('restartStage aşamanın başlangıç parasıyla devam ettirir, borç ve çalışanlar silinir', () => {
+    const v = gameReducer(view({ stage: 3, age: 18, money: 10, day: 40, loan: { principal: 2e6, dailyRate: 0.01 }, employees: { usta: true, boyaci: false, satis: false }, listings: [makeListing({ minPrice: 90000 })] }), { type: 'restartStage' });
+    expect(v.state).toMatchObject({ stage: 3, age: 18, money: 500000, loan: null, employees: { usta: false, boyaci: false, satis: false }, day: 40 });
+    expect(v.state.listings.every((l) => l.item.category === 'araba')).toBe(true);
+  });
+  test('iflas değilken restartStage bir şey yapmaz', () => {
+    const start = view();
+    expect(gameReducer(start, { type: 'restartStage' }).state).toBe(start.state);
+  });
 });

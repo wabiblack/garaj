@@ -27,13 +27,13 @@ export function makeListing(item: Item, season: Season, rng: RNG, special: Speci
 }
 
 export function respondToOffer(listing: Listing, amount: number): { result: OfferResult; listing: Listing } {
-  if (amount >= listing.minPrice) return { result: { kind: 'accepted', price: amount }, listing };
+  if (amount >= listing.minPrice) return { result: { kind: 'accepted', price: Math.min(amount, listing.askPrice) }, listing };
   const patience = listing.patience - (amount < listing.minPrice * 0.5 ? 2 : 1);
   if (patience <= 0) return { result: { kind: 'walked' }, listing: { ...listing, patience: 0 } };
   const price = Math.max(listing.minPrice, round10((listing.askPrice + amount) / 2));
   return {
     result: { kind: 'counter', price, patienceLeft: patience },
-    listing: { ...listing, askPrice: price, patience },
+    listing: { ...listing, askPrice: price, patience, lastRejected: amount },
   };
 }
 

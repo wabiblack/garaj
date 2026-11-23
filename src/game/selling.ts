@@ -3,6 +3,8 @@ import type { RNG } from './rng';
 import { marketValue, round10 } from './pricing';
 
 export const OFFER_LO = 0.94, OFFER_HI = 1.05;
+/** Alıcı, gözündeki değerin bu katından fazlasını asla teklif etmez. */
+export const OFFER_CAP = 1.1;
 const BUYERS = ['Ali', 'Burak', 'Can', 'Derya', 'Ece', 'Ferhat', 'Gül', 'İsmail', 'Kemal', 'Leyla', 'Nihat', 'Oya', 'Serkan', 'Tuğba', 'Volkan', 'Yasemin'];
 
 export function buyerCount(state: GameState): number {
@@ -20,11 +22,12 @@ export function generateOffers(state: GameState, rng: RNG): BuyerOffer[] {
     const item = state.inventory.find((i) => i.id === sale.itemId);
     if (!item) continue;
     const value = buyerValue(item, sale.disclosed, state);
-    const p = Math.min(0.95, Math.max(0.05, 1.8 - sale.price / Math.max(1, value)));
+    const p = Math.min(0.95, Math.max(0, 1.8 - sale.price / Math.max(1, value)));
+    const bonus = (1 + 0.03 * state.locationLevel) * (item.tags.includes('klasik') ? 1.15 : 1);
+    const cap = value * OFFER_CAP * bonus;
     for (let i = 0; i < buyerCount(state); i++) {
       if (!rng.chance(p)) continue;
-      let amount = sale.price * rng.range(OFFER_LO, OFFER_HI) * (1 + 0.03 * state.locationLevel);
-      if (item.tags.includes('klasik')) amount *= 1.15;
+      const amount = Math.min(cap, sale.price * rng.range(OFFER_LO, OFFER_HI) * bonus);
       offers.push({ id: rng.id('o'), itemId: item.id, amount: round10(amount), buyerName: rng.pick(BUYERS) });
     }
   }

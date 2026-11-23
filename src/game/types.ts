@@ -33,6 +33,8 @@ export interface Listing {
   inspected: boolean;
   special: SpecialKind | null;
   sellerName: string;
+  /** Satıcının son reddettiği teklif; aynı tutar tekrar sabır yemez. */
+  lastRejected?: number;
 }
 
 export interface SaleListing { itemId: string; price: number; disclosed: boolean }

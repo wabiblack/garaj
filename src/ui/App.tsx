@@ -12,8 +12,19 @@ import { ProfileScreen } from './screens/ProfileScreen';
 import { EveningScreen } from './screens/EveningScreen';
 import { TransitionScreen } from './screens/TransitionScreen';
 import { EndScreen } from './screens/EndScreen';
+import { BankruptScreen } from './screens/BankruptScreen';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { isBankrupt } from '../game/progression';
 
 export default function App() {
+  return (
+    <ErrorBoundary>
+      <Game />
+    </ErrorBoundary>
+  );
+}
+
+function Game() {
   const { view, broken, dispatch, reset } = useGame();
   const [tab, setTab] = useState<Tab>('ilanlar');
   const [listingId, setListingId] = useState<string | null>(null);
@@ -26,7 +37,9 @@ export default function App() {
       ? <EveningScreen view={view} dispatch={dispatch} />
       : state.won && !state.wonSeen
         ? <EndScreen state={state} onContinue={() => dispatch({ type: 'dismissWin' })} />
-        : null;
+        : isBankrupt(state)
+          ? <BankruptScreen state={state} onRestart={() => dispatch({ type: 'restartStage' })} />
+          : null;
 
   return (
     <div className="app">

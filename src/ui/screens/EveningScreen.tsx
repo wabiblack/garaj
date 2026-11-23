@@ -23,7 +23,7 @@ function OfferRow({ offer, label, dispatch }: { offer: BuyerOffer; label: string
         <div className="offer__counter">
           <label className="field field--inline">
             <span className="field__label">Karşı teklifin (TL)</span>
-            <input className="field__input" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} />
+            <input className="field__input" inputMode="numeric" maxLength={10} value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))} />
           </label>
           <Button small variant="primary" onClick={() => dispatch({ type: 'counterOffer', offerId: offer.id, amount: parseAmount(amount) })}>Gönder</Button>
         </div>

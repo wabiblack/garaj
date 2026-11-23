@@ -4,7 +4,7 @@ import { canBuy, inspect, inspectionCost, respondToOffer, type BuyBlock, type Of
 import { care, clean, paint, repair } from './prep';
 import { counterOffer, settleSale } from './selling';
 import { endDay, startNextDay } from './day';
-import { checkProgress, completeTransition } from './progression';
+import { checkProgress, completeTransition, isBankrupt, restartStage } from './progression';
 import { fire, hire, repayLoan, takeLoan, upgradeCapacity, upgradeLocation, type GrowthBlock } from './growth';
 import { newGame } from './newGame';
 
@@ -22,6 +22,7 @@ export type Action =
   | { type: 'upgradeCapacity' } | { type: 'upgradeLocation' }
   | { type: 'hire' | 'fire'; role: keyof Employees }
   | { type: 'takeLoan'; amount: number } | { type: 'repayLoan' }
+  | { type: 'restartStage' }
   | { type: 'newGame'; seed: number };
 
 export interface GameView { state: GameState; message: string | null; lastOffer: OfferResult | null }
@@ -56,6 +57,7 @@ function step(view: GameView, action: Action): GameView {
       const listing = s.listings.find((l) => l.id === action.listingId);
       if (!day || !listing || !validAmount(action.amount)) return same();
       const amount = Math.round(action.amount);
+      if (listing.lastRejected === amount) return same();
       const block = canBuy(s, amount);
       if (block) return same(BLOCK_MESSAGE[block]);
       const { result, listing: updated } = respondToOffer(listing, amount);
@@ -154,6 +156,8 @@ function step(view: GameView, action: Action): GameView {
     }
     case 'fire':
       return to(fire(s, action.role));
+    case 'restartStage':
+      return isBankrupt(s) ? { state: restartStage(s), message: null, lastOffer: null } : same();
     case 'newGame':
       return { state: newGame(action.seed), message: null, lastOffer: null };
   }

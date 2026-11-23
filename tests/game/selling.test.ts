@@ -96,3 +96,22 @@ describe('settleSale', () => {
     expect(settleSale(s, 'yok', 100, createRng(1))).toBe(s);
   });
 });
+
+describe('fix C1: absürt fiyat satılmaz', () => {
+  test('değerin 1.8 katı ve üstüne hiç teklif gelmez', () => {
+    const item = makeItem({ baseValue: 2000, condition: 100 });
+    const s = makeState({ reputation: 100, locationLevel: 2, inventory: [item], forSale: [{ itemId: item.id, price: 1_000_000, disclosed: false }] });
+    const r = createRng(7);
+    let total = 0;
+    for (let i = 0; i < 500; i++) total += generateOffers(s, r).length;
+    expect(total).toBe(0);
+  });
+  test('teklif değerin 1.1 katını (mekân ve klasik payıyla) aşmaz', () => {
+    const item = makeItem({ baseValue: 2000, condition: 100 });
+    const s = makeState({ reputation: 100, inventory: [item], forSale: [{ itemId: item.id, price: 3000, disclosed: false }] });
+    const r = createRng(9);
+    const all = Array.from({ length: 300 }, () => generateOffers(s, r)).flat();
+    expect(all.length).toBeGreaterThan(0);
+    for (const o of all) expect(o.amount).toBeLessThanOrEqual(2200);
+  });
+});

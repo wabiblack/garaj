@@ -12,7 +12,9 @@ function looksValid(s: unknown): s is GameState {
     [1, 2, 3].includes(g.stage as number) &&
     Array.isArray(g.inventory) && Array.isArray(g.listings) && Array.isArray(g.forSale) && Array.isArray(g.offers) &&
     typeof g.employees === 'object' && g.employees !== null &&
-    typeof g.summary === 'object' && g.summary !== null
+    (g.phase === 'day' || g.phase === 'evening') &&
+    typeof g.summary === 'object' && g.summary !== null &&
+    Array.isArray((g.summary as Record<string, unknown>).notes)
   );
 }
 
