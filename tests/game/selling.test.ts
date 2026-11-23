@@ -6,7 +6,7 @@ const emp = (o: Partial<{ usta: boolean; boyaci: boolean; satis: boolean }>) => 
 
 test('buyerCount', () => {
   expect(buyerCount(makeState())).toBe(2);
-  expect(buyerCount(makeState({ reputation: 61, locationLevel: 2, employees: emp({ satis: true }) }))).toBe(6);
+  expect(buyerCount(makeState({ reputation: 76, locationLevel: 2, employees: emp({ satis: true }) }))).toBe(6);
 });
 
 describe('generateOffers', () => {
@@ -72,14 +72,14 @@ describe('settleSale', () => {
     expect(s.summary.sold).toBe(1);
     expect(s.summary.earned).toBe(1900);
   });
-  test('kusursuz satış itibar +1, belirtilmiş kusurlu +2, 100ü geçmez', () => {
-    expect(sold().reputation).toBe(51);
+  test('kusursuz satış ve belirtilmiş kusurlu +2, 100ü geçmez', () => {
+    expect(sold().reputation).toBe(52);
     const defect = { id: 'd', name: 'Fren', repairCost: 1, valueHit: 0.1, known: true };
     expect(sold({ defects: [defect] }, true).reputation).toBe(52);
     expect(sold({}, false, 100).reputation).toBe(100);
   });
   test('gizlenen kusur yaklaşık %40 ihtimalle pendingCatch e düşer', () => {
-    const defect = { id: 'd', name: 'Fren', repairCost: 1, valueHit: 0.1, known: false };
+    const defect = { id: 'd', name: 'Fren', repairCost: 1, valueHit: 0.1, known: true };
     const r = createRng(12);
     let caught = 0;
     for (let i = 0; i < 300; i++) {
@@ -113,5 +113,29 @@ describe('fix C1: absürt fiyat satılmaz', () => {
     const all = Array.from({ length: 300 }, () => generateOffers(s, r)).flat();
     expect(all.length).toBeGreaterThan(0);
     for (const o of all) expect(o.amount).toBeLessThanOrEqual(2200);
+  });
+});
+
+describe('fix M5: itibar', () => {
+  test('kusursuz satış da +2 itibar verir', () => {
+    const item = makeItem();
+    const s = settleSale(makeState({ inventory: [item] }), item.id, 100, createRng(1));
+    expect(s.reputation).toBe(52);
+  });
+  test('bilinen kusuru saklamak ~%40 yakalanır, bilinmeyen kusur ~%15 şikâyet olur', () => {
+    const run = (known: boolean) => {
+      const r = createRng(21);
+      let n = 0;
+      for (let i = 0; i < 600; i++) {
+        const item = makeItem({ defects: [{ id: 'd', name: 'Fren', repairCost: 1, valueHit: 0.1, known }] });
+        const s = settleSale(makeState({ inventory: [item], forSale: [{ itemId: item.id, price: 1, disclosed: false }] }), item.id, 1, r);
+        if (s.pendingCatch.length) { n++; expect(s.pendingCatch[0].knowing).toBe(known); }
+      }
+      return n / 600;
+    };
+    expect(run(true)).toBeGreaterThan(0.33);
+    expect(run(true)).toBeLessThan(0.47);
+    expect(run(false)).toBeGreaterThan(0.10);
+    expect(run(false)).toBeLessThan(0.20);
   });
 });

@@ -78,3 +78,20 @@ describe('applyDailyCosts', () => {
     expect(s.money).toBe(7000);
   });
 });
+
+describe('fix M4 ve M6', () => {
+  test('bir günlük maaşa parası yetmeyen işe alamaz', () => {
+    expect(hire(s3({ money: 2999 }), 'usta')).toBe('yetersiz-para');
+    expect(typeof hire(s3({ money: 3000 }), 'usta')).toBe('object');
+  });
+  test('yükseltmeler harcanana yazılır', () => {
+    const a = ok(upgradeCapacity(s3({ money: 1_000_000 })));
+    expect(a.summary.spent).toBe(400_000);
+    const b = ok(upgradeLocation(s3({ money: 3_000_000 })));
+    expect(b.summary.spent).toBe(2_500_000);
+  });
+  test('maaş ve ödenen faiz harcanana yazılır', () => {
+    const s = applyDailyCosts(s3({ money: 100_000, employees: { usta: true, boyaci: false, satis: false }, loan: { principal: 1_000_000, dailyRate: 0.01 } }));
+    expect(s.summary.spent).toBe(3000 + 10_000);
+  });
+});

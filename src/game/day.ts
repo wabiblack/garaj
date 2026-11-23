@@ -57,14 +57,17 @@ export function endDay(state: GameState): GameState {
 export function startNextDay(state: GameState): GameState {
   if (state.phase !== 'evening') return state;
   const day = state.day + 1;
-  const notes = state.pendingCatch.map((c) => `${c.itemName} satışında gizlenen kusur ortaya çıktı`);
+  const notes = state.pendingCatch.map((c) =>
+    c.knowing === false ? `${c.itemName} alıcısı fark etmediğin bir kusur buldu` : `${c.itemName} satışında gizlenen kusur ortaya çıktı`,
+  );
+  const repLoss = state.pendingCatch.reduce((sum, c) => sum + (c.knowing === false ? 5 : 15), 0);
   const next: GameState = applyDailyCosts({
     ...state,
     day,
     phase: 'day',
     season: seasonForDay(day),
     offers: [],
-    reputation: Math.max(0, state.reputation - 15 * state.pendingCatch.length),
+    reputation: Math.max(0, state.reputation - repLoss),
     pendingCatch: [],
     inventory: state.inventory.map((i) => {
       const held = i.heldDays ?? 0;

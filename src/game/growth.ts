@@ -11,6 +11,10 @@ const LOAN_RATE = 0.01;
 /** Para yetmezse bu sırayla işten ayrılırlar. */
 const QUIT_ORDER: (keyof Employees)[] = ['satis', 'boyaci', 'usta'];
 
+function spent(s: GameState, cost: number): GameState['summary'] {
+  return { ...s.summary, spent: s.summary.spent + cost };
+}
+
 export type GrowthBlock = 'asama-3-degil' | 'yetersiz-para' | 'en-ust-seviye' | 'zaten-var' | 'kredi-var' | null;
 
 export function upgradeCapacity(s: GameState): GameState | GrowthBlock {
@@ -18,7 +22,7 @@ export function upgradeCapacity(s: GameState): GameState | GrowthBlock {
   if (s.capacityLevel >= 3) return 'en-ust-seviye';
   const cost = CAPACITY_COST[s.capacityLevel];
   if (s.money < cost) return 'yetersiz-para';
-  return { ...s, money: s.money - cost, capacityLevel: (s.capacityLevel + 1) as GameState['capacityLevel'] };
+  return { ...s, money: s.money - cost, summary: spent(s, cost), capacityLevel: (s.capacityLevel + 1) as GameState['capacityLevel'] };
 }
 
 export function upgradeLocation(s: GameState): GameState | GrowthBlock {
@@ -26,12 +30,13 @@ export function upgradeLocation(s: GameState): GameState | GrowthBlock {
   if (s.locationLevel >= 2) return 'en-ust-seviye';
   const cost = LOCATION_COST[s.locationLevel];
   if (s.money < cost) return 'yetersiz-para';
-  return { ...s, money: s.money - cost, locationLevel: (s.locationLevel + 1) as GameState['locationLevel'] };
+  return { ...s, money: s.money - cost, summary: spent(s, cost), locationLevel: (s.locationLevel + 1) as GameState['locationLevel'] };
 }
 
 export function hire(s: GameState, role: keyof Employees): GameState | GrowthBlock {
   if (s.stage !== 3) return 'asama-3-degil';
   if (s.employees[role]) return 'zaten-var';
+  if (s.money < SALARY[role]) return 'yetersiz-para';
   return { ...s, employees: { ...s.employees, [role]: true } };
 }
 
@@ -78,5 +83,6 @@ export function applyDailyCosts(s: GameState): GameState {
       notes.push('Faiz ödenemedi, borca eklendi');
     }
   }
-  return { ...s, money, employees, loan, summary: { ...s.summary, notes } };
+  const paid = s.money - money;
+  return { ...s, money, employees, loan, summary: { ...s.summary, notes, spent: s.summary.spent + paid } };
 }

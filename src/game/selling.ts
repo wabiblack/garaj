@@ -9,7 +9,7 @@ const BUYERS = ['Ali', 'Burak', 'Can', 'Derya', 'Ece', 'Ferhat', 'Gül', 'İsmai
 
 export function buyerCount(state: GameState): number {
   const event = state.event === 'fuar' ? 2 : state.event === 'durgun' ? -1 : 0;
-  return Math.max(1, 2 + (state.reputation > 60 ? 1 : 0) + state.locationLevel + (state.employees.satis ? 1 : 0) + event);
+  return Math.max(1, 2 + (state.reputation > 75 ? 1 : 0) + state.locationLevel + (state.employees.satis ? 1 : 0) + event);
 }
 
 /** Alıcının gözündeki değer: kusurlar belirtildiyse bilinenler düşülür, değilse kusursuz sanılır. */
@@ -54,9 +54,11 @@ export function settleSale(state: GameState, itemId: string, amount: number, rng
   const disclosed = sale?.disclosed ?? false;
   let reputation = state.reputation;
   let pendingCatch = state.pendingCatch;
-  if (item.defects.length === 0) reputation += 1;
-  else if (disclosed) reputation += 2;
-  else if (rng.chance(0.4)) pendingCatch = [...pendingCatch, { itemName: itemName(item) }];
+  const knownHidden = item.defects.some((d) => d.known) && !disclosed;
+  if (item.defects.length === 0 || (disclosed && !item.defects.some((d) => !d.known))) reputation += 2;
+  else if (knownHidden) {
+    if (rng.chance(0.4)) pendingCatch = [...pendingCatch, { itemName: itemName(item), knowing: true }];
+  } else if (rng.chance(0.15)) pendingCatch = [...pendingCatch, { itemName: itemName(item), knowing: false }];
   return {
     ...state,
     money: state.money + amount,

@@ -79,3 +79,10 @@ describe('startNextDay', () => {
     expect(startNextDay(s)).toBe(s);
   });
 });
+
+test('fix M5: bilmeden satılan kusur −5, bilerek saklanan −15', () => {
+  const s = startNextDay(makeState({ phase: 'evening', reputation: 50, pendingCatch: [{ itemName: 'A', knowing: false }, { itemName: 'B', knowing: true }] }));
+  expect(s.reputation).toBe(30);
+  expect(s.summary.notes).toContain('A alıcısı fark etmediğin bir kusur buldu');
+  expect(s.summary.notes).toContain('B satışında gizlenen kusur ortaya çıktı');
+});

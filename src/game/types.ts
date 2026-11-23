@@ -92,7 +92,8 @@ export interface GameState {
   employees: Employees;
   loan: Loan | null;
   /** Ertesi gün yakalanacak gizlenmiş kusurlu satışlar */
-  pendingCatch: { itemName: string }[];
+  /** knowing: oyuncu kusuru biliyordu (yoksa bilmeden satılmış kusur şikâyeti). */
+  pendingCatch: { itemName: string; knowing?: boolean }[];
   summary: DaySummary;
   pendingTransition: Stage | null;
   won: boolean;
