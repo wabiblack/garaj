@@ -4,6 +4,8 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // GitHub Pages depo alt yolunda yayınlanır: https://<kullanıcı>.github.io/garaj/
+  base: process.env.GITHUB_PAGES ? '/garaj/' : '/',
   plugins: [
     react(),
     VitePWA({
