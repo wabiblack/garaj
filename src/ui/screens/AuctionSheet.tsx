@@ -1,3 +1,4 @@
+import { cue } from '../feedback';
 import { useEffect, useRef, useState } from 'react';
 import type { Action, GameView } from '../../game/reducer';
 import type { Listing } from '../../game/types';
@@ -60,6 +61,7 @@ export function AuctionSheet({ listing, view, dispatch, onClose, onGoGarage }: {
       return;
     }
     if (left > 0) return;
+    cue('hammer');
     if (leader === 'Sen') {
       finalPrice.current = price;
       setPhase('won');

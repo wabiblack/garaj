@@ -17,15 +17,18 @@ export function setSoundOn(on: boolean): void {
   }
 }
 
-export type Cue = 'coin' | 'deal' | 'error' | 'achievement';
+export type Cue = 'coin' | 'deal' | 'error' | 'achievement' | 'hammer' | 'hit' | 'miss';
 
 const NOTES: Record<Cue, [freq: number, start: number, dur: number][]> = {
   coin: [[988, 0, 0.08], [1319, 0.08, 0.18]],
   deal: [[523, 0, 0.1], [659, 0.1, 0.1], [784, 0.2, 0.2]],
   error: [[196, 0, 0.18]],
   achievement: [[659, 0, 0.1], [784, 0.1, 0.1], [988, 0.2, 0.1], [1319, 0.3, 0.3]],
+  hammer: [[147, 0, 0.12], [110, 0.14, 0.25]],
+  hit: [[1568, 0, 0.06]],
+  miss: [[262, 0, 0.1]],
 };
-const VIBRATION: Record<Cue, number[]> = { coin: [30], deal: [20, 40, 20], error: [80], achievement: [30, 50, 30, 50, 60] };
+const VIBRATION: Record<Cue, number[]> = { coin: [30], deal: [20, 40, 20], error: [80], achievement: [30, 50, 30, 50, 60], hammer: [60, 40, 90], hit: [15], miss: [40] };
 
 let ctx: AudioContext | null = null;
 
@@ -45,7 +48,7 @@ export function cue(kind: Cue): void {
     for (const [freq, start, dur] of NOTES[kind]) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = kind === 'error' ? 'sawtooth' : 'triangle';
+      osc.type = kind === 'error' || kind === 'miss' ? 'sawtooth' : kind === 'hammer' ? 'square' : 'triangle';
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.0001, now + start);
       gain.gain.exponentialRampToValueAtTime(0.18, now + start + 0.01);

@@ -3,15 +3,22 @@ import { createRng } from './rng';
 import { emptySummary, listingsFor } from './day';
 import { emptyStats, generateQuests } from './career';
 
-export function newGame(seed: number): GameState {
+import type { AchievementId } from './types';
+
+/** Zor modda başlangıç parası. */
+export const HARD_START_MONEY = 1000;
+
+/** Yeni oyun. Zor mod (Yeni Oyun+) başarımları korur. */
+export function newGame(seed: number, opts: { hard?: boolean; achievements?: AchievementId[] } = {}): GameState {
+  const hard = opts.hard ?? false;
   const rng = createRng(seed);
   const base: GameState = {
-    version: 3, rngState: 0, day: 1, phase: 'day', stage: 1, age: 12, money: 2000, season: 'ilkbahar',
+    version: 3, rngState: 0, day: 1, phase: 'day', stage: 1, age: 12, money: hard ? HARD_START_MONEY : 2000, season: 'ilkbahar',
     inventory: [], listings: [], forSale: [], offers: [], reputation: 50, skill: 0,
-    capacityLevel: 0, locationLevel: 0, employees: { usta: false, boyaci: false, satis: false }, loan: null,
+    capacityLevel: 0, locationLevel: 0, employees: { usta: false, boyaci: false, satis: false, cirak: false }, loan: null,
     pendingCatch: [], summary: emptySummary(1), pendingTransition: null, won: false, wonSeen: false,
-    event: null, quests: [], stats: emptyStats(), achievements: [],
-    orders: [], story: { seen: [], pending: null }, history: [], branches: 0, finalSeen: false,
+    event: null, quests: [], stats: emptyStats(), achievements: opts.achievements ?? [],
+    orders: [], story: { seen: [], pending: null }, history: [], branches: 0, finalSeen: false, hard, prices: {},
   };
   const listings = listingsFor(base, rng);
   const quests = generateQuests(base, rng);

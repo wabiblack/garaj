@@ -67,7 +67,7 @@ export interface Order {
 
 export interface SaleListing { itemId: string; price: number; disclosed: boolean }
 export interface BuyerOffer { id: string; itemId: string; amount: number; buyerName: string }
-export interface Employees { usta: boolean; boyaci: boolean; satis: boolean }
+export interface Employees { usta: boolean; boyaci: boolean; satis: boolean; cirak: boolean }
 export interface Loan { principal: number; dailyRate: number }
 export interface Quest {
   id: string;
@@ -86,6 +86,8 @@ export interface Stats {
   bestItem: string | null;
   disclosedSales: number;
   rivalTaken: number;
+  /** Türe göre satış sayısı: uzmanlık bundan hesaplanır. */
+  categorySales: Record<Category, number>;
   stageDay: { 2: number | null; 3: number | null; 4: number | null };
 }
 export interface DaySummary { day: number; bought: number; sold: number; spent: number; earned: number; notes: string[] }
@@ -129,4 +131,8 @@ export interface GameState {
   /** 4. aşamada açılan şube sayısı (0–3). */
   branches: number;
   finalSeen: boolean;
+  /** Zor mod: satıcılar daha sert, alıcılar daha az. */
+  hard: boolean;
+  /** Model başına oyuncunun son satışları (en çok 5). */
+  prices: Record<string, { day: number; price: number }[]>;
 }

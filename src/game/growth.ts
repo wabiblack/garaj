@@ -1,11 +1,13 @@
-import type { Employees, GameState } from './types';
+import type { Employees, GameState, Stage } from './types';
 export { CAPACITY } from './negotiation';
 
 export const CAPACITY_COST: readonly number[] = [400_000, 1_200_000, 3_000_000];
 export const LOCATIONS = ['Sanayi garajı', 'Mahalle galerisi', 'Ana cadde showroom'] as const;
 export const LOCATION_COST: readonly number[] = [2_500_000, 8_000_000];
-export const SALARY: Record<keyof Employees, number> = { usta: 3000, boyaci: 2500, satis: 3500 };
-export const ROLE_LABEL: Record<keyof Employees, string> = { usta: 'Usta', boyaci: 'Boyacı', satis: 'Satış elemanı' };
+export const SALARY: Record<keyof Employees, number> = { cirak: 400, usta: 3000, boyaci: 2500, satis: 3500 };
+/** Çırak motor işinde (2. aşama) açılır, diğerleri galeride. */
+export const ROLE_STAGE: Record<keyof Employees, Stage> = { cirak: 2, usta: 3, boyaci: 3, satis: 3 };
+export const ROLE_LABEL: Record<keyof Employees, string> = { cirak: 'Çırak', usta: 'Usta', boyaci: 'Boyacı', satis: 'Satış elemanı' };
 export const LOAN_OPTIONS = [1_000_000, 3_000_000] as const;
 const LOAN_RATE = 0.01;
 /** 4. aşama şubeleri: sırayla açılır, her biri günlük gelir ve +1 alıcı getirir. */
@@ -27,13 +29,13 @@ export function openBranch(s: GameState): GameState | GrowthBlock {
   return { ...s, money: s.money - next.cost, summary: spent(s, next.cost), branches: s.branches + 1 };
 }
 /** Para yetmezse bu sırayla işten ayrılırlar. */
-const QUIT_ORDER: (keyof Employees)[] = ['satis', 'boyaci', 'usta'];
+const QUIT_ORDER: (keyof Employees)[] = ['satis', 'boyaci', 'usta', 'cirak'];
 
 function spent(s: GameState, cost: number): GameState['summary'] {
   return { ...s.summary, spent: s.summary.spent + cost };
 }
 
-export type GrowthBlock = 'asama-3-degil' | 'asama-4-degil' | 'yetersiz-para' | 'en-ust-seviye' | 'zaten-var' | 'kredi-var' | null;
+export type GrowthBlock = 'asama-2-degil' | 'asama-3-degil' | 'asama-4-degil' | 'yetersiz-para' | 'en-ust-seviye' | 'zaten-var' | 'kredi-var' | null;
 
 export function upgradeCapacity(s: GameState): GameState | GrowthBlock {
   if (s.stage < 3) return 'asama-3-degil';
@@ -52,7 +54,7 @@ export function upgradeLocation(s: GameState): GameState | GrowthBlock {
 }
 
 export function hire(s: GameState, role: keyof Employees): GameState | GrowthBlock {
-  if (s.stage < 3) return 'asama-3-degil';
+  if (s.stage < ROLE_STAGE[role]) return ROLE_STAGE[role] === 2 ? 'asama-2-degil' : 'asama-3-degil';
   if (s.employees[role]) return 'zaten-var';
   if (s.money < SALARY[role]) return 'yetersiz-para';
   return { ...s, employees: { ...s.employees, [role]: true } };

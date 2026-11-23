@@ -56,7 +56,7 @@ describe('kredi', () => {
 });
 
 describe('applyDailyCosts', () => {
-  const all = { usta: true, boyaci: true, satis: true };
+  const all = { usta: true, boyaci: true, satis: true, cirak: false };
   test('maaş ve faiz düşülür', () => {
     const s = applyDailyCosts(s3({ money: 100_000, employees: all, loan: { principal: 1_000_000, dailyRate: 0.01 } }));
     expect(s.money).toBe(100_000 - 9000 - 10_000);
@@ -64,7 +64,7 @@ describe('applyDailyCosts', () => {
   });
   test('maaşı ödenemeyen çalışan sırayla ayrılır, para eksiye düşmez', () => {
     const s = applyDailyCosts(s3({ money: 5000, employees: all }));
-    expect(s.employees).toEqual({ usta: true, boyaci: false, satis: false });
+    expect(s.employees).toEqual({ usta: true, boyaci: false, satis: false, cirak: false });
     expect(s.money).toBe(2000);
     expect(s.summary.notes.some((n) => n.includes('Satış elemanı'))).toBe(true);
   });
@@ -74,7 +74,7 @@ describe('applyDailyCosts', () => {
     expect(s.loan!.principal).toBe(1_007_000);
   });
   test('startNextDay giderleri uygular', () => {
-    const s = startNextDay(s3({ phase: 'evening', money: 10_000, employees: { usta: true, boyaci: false, satis: false } }));
+    const s = startNextDay(s3({ phase: 'evening', money: 10_000, employees: { usta: true, boyaci: false, satis: false, cirak: false } }));
     expect(s.summary.spent).toBe(3000);
   });
 });
@@ -91,7 +91,7 @@ describe('fix M4 ve M6', () => {
     expect(b.summary.spent).toBe(2_500_000);
   });
   test('maaş ve ödenen faiz harcanana yazılır', () => {
-    const s = applyDailyCosts(s3({ money: 100_000, employees: { usta: true, boyaci: false, satis: false }, loan: { principal: 1_000_000, dailyRate: 0.01 } }));
+    const s = applyDailyCosts(s3({ money: 100_000, employees: { usta: true, boyaci: false, satis: false, cirak: false }, loan: { principal: 1_000_000, dailyRate: 0.01 } }));
     expect(s.summary.spent).toBe(3000 + 10_000);
   });
 });

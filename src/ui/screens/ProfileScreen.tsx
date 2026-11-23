@@ -2,8 +2,11 @@ import { useState } from 'react';
 import type { Action, GameView } from '../../game/reducer';
 import type { Employees } from '../../game/types';
 import {
-  CAPACITY, CAPACITY_COST, LOAN_OPTIONS, LOCATION_COST, LOCATIONS, ROLE_LABEL, SALARY, dailySalaries,
+  CAPACITY, CAPACITY_COST, LOAN_OPTIONS, LOCATION_COST, LOCATIONS, ROLE_LABEL, ROLE_STAGE, SALARY, dailySalaries,
 } from '../../game/growth';
+import { CATEGORIES_BY_STAGE, CATEGORY_LABEL } from '../../game/catalog';
+import { EXPERT_DISCOUNT, EXPERT_MAX, EXPERT_STEP, expertLevel } from '../../game/expertise';
+import { shareRecordCard } from '../shareCard';
 import { formatTL } from '../../game/format';
 import { STAGE_LABEL } from '../components/TopBar';
 import { Button } from '../components/Button';
@@ -27,6 +30,7 @@ function Meter({ label, value }: { label: string; value: number }) {
 }
 
 const ROLE_HELP: Record<keyof Employees, string> = {
+  cirak: 'Teklif gelmeyen mala müşteri bulur',
   usta: 'Tamirler %20 ucuz',
   boyaci: 'Boya %30 ucuz',
   satis: 'Her gün +1 alıcı',
@@ -40,6 +44,7 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
   const [backup, setBackup] = useState<'none' | 'export' | 'import'>('none');
   const [code, setCode] = useState('');
   const [backupMsg, setBackupMsg] = useState<string | null>(null);
+  const [shareMsg, setShareMsg] = useState<string | null>(null);
   const change = (s: Settings) => { setSettings(s); saveSettings(s); };
   const showExport = async () => {
     const c = exportSave(state);
@@ -69,7 +74,7 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
         <img className="avatar" src={portraitUrl(state.age)} alt="" />
         <div>
           <h1>Kerem</h1>
-          <div className="muted">{state.age} yaş · {STAGE_LABEL[state.stage]} · Gün {state.day}</div>
+          <div className="muted">{state.age} yaş · {STAGE_LABEL[state.stage]} · Gün {state.day}{state.hard ? ' · Zor mod' : ''}</div>
         </div>
       </div>
       <div className="panel">
@@ -92,6 +97,25 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
           <div className="stat"><span>{RIVAL}’in kaptığı</span><strong>{stats.rivalTaken}</strong></div>
           <div className="stat"><span>Holding</span><strong>{stats.stageDay[4] ? `Gün ${stats.stageDay[4]}` : '—'}</strong></div>
         </div>
+        <Button small onClick={() => void shareRecordCard(state).then(setShareMsg)}>Rekor kartını paylaş</Button>
+        {shareMsg ? <p className="hint" role="status">{shareMsg}</p> : null}
+      </div>
+
+      <h2 className="h2">Uzmanlık</h2>
+      <div className="panel">
+        <p className="hint">Aynı türden her {EXPERT_STEP} satış bir seviye. Her seviyede satıcılar %{EXPERT_DISCOUNT * 100} daha aşağı iner.</p>
+        {[...new Set(Object.values(CATEGORIES_BY_STAGE).flat())].filter((c) => (stats.categorySales[c] ?? 0) > 0 || CATEGORIES_BY_STAGE[state.stage].includes(c)).map((c) => {
+          const level = expertLevel(state, c);
+          return (
+            <div className="row" key={c}>
+              <div>
+                <div className="row__title">{CATEGORY_LABEL[c]}</div>
+                <div className="row__sub">{stats.categorySales[c] ?? 0} satış{level < EXPERT_MAX ? ` · sonraki seviyeye ${EXPERT_STEP * (level + 1) - (stats.categorySales[c] ?? 0)}` : ''}</div>
+              </div>
+              <span className={'tag' + (level > 0 ? ' tag--accent' : '')} aria-label={`${CATEGORY_LABEL[c]} uzmanlık ${level}/${EXPERT_MAX}`}>{'★'.repeat(level) + '☆'.repeat(EXPERT_MAX - level)}</span>
+            </div>
+          );
+        })}
       </div>
 
       <section aria-label="Başarımlar">
@@ -130,6 +154,27 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
         </>
       ) : null}
 
+      {state.stage >= 2 ? (
+        <>
+          <h2 className="h2">Çalışanlar <span className="muted">· günlük {formatTL(dailySalaries(state.employees))}</span></h2>
+          <div className="panel">
+            {(Object.keys(SALARY) as (keyof Employees)[]).filter((role) => ROLE_STAGE[role] <= state.stage).map((role) => (
+              <div className="row" key={role}>
+                <div>
+                  <div className="row__title">{ROLE_LABEL[role]}</div>
+                  <div className="row__sub">{ROLE_HELP[role]} · {formatTL(SALARY[role])}/gün</div>
+                </div>
+                {state.employees[role] ? (
+                  <Button small variant="ghost" aria-label={`${ROLE_LABEL[role]}: Çıkar`} onClick={() => dispatch({ type: 'fire', role })}>Çıkar</Button>
+                ) : (
+                  <Button small aria-label={`${ROLE_LABEL[role]}: İşe al`} onClick={() => dispatch({ type: 'hire', role })}>İşe al</Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      ) : null}
+
       {state.stage >= 3 ? (
         <>
           <h2 className="h2">Büyüme</h2>
@@ -158,23 +203,6 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
             </div>
           </div>
 
-          <h2 className="h2">Çalışanlar <span className="muted">· günlük {formatTL(dailySalaries(state.employees))}</span></h2>
-          <div className="panel">
-            {(Object.keys(SALARY) as (keyof Employees)[]).map((role) => (
-              <div className="row" key={role}>
-                <div>
-                  <div className="row__title">{ROLE_LABEL[role]}</div>
-                  <div className="row__sub">{ROLE_HELP[role]} · {formatTL(SALARY[role])}/gün</div>
-                </div>
-                {state.employees[role] ? (
-                  <Button small variant="ghost" aria-label={`${ROLE_LABEL[role]}: Çıkar`} onClick={() => dispatch({ type: 'fire', role })}>Çıkar</Button>
-                ) : (
-                  <Button small aria-label={`${ROLE_LABEL[role]}: İşe al`} onClick={() => dispatch({ type: 'hire', role })}>İşe al</Button>
-                )}
-              </div>
-            ))}
-          </div>
-
           <h2 className="h2">Banka</h2>
           <div className="panel">
             {state.loan ? (
@@ -201,7 +229,7 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
         </>
       ) : (
         <div className="panel panel--muted">
-          <p className="muted">Garajı büyütme, çalışan ve kredi Kerem galerici olunca açılır.</p>
+          <p className="muted">{state.stage === 1 ? 'Çırak motor işinde; garajı büyütme, usta ve kredi Kerem galerici olunca açılır.' : 'Garajı büyütme, usta ve kredi Kerem galerici olunca açılır.'}</p>
         </div>
       )}
 

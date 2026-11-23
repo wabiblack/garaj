@@ -27,7 +27,7 @@ export function completeTransition(state: GameState): GameState {
   if (stage === null || stage === 1) return state;
   if (stage === 4) {
     const rng4 = createRng(state.rngState);
-    const listings4 = generateListings({ stage, season: state.season }, rng4);
+    const listings4 = generateListings({ ...state, stage }, rng4);
     return {
       ...state, stage, age: STAGE_AGE[4], listings: listings4, pendingTransition: null, event: null, orders: [],
       quests: generateQuests({ ...state, stage }, rng4), rngState: rng4.state(),
@@ -36,7 +36,7 @@ export function completeTransition(state: GameState): GameState {
   const sellOff = state.inventory.reduce((sum, i) => sum + round10(marketValue(i, state.season) * 0.8), 0);
   const notes = state.inventory.length > 0 ? [...state.summary.notes, 'Kerem eski eşyalarını elden çıkardı'] : state.summary.notes;
   const rng = createRng(state.rngState);
-  const listings = generateListings({ stage, season: state.season }, rng);
+  const listings = generateListings({ ...state, stage }, rng);
   const quests = generateQuests({ ...state, stage }, rng);
   return {
     ...state,
@@ -78,7 +78,7 @@ export function restartStage(state: GameState): GameState {
     ...state,
     money,
     loan: null,
-    employees: { usta: false, boyaci: false, satis: false },
+    employees: { usta: false, boyaci: false, satis: false, cirak: false },
     listings,
     offers: [],
     summary: { ...state.summary, notes: [...state.summary.notes, 'İflastan sonra yeniden başladın'] },

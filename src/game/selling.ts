@@ -1,4 +1,4 @@
-import type { BuyerOffer, GameState, Item } from './types';
+import type { BuyerOffer, GameState, Item, SaleListing } from './types';
 import type { RNG } from './rng';
 import { marketValue, round10 } from './pricing';
 
@@ -9,7 +9,23 @@ const BUYERS = ['Ali', 'Burak', 'Can', 'Derya', 'Ece', 'Ferhat', 'Gül', 'İsmai
 
 export function buyerCount(state: GameState): number {
   const event = state.event === 'fuar' ? 2 : state.event === 'durgun' ? -1 : 0;
-  return Math.max(1, 2 + (state.reputation > 75 ? 1 : 0) + state.locationLevel + state.branches + (state.employees.satis ? 1 : 0) + event);
+  const hard = state.hard ? -1 : 0;
+  return Math.max(1, 2 + (state.reputation > 75 ? 1 : 0) + state.locationLevel + state.branches + (state.employees.satis ? 1 : 0) + event + hard);
+}
+
+/** Çırak, teklif gelmeyen en ucuz satıştaki mal için piyasa değerinin bu katında bir müşteri bulur. */
+export const CIRAK_SHARE = 0.9;
+export const CIRAK_BUYER = 'Çırağın müşterisi';
+
+function cirakOffer(state: GameState, offers: BuyerOffer[], rng: RNG): BuyerOffer | null {
+  const idle = state.forSale
+    .filter((f) => !offers.some((o) => o.itemId === f.itemId))
+    .map((f) => ({ f, item: state.inventory.find((i) => i.id === f.itemId) }))
+    .filter((x): x is { f: SaleListing; item: Item } => x.item !== undefined)
+    .sort((a, b) => a.f.price - b.f.price)[0];
+  if (!idle) return null;
+  const amount = round10(Math.min(idle.f.price, buyerValue(idle.item, idle.f.disclosed, state) * CIRAK_SHARE));
+  return { id: rng.id('o'), itemId: idle.item.id, amount, buyerName: CIRAK_BUYER };
 }
 
 /** Alıcının gözündeki değer: kusurlar belirtildiyse bilinenler düşülür, değilse kusursuz sanılır. */
@@ -32,7 +48,8 @@ export function generateOffers(state: GameState, rng: RNG): BuyerOffer[] {
       offers.push({ id: rng.id('o'), itemId: item.id, amount: round10(amount), buyerName: rng.pick(BUYERS) });
     }
   }
-  return offers;
+  const extra = state.employees.cirak ? cirakOffer(state, offers, rng) : null;
+  return extra ? [...offers, extra] : offers;
 }
 
 export type CounterResult = { kind: 'accepted'; amount: number } | { kind: 'left' };

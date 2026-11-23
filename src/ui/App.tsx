@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { cue } from './feedback';
 import { ACHIEVEMENTS } from '../game/career';
-import type { GameView } from '../game/reducer';
+import type { Action, GameView } from '../game/reducer';
+import { dayKey, nextStreak } from '../game/streak';
+import { loadStreak, saveStreak } from './streakStore';
 import { TabBar, type Tab } from './components/TabBar';
 import { TopBar } from './components/TopBar';
 import { Toast } from './components/Toast';
@@ -38,6 +40,7 @@ function Game() {
   const [listingId, setListingId] = useState<string | null>(null);
   const [auction, setAuction] = useState<Listing | null>(null);
   const achievement = useFeedback(view);
+  useDailyStreak(view !== null, dispatch);
 
   if (broken || !view) return <BrokenSaveScreen onReset={reset} />;
   const { state } = view;
@@ -48,7 +51,7 @@ function Game() {
     : state.phase === 'evening'
       ? <EveningScreen view={view} dispatch={dispatch} />
       : (state.won && !state.wonSeen) || (state.stage === 4 && state.branches >= 3 && !state.finalSeen)
-        ? <EndScreen state={state} onContinue={() => dispatch({ type: 'dismissWin' })} />
+        ? <EndScreen state={state} onContinue={() => dispatch({ type: 'dismissWin' })} onHardMode={() => reset(true)} />
         : state.story.pending
           ? <StoryScreen id={state.story.pending} state={state} onChoose={(index) => dispatch({ type: 'storyChoice', index })} />
           : isBankrupt(state)
@@ -101,6 +104,19 @@ function Game() {
   );
 }
 
+/** Uygulama her yeni günde ilk açılışta seri ödülünü verir. */
+function useDailyStreak(ready: boolean, dispatch: (a: Action) => void) {
+  const done = useRef(false);
+  useEffect(() => {
+    if (!ready || done.current) return;
+    done.current = true;
+    const { streak, fresh } = nextStreak(loadStreak(), dayKey(new Date()));
+    if (!fresh) return;
+    saveStreak(streak);
+    dispatch({ type: 'streakBonus', days: streak.count });
+  }, [ready, dispatch]);
+}
+
 /** Oyun olaylarına ses/titreşimle karşılık verir; yeni başarımı birkaç saniye gösterir. */
 function useFeedback(view: GameView | null): string | null {
   const prev = useRef(view);
@@ -115,6 +131,7 @@ function useFeedback(view: GameView | null): string | null {
       setAchievement(`Başarım: ${ACHIEVEMENTS[fresh[fresh.length - 1]].title}`);
       cue('achievement');
     } else if (b.stats.sales > a.stats.sales) cue('coin');
+    else if (b.money > a.money && view.message?.startsWith('Günlük seri')) cue('coin');
     else if (view.lastOffer?.kind === 'accepted' && view.lastOffer !== before.lastOffer) cue('deal');
     else if (view.message && view.message !== before.message && /yetmiyor|dolu|vazgeçti/.test(view.message)) cue('error');
   }, [view]);

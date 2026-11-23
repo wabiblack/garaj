@@ -24,18 +24,21 @@ function init(): Root {
 }
 
 function rootReducer(root: Root, action: Action): Root {
-  if (action.type === 'newGame') return { view: { state: newGame(action.seed), message: null, lastOffer: null }, broken: false, fresh: true };
+  if (action.type === 'newGame') {
+    const keep = action.hard && root.view ? { hard: true, achievements: root.view.state.achievements } : {};
+    return { view: { state: newGame(action.seed, keep), message: null, lastOffer: null }, broken: false, fresh: true };
+  }
   if (!root.view) return root;
   return { view: gameReducer(root.view, action), broken: false, fresh: root.fresh };
 }
 
-export function useGame(): { view: GameView | null; broken: boolean; fresh: boolean; dispatch(a: Action): void; reset(): void } {
+export function useGame(): { view: GameView | null; broken: boolean; fresh: boolean; dispatch(a: Action): void; reset(hard?: boolean): void } {
   const [root, dispatch] = useReducer(rootReducer, undefined, init);
   const state = root.view?.state;
   useEffect(() => {
     const st = storage();
     if (state && st) saveGame(st, state);
   }, [state]);
-  const reset = useCallback(() => dispatch({ type: 'newGame', seed: randomSeed() }), []);
+  const reset = useCallback((hard = false) => dispatch({ type: 'newGame', seed: randomSeed(), hard }), []);
   return { view: root.view, broken: root.broken, fresh: root.fresh, dispatch, reset };
 }

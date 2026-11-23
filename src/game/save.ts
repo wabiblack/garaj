@@ -60,9 +60,9 @@ export function importSave(code: string): GameState | null {
 /** Eski kayıtları sırayla güncel sürüme taşır. */
 function migrate(s: GameState): GameState {
   const v = s.version as number;
-  if (v === 3) return s;
+  if (v === 3) return fillV3(s);
   const v2 = v === 1 ? migrate1to2(s) : s;
-  return {
+  return fillV3({
     ...v2,
     version: 3,
     orders: [],
@@ -71,6 +71,17 @@ function migrate(s: GameState): GameState {
     branches: 0,
     finalSeen: false,
     stats: { ...v2.stats, rivalTaken: v2.stats.rivalTaken ?? 0, stageDay: { ...v2.stats.stageDay, 4: v2.stats.stageDay[4] ?? null } },
+  });
+}
+
+/** Sürüm 3'e sonradan eklenen alanlar (çırak, uzmanlık, zor mod, fiyat geçmişi) eski kayıtlarda yoksa doldurulur. */
+function fillV3(s: GameState): GameState {
+  return {
+    ...s,
+    employees: { ...s.employees, cirak: s.employees.cirak ?? false },
+    stats: { ...s.stats, categorySales: { ...emptyStats().categorySales, ...s.stats.categorySales } },
+    hard: s.hard ?? false,
+    prices: s.prices ?? {},
   };
 }
 

@@ -15,7 +15,7 @@ describe('repair', () => {
   });
   test('beceri ve usta maliyeti düşürür', () => {
     expect(repairCost(d(true), makeState({ skill: 100 }))).toBe(500);
-    expect(repairCost(d(true), makeState({ skill: 50, employees: { usta: true, boyaci: false, satis: false } }))).toBe(600);
+    expect(repairCost(d(true), makeState({ skill: 50, employees: { usta: true, boyaci: false, satis: false, cirak: false } }))).toBe(600);
   });
 });
 
@@ -40,7 +40,7 @@ describe('paint', () => {
   });
   test('boyacı %30 ucuzlatır', () => {
     const car = makeItem({ category: 'araba', baseValue: 100000 });
-    expect(paint(car, makeState({ employees: { usta: false, boyaci: true, satis: false } }))!.cost).toBe(4200);
+    expect(paint(car, makeState({ employees: { usta: false, boyaci: true, satis: false, cirak: false } }))!.cost).toBe(4200);
   });
 });
 

@@ -162,8 +162,8 @@ describe('fix I3: iflas', () => {
     expect(isBankrupt(makeState({ stage: 1, money: 2000, listings: [makeListing()] }))).toBe(false);
   });
   test('restartStage aşamanın başlangıç parasıyla devam ettirir, borç ve çalışanlar silinir', () => {
-    const v = gameReducer(view({ stage: 3, age: 18, money: 10, day: 40, loan: { principal: 2e6, dailyRate: 0.01 }, employees: { usta: true, boyaci: false, satis: false }, listings: [makeListing({ minPrice: 90000 })] }), { type: 'restartStage' });
-    expect(v.state).toMatchObject({ stage: 3, age: 18, money: 500000, loan: null, employees: { usta: false, boyaci: false, satis: false }, day: 40 });
+    const v = gameReducer(view({ stage: 3, age: 18, money: 10, day: 40, loan: { principal: 2e6, dailyRate: 0.01 }, employees: { usta: true, boyaci: false, satis: false, cirak: false }, listings: [makeListing({ minPrice: 90000 })] }), { type: 'restartStage' });
+    expect(v.state).toMatchObject({ stage: 3, age: 18, money: 500000, loan: null, employees: { usta: false, boyaci: false, satis: false, cirak: false }, day: 40 });
     expect(v.state.listings.every((l) => l.item.category === 'araba')).toBe(true);
   });
   test('iflas değilken restartStage bir şey yapmaz', () => {

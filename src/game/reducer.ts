@@ -14,6 +14,8 @@ import { fire, hire, openBranch, repayLoan, takeLoan, upgradeCapacity, upgradeLo
 import { newGame } from './newGame';
 import { checkAchievements, recordPurchase, recordSale, unlockAchievement } from './career';
 import type { RNG } from './rng';
+import { streakBonus } from './streak';
+import { formatTL } from './format';
 
 export type Action =
   | { type: 'offer'; listingId: string; amount: number }
@@ -36,13 +38,15 @@ export type Action =
   | { type: 'auctionLost'; listingId: string }
   | { type: 'openBranch' }
   | { type: 'load'; state: GameState }
-  | { type: 'newGame'; seed: number };
+  | { type: 'streakBonus'; days: number }
+  | { type: 'newGame'; seed: number; hard?: boolean };
 
 export interface GameView { state: GameState; message: string | null; lastOffer: OfferResult | null }
 
 const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock>, string> = {
   'yetersiz-para': 'Paran yetmiyor',
   'depo-dolu': 'Depon dolu',
+  'asama-2-degil': 'Çırak motor işine girince alınır',
   'asama-3-degil': 'Bu özellik galerici olunca açılır',
   'en-ust-seviye': 'Zaten en üst seviyede',
   'zaten-var': 'Zaten çalışıyor',
@@ -192,7 +196,12 @@ function step(view: GameView, action: Action): GameView {
     case 'restartStage':
       return isBankrupt(s) ? { state: restartStage(s), message: null, lastOffer: null } : same();
     case 'newGame':
-      return { state: newGame(action.seed), message: null, lastOffer: null };
+      return { state: newGame(action.seed, action.hard ? { hard: true, achievements: s.achievements } : {}), message: null, lastOffer: null };
+    case 'streakBonus': {
+      const bonus = streakBonus(s.stage, action.days);
+      if (bonus <= 0) return same();
+      return to({ ...s, money: s.money + bonus }, `Günlük seri: ${action.days} gün · +${formatTL(bonus)}`);
+    }
     case 'load':
       return { state: action.state, message: 'Kayıt yüklendi', lastOffer: null };
     case 'fulfillOrder': {

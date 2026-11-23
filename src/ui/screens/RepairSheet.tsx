@@ -1,3 +1,4 @@
+import { cue } from '../feedback';
 import { useEffect, useRef, useState } from 'react';
 import type { Action } from '../../game/reducer';
 import type { Defect, Item } from '../../game/types';
@@ -40,7 +41,11 @@ export function RepairSheet({ item, defect, cost, money, dispatch, onClose }: {
     return () => cancelAnimationFrame(raf);
   }, [done, results.length]);
 
-  const strike = () => setResults((r) => [...r, isHit(needleAt(performance.now() - start.current, SWEEP_MS[r.length]))]);
+  const strike = () => {
+    const hit = isHit(needleAt(performance.now() - start.current, SWEEP_MS[results.length]));
+    cue(hit ? 'hit' : 'miss');
+    setResults((r) => [...r, hit]);
+  };
   const finish = (quality: number) => {
     dispatch({ type: 'repair', itemId: item.id, defectId: defect.id, quality });
     onClose();

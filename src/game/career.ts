@@ -22,10 +22,12 @@ export const ACHIEVEMENTS: Record<AchievementId, { title: string; desc: string }
 };
 
 export const QUEST_REWARD: Record<Stage, number> = { 1: 1000, 2: 5000, 3: 50000, 4: 200000 };
+/** Model başına hatırlanan satış sayısı. */
+export const PRICE_MEMORY = 5;
 const PROFIT_TARGET: Record<Stage, number> = { 1: 1500, 2: 20000, 3: 200000, 4: 800000 };
 
 export function emptyStats(): Stats {
-  return { sales: 0, profit: 0, bestProfit: 0, bestItem: null, disclosedSales: 0, rivalTaken: 0, stageDay: { 2: null, 3: null, 4: null } };
+  return { sales: 0, profit: 0, bestProfit: 0, bestItem: null, disclosedSales: 0, rivalTaken: 0, categorySales: { bisiklet: 0, guvercin: 0, konsol: 0, telefon: 0, motor: 0, araba: 0 }, stageDay: { 2: null, 3: null, 4: null } };
 }
 
 function makeQuest(kind: QuestKind, state: GameState, rng: RNG): Quest {
@@ -73,6 +75,7 @@ export function recordSale(state: GameState, item: Item, amount: number, disclos
     sales: state.stats.sales + 1,
     profit: state.stats.profit + profit,
     disclosedSales: state.stats.disclosedSales + (honest ? 1 : 0),
+    categorySales: { ...state.stats.categorySales, [item.category]: (state.stats.categorySales[item.category] ?? 0) + 1 },
     ...(profit > state.stats.bestProfit ? { bestProfit: profit, bestItem: itemName(item) } : {}),
   };
   let money = state.money;
@@ -93,7 +96,9 @@ export function recordSale(state: GameState, item: Item, amount: number, disclos
   const ids: AchievementId[] = ['ilk-satis'];
   if (item.tags.includes('nadir') || item.tags.includes('klasik')) ids.push('koleksiyoncu');
   if (profit >= 100000) ids.push('buyuk-vurgun');
-  return unlock({ ...state, money, stats, quests, summary: { ...state.summary, notes } }, ids);
+  const name = itemName(item);
+  const prices = { ...state.prices, [name]: [...(state.prices[name] ?? []), { day: state.day, price: amount }].slice(-PRICE_MEMORY) };
+  return unlock({ ...state, money, stats, quests, prices, summary: { ...state.summary, notes } }, ids);
 }
 
 export function recordPurchase(state: GameState, listing: Listing, price: number): GameState {

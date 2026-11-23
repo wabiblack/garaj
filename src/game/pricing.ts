@@ -10,8 +10,16 @@ export function round10(x: number): number {
   return Math.round(x / 10) * 10;
 }
 
+/** Türe göre mevsim etkisi: yazın bisiklet ve motor aranır, kışın ucuzlar. */
+export const CATEGORY_SEASON: Partial<Record<Item['category'], Partial<Record<Season, number>>>> = {
+  bisiklet: { yaz: 1.15, kis: 0.85 },
+  motor: { yaz: 1.1, kis: 0.9 },
+};
+
 function seasonFactor(item: Item, season: Season): number {
   if (item.tags.includes('klasik')) return 1;
+  const cat = CATEGORY_SEASON[item.category]?.[season];
+  if (cat) return cat;
   if (item.tags.includes('4x4')) return season === 'kis' ? 1.2 : season === 'yaz' ? 0.9 : 1;
   if (item.tags.includes('cabrio')) return season === 'yaz' ? 1.2 : season === 'kis' ? 0.85 : 1;
   return 1;

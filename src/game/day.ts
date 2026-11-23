@@ -1,4 +1,4 @@
-import type { DaySummary, GameEventId, GameState, Listing, Personality, SpecialKind, Stage } from './types';
+import type { DaySummary, GameEventId, GameState, Listing, Personality, Season, SpecialKind, Stage } from './types';
 import { createRng, type RNG } from './rng';
 import { CATEGORIES_BY_STAGE, addHiddenDefect, generateItem } from './catalog';
 import { makeListing } from './negotiation';
@@ -10,6 +10,7 @@ import { applyDailyCosts } from './growth';
 import { updateOrders } from './orders';
 import { markRivalTarget } from './rival';
 import { pickStory } from './story';
+import { adjustListing } from './expertise';
 
 export function emptySummary(day: number): DaySummary {
   return { day, bought: 0, sold: 0, spent: 0, earned: 0, notes: [] };
@@ -33,7 +34,17 @@ const EVENT_CHANCE = 0.3;
 const APPRECIATION = 1.03;
 const MAX_HELD_DAYS = 15;
 
-export function generateListings(state: Pick<GameState, 'stage' | 'season'>, rng: RNG): Listing[] {
+/** Mevsim değişince günün notuna düşülür. */
+export const SEASON_NOTE: Record<Season, string> = {
+  ilkbahar: 'İlkbahar geldi: fiyatlar normale döndü.',
+  yaz: 'Yaz geldi: bisiklet ve motor daha değerli, üstü açık arabalar aranıyor.',
+  sonbahar: 'Sonbahar geldi: fiyatlar normale döndü.',
+  kis: 'Kış geldi: bisiklet ve motor ucuzladı, 4x4 aranıyor.',
+};
+
+export type ListingContext = Pick<GameState, 'stage' | 'season'> & Partial<Pick<GameState, 'stats' | 'hard'>>;
+
+export function generateListings(state: ListingContext, rng: RNG): Listing[] {
   const cats = CATEGORIES_BY_STAGE[state.stage];
   const count = rng.int(4, 6);
   const listings: Listing[] = [];
@@ -50,14 +61,14 @@ export function generateListings(state: Pick<GameState, 'stage' | 'season'>, rng
     const item = generateItem('araba', rng, { ...(kind === 'mezat' ? {} : { special: kind }), ...(state.stage === 4 ? { scale: 2 } : {}) });
     listings.unshift(makeListing(item, state.season, rng, kind));
   }
-  return listings;
+  return listings.map((l) => adjustListing(l, state));
 }
 
 /**
  * Elinde eşya olmayan oyuncuya en az bir parasının yettiği ilan çıkar (en çok 30 deneme).
  * Böylece talihsiz bir gün oyuncuyu kilitlemez.
  */
-export function listingsFor(state: Pick<GameState, 'stage' | 'season' | 'money' | 'inventory'>, rng: RNG): Listing[] {
+export function listingsFor(state: ListingContext & Pick<GameState, 'money' | 'inventory'>, rng: RNG): Listing[] {
   let listings = generateListings(state, rng);
   if (state.inventory.length > 0) return listings;
   for (let i = 0; i < 30 && listings.every((l) => l.minPrice > state.money); i++) listings = generateListings(state, rng);
@@ -74,6 +85,7 @@ export function endDay(state: GameState): GameState {
 export function startNextDay(state: GameState): GameState {
   if (state.phase !== 'evening') return state;
   const day = state.day + 1;
+  const season = seasonForDay(day);
   const notes = state.pendingCatch.map((c) =>
     c.knowing === false ? `${c.itemName} alıcısı fark etmediğin bir kusur buldu` : `${c.itemName} satışında gizlenen kusur ortaya çıktı`,
   );
@@ -82,7 +94,7 @@ export function startNextDay(state: GameState): GameState {
     ...state,
     day,
     phase: 'day',
-    season: seasonForDay(day),
+    season,
     offers: [],
     reputation: Math.max(0, state.reputation - repLoss),
     pendingCatch: [],
@@ -95,7 +107,7 @@ export function startNextDay(state: GameState): GameState {
         ...(appreciates ? { baseValue: round10(i.baseValue * APPRECIATION), heldDays: held + 1 } : {}),
       };
     }),
-    summary: { ...emptySummary(day), notes },
+    summary: { ...emptySummary(day), notes: season !== state.season ? [...notes, SEASON_NOTE[season]] : notes },
   });
   const rng = createRng(state.rngState);
   let listings = listingsFor(next, rng);

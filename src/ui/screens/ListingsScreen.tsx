@@ -5,6 +5,22 @@ import { EVENT_INFO } from '../../game/day';
 import { formatTL } from '../../game/format';
 import { orderTitle } from '../../game/orders';
 import { RIVAL } from '../../game/rival';
+import { expertLevel } from '../../game/expertise';
+import { useState } from 'react';
+import { coachDismissed, coachTip, dismissCoach } from '../coach';
+
+function Coach({ state }: { state: GameState }) {
+  const [hidden, setHidden] = useState(coachDismissed);
+  const tip = hidden ? null : coachTip(state);
+  if (!tip) return null;
+  return (
+    <aside className="coach" aria-label="Rehber">
+      <span className="coach__icon" aria-hidden="true">💡</span>
+      <p className="coach__text">{tip}</p>
+      <button type="button" className="coach__close" aria-label="Rehberi kapat" onClick={() => { dismissCoach(); setHidden(true); }}>×</button>
+    </aside>
+  );
+}
 
 const SPECIAL_LABEL = { mezat: 'Canlı mezat', hurdalik: 'Hurdalık', klasik: 'Nadir klasik' } as const;
 
@@ -28,6 +44,7 @@ function QuestRow({ q }: { q: Quest }) {
 export function ListingsScreen({ state, onOpen }: { state: GameState; onOpen(id: string): void }) {
   return (
     <section>
+      <Coach state={state} />
       {state.event ? (
         <div className="event">
           <div className="event__title">{EVENT_INFO[state.event].title}</div>
@@ -78,6 +95,7 @@ export function ListingsScreen({ state, onOpen }: { state: GameState; onOpen(id:
               badge={
                 <>
                   {l.special ? <span className="tag tag--accent">{SPECIAL_LABEL[l.special]}</span> : null}
+                  {expertLevel(state, l.item.category) > 0 && l.special !== 'mezat' ? <span className="tag tag--expert">Uzmanlık alanın</span> : null}
                   {l.rivalEye ? <span className="tag tag--rival">{RIVAL} göz koydu</span> : null}
                   {l.personality !== 'normal' ? <span className={'tag tag--persona tag--' + l.personality}>{PERSONALITY_LABEL[l.personality]}</span> : null}
                 </>
