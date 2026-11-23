@@ -7,6 +7,9 @@ import { formatTL } from './format';
 import { generateQuests } from './career';
 import { generateOffers } from './selling';
 import { applyDailyCosts } from './growth';
+import { updateOrders } from './orders';
+import { markRivalTarget } from './rival';
+import { pickStory } from './story';
 
 export function emptySummary(day: number): DaySummary {
   return { day, bought: 0, sold: 0, spent: 0, earned: 0, notes: [] };
@@ -24,7 +27,8 @@ export const EVENT_INFO: Record<GameEventId, { title: string; text: string }> = 
   hediye: { title: 'Hediye', text: 'Komşun yardımların için para verdi' },
   ceza: { title: 'Park cezası', text: 'Park cezası yedin' },
 };
-export const EVENT_MONEY: Record<Stage, number> = { 1: 500, 2: 5000, 3: 50000 };
+export const EVENT_MONEY: Record<Stage, number> = { 1: 500, 2: 5000, 3: 50000, 4: 200000 };
+const HISTORY_DAYS = 60;
 const EVENT_CHANCE = 0.3;
 const APPRECIATION = 1.03;
 const MAX_HELD_DAYS = 15;
@@ -35,13 +39,15 @@ export function generateListings(state: Pick<GameState, 'stage' | 'season'>, rng
   const listings: Listing[] = [];
   for (let i = 0; i < count; i++) {
     const personality = rollPersonality(rng);
-    let item = generateItem(rng.pick(cats), rng);
+    let item = generateItem(rng.pick(cats), rng, state.stage === 4 ? { scale: 2 } : {});
     if (personality === 'kurnaz') item = addHiddenDefect(item, rng);
     listings.push(makeListing(item, state.season, rng, null, personality));
   }
-  if (state.stage === 3 && rng.chance(0.2)) {
+  if (state.stage === 2 && rng.chance(0.15)) {
+    listings.unshift(makeListing(generateItem('motor', rng), state.season, rng, 'mezat'));
+  } else if (state.stage >= 3 && rng.chance(0.2)) {
     const kind = rng.pick<SpecialKind>(['mezat', 'hurdalik', 'klasik']);
-    const item = generateItem('araba', rng, kind === 'mezat' ? {} : { special: kind });
+    const item = generateItem('araba', rng, { ...(kind === 'mezat' ? {} : { special: kind }), ...(state.stage === 4 ? { scale: 2 } : {}) });
     listings.unshift(makeListing(item, state.season, rng, kind));
   }
   return listings;
@@ -105,5 +111,14 @@ export function startNextDay(state: GameState): GameState {
     dayNotes.push(EVENT_INFO[event].text + extra);
   }
   const quests = generateQuests(next, rng, next.quests.filter((q) => !q.done));
-  return { ...next, listings, money, event, quests, summary: { ...next.summary, notes: dayNotes }, rngState: rng.state() };
+  const orders = updateOrders(next, rng);
+  dayNotes.push(...orders.notes);
+  listings = markRivalTarget(listings, next.season, rng);
+  const pending = pickStory(next, rng);
+  return {
+    ...next, listings, money, event, quests, orders: orders.orders,
+    story: { ...next.story, pending },
+    history: [...state.history, { day: state.day, money: state.money }].slice(-HISTORY_DAYS),
+    summary: { ...next.summary, notes: dayNotes }, rngState: rng.state(),
+  };
 }

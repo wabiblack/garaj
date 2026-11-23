@@ -9,7 +9,7 @@ const BUYERS = ['Ali', 'Burak', 'Can', 'Derya', 'Ece', 'Ferhat', 'Gül', 'İsmai
 
 export function buyerCount(state: GameState): number {
   const event = state.event === 'fuar' ? 2 : state.event === 'durgun' ? -1 : 0;
-  return Math.max(1, 2 + (state.reputation > 75 ? 1 : 0) + state.locationLevel + (state.employees.satis ? 1 : 0) + event);
+  return Math.max(1, 2 + (state.reputation > 75 ? 1 : 0) + state.locationLevel + state.branches + (state.employees.satis ? 1 : 0) + event);
 }
 
 /** Alıcının gözündeki değer: kusurlar belirtildiyse bilinenler düşülür, değilse kusursuz sanılır. */

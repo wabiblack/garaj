@@ -15,13 +15,17 @@ export const ACHIEVEMENTS: Record<AchievementId, { title: string; desc: string }
   showroom: { title: 'Showroom sahibi', desc: 'Ana caddeye taşındın' },
   borcsuz: { title: 'Borçsuz', desc: 'Banka kredisini kapattın' },
   sampiyon: { title: 'Şehrin bir numarası', desc: 'En büyük galerici oldun' },
+  mezatci: { title: 'Mezatçı', desc: 'Bir mezatı kazandın' },
+  siparisci: { title: 'Sözünün eri', desc: 'Bir müşteri siparişini teslim ettin' },
+  rakip: { title: 'Cevdet’e geçit yok', desc: 'Cevdet’in göz koyduğu malı ondan önce aldın' },
+  holding: { title: 'Holding patronu', desc: 'Üç şehirde şube açtın' },
 };
 
-export const QUEST_REWARD: Record<Stage, number> = { 1: 1000, 2: 5000, 3: 50000 };
-const PROFIT_TARGET: Record<Stage, number> = { 1: 1500, 2: 20000, 3: 200000 };
+export const QUEST_REWARD: Record<Stage, number> = { 1: 1000, 2: 5000, 3: 50000, 4: 200000 };
+const PROFIT_TARGET: Record<Stage, number> = { 1: 1500, 2: 20000, 3: 200000, 4: 800000 };
 
 export function emptyStats(): Stats {
-  return { sales: 0, profit: 0, bestProfit: 0, bestItem: null, disclosedSales: 0, stageDay: { 2: null, 3: null } };
+  return { sales: 0, profit: 0, bestProfit: 0, bestItem: null, disclosedSales: 0, rivalTaken: 0, stageDay: { 2: null, 3: null, 4: null } };
 }
 
 function makeQuest(kind: QuestKind, state: GameState, rng: RNG): Quest {
@@ -104,17 +108,16 @@ export function checkAchievements(state: GameState): GameState {
   const ids: AchievementId[] = [];
   if (state.stats.sales > 0) ids.push('ilk-satis');
   if (state.stage >= 2) ids.push('motorcu');
-  if (state.stage === 3) ids.push('galerici');
+  if (state.stage >= 3) ids.push('galerici');
+  if (state.branches >= 3) ids.push('holding');
   if (state.locationLevel === 2) ids.push('showroom');
   if (state.won) ids.push('sampiyon');
   if (state.stats.disclosedSales >= 5) ids.push('durust-esnaf');
   let s = unlock(state, ids);
   const { stageDay } = s.stats;
-  if ((s.stage >= 2 && stageDay[2] === null) || (s.stage === 3 && stageDay[3] === null)) {
-    s = {
-      ...s,
-      stats: { ...s.stats, stageDay: { 2: stageDay[2] ?? (s.stage >= 2 ? s.day : null), 3: stageDay[3] ?? (s.stage === 3 ? s.day : null) } },
-    };
+  const at = (n: 2 | 3 | 4) => stageDay[n] ?? (s.stage >= n ? s.day : null);
+  if (at(2) !== stageDay[2] || at(3) !== stageDay[3] || at(4) !== (stageDay[4] ?? null)) {
+    s = { ...s, stats: { ...s.stats, stageDay: { 2: at(2), 3: at(3), 4: at(4) } } };
   }
   return s;
 }

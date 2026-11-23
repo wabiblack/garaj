@@ -75,7 +75,7 @@ describe('applyDailyCosts', () => {
   });
   test('startNextDay giderleri uygular', () => {
     const s = startNextDay(s3({ phase: 'evening', money: 10_000, employees: { usta: true, boyaci: false, satis: false } }));
-    expect(s.money).toBe(7000);
+    expect(s.summary.spent).toBe(3000);
   });
 });
 

@@ -24,6 +24,7 @@ describe('Garaj', () => {
     expect(screen.getByRole('button', { name: 'Bak · 30 TL' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Boya/ })).toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'Tamir et: Fren tutmuyor · 200 TL' }));
+    await userEvent.click(within(screen.getByRole('dialog', { name: 'Tamir' })).getByRole('button', { name: /Ustaya bırak/ }));
     expect(screen.queryByRole('button', { name: /Tamir et/ })).toBeNull();
   });
   test('araba için boya butonu', async () => {

@@ -19,7 +19,7 @@ test('ilanlarda kişilik rozeti, olay kartı ve görevler görünür', () => {
 test('profilde rekorlar ve başarımlar', async () => {
   seedSave(makeState({
     achievements: ['ilk-satis'],
-    stats: { sales: 4, profit: 3200, bestProfit: 1500, bestItem: 'Kanat BMX', disclosedSales: 1, stageDay: { 2: null, 3: null } },
+    stats: { sales: 4, profit: 3200, bestProfit: 1500, bestItem: 'Kanat BMX', disclosedSales: 1, rivalTaken: 0, stageDay: { 2: null, 3: null, 4: null } },
   }));
   render(<App />);
   await userEvent.click(screen.getByRole('tab', { name: 'Profil' }));
@@ -27,7 +27,7 @@ test('profilde rekorlar ve başarımlar', async () => {
   expect(screen.getByText('3.200 TL')).toBeInTheDocument();
   const ach = screen.getByRole('region', { name: 'Başarımlar' });
   expect(within(ach).getByText('İlk satış')).toBeInTheDocument();
-  expect(within(ach).getByText('1/10')).toBeInTheDocument();
+  expect(within(ach).getByText('1/14')).toBeInTheDocument();
 });
 
 test('yeni başarım bildirimi', async () => {

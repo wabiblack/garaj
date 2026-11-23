@@ -1,4 +1,4 @@
-export type Stage = 1 | 2 | 3;
+export type Stage = 1 | 2 | 3 | 4;
 export type Season = 'ilkbahar' | 'yaz' | 'sonbahar' | 'kis';
 export type Category = 'bisiklet' | 'guvercin' | 'konsol' | 'telefon' | 'motor' | 'araba';
 export type Tag = '4x4' | 'cabrio' | 'klasik' | 'nadir';
@@ -7,7 +7,10 @@ export type GameEventId = 'fuar' | 'durgun' | 'firsat' | 'hediye' | 'ceza';
 export type QuestKind = 'sat' | 'kategori' | 'kar' | 'temiz' | 'durust';
 export type AchievementId =
   | 'ilk-satis' | 'pazarlikci' | 'durust-esnaf' | 'koleksiyoncu' | 'buyuk-vurgun'
-  | 'motorcu' | 'galerici' | 'showroom' | 'borcsuz' | 'sampiyon';
+  | 'motorcu' | 'galerici' | 'showroom' | 'borcsuz' | 'sampiyon'
+  | 'mezatci' | 'siparisci' | 'rakip' | 'holding';
+export type StoryId =
+  | 'okul' | 'kardes' | 'dede' | 'ehliyet' | 'cirak' | 'amca-borc' | 'dugun' | 'vergi' | 'cevdet-ortak' | 'roportaj';
 export type SpecialKind = 'mezat' | 'hurdalik' | 'klasik';
 
 export interface Defect { id: string; name: string; repairCost: number; valueHit: number; known: boolean }
@@ -44,6 +47,22 @@ export interface Listing {
   personality: Personality;
   /** Satıcının son reddettiği teklif; aynı tutar tekrar sabır yemez. */
   lastRejected?: number;
+  /** Rakip Cevdet bu ilana göz koydu: oyuncunun bir sonraki hamlesinde kapar. */
+  rivalEye?: boolean;
+  /** Mezatta rakiplerin çıkabileceği en yüksek fiyat (gizli). */
+  auctionMax?: number;
+}
+
+/** Müşteri siparişi: belirli bir türde mal arayan alıcı, piyasa değerinin üstünü öder. */
+export interface Order {
+  id: string;
+  buyerName: string;
+  category: Category;
+  tag?: Tag;
+  minCondition: number;
+  /** Piyasa değerine eklenen pay (0.3 = %30 fazla). */
+  bonus: number;
+  daysLeft: number;
 }
 
 export interface SaleListing { itemId: string; price: number; disclosed: boolean }
@@ -66,12 +85,13 @@ export interface Stats {
   bestProfit: number;
   bestItem: string | null;
   disclosedSales: number;
-  stageDay: { 2: number | null; 3: number | null };
+  rivalTaken: number;
+  stageDay: { 2: number | null; 3: number | null; 4: number | null };
 }
 export interface DaySummary { day: number; bought: number; sold: number; spent: number; earned: number; notes: string[] }
 
 export interface GameState {
-  version: 2;
+  version: 3;
   rngState: number;
   day: number;
   phase: 'day' | 'evening';
@@ -102,4 +122,11 @@ export interface GameState {
   quests: Quest[];
   stats: Stats;
   achievements: AchievementId[];
+  orders: Order[];
+  story: { seen: StoryId[]; pending: StoryId | null };
+  /** Gün sonlarındaki para (en çok son 60 gün). */
+  history: { day: number; money: number }[];
+  /** 4. aşamada açılan şube sayısı (0–3). */
+  branches: number;
+  finalSeen: boolean;
 }

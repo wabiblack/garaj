@@ -40,13 +40,13 @@ test('fix M1: phase veya summary.notes bozuksa broken', () => {
   expect(loadGame(memStorage({ [SAVE_KEY]: JSON.stringify({ ...g, summary: { day: 1 } }) }))).toEqual({ kind: 'broken' });
 });
 
-test('sürüm 1 kaydı sürüm 2ye taşınır', () => {
+test('sürüm 1 kaydı güncel sürüme taşınır', () => {
   const g = newGame(4);
   const { event: _e, quests: _q, stats: _s, achievements: _a, ...v1 } = { ...g, version: 1 } as Record<string, unknown>;
   const res = loadGame(memStorage({ [SAVE_KEY]: JSON.stringify(v1) }));
   expect(res.kind).toBe('ok');
   if (res.kind !== 'ok') return;
-  expect(res.state.version).toBe(2);
+  expect(res.state.version).toBe(3);
   expect(res.state.quests).toHaveLength(3);
   expect(res.state.stats.sales).toBe(0);
   expect(res.state.achievements).toEqual([]);

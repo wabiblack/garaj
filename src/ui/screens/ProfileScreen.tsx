@@ -10,6 +10,12 @@ import { Button } from '../components/Button';
 import { ACHIEVEMENTS } from '../../game/career';
 import type { AchievementId } from '../../game/types';
 import { isSoundOn, setSoundOn } from '../feedback';
+import { BRANCHES } from '../../game/growth';
+import { exportSave, importSave } from '../../game/save';
+import { RIVAL } from '../../game/rival';
+import { portraitUrl } from '../art';
+import { MoneyChart } from '../components/MoneyChart';
+import { loadSettings, saveSettings, type Settings } from '../settings';
 
 function Meter({ label, value }: { label: string; value: number }) {
   return (
@@ -30,13 +36,37 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
   const { state } = view;
   const [confirm, setConfirm] = useState(false);
   const [sound, setSound] = useState(isSoundOn);
+  const [settings, setSettings] = useState<Settings>(loadSettings);
+  const [backup, setBackup] = useState<'none' | 'export' | 'import'>('none');
+  const [code, setCode] = useState('');
+  const [backupMsg, setBackupMsg] = useState<string | null>(null);
+  const change = (s: Settings) => { setSettings(s); saveSettings(s); };
+  const showExport = async () => {
+    const c = exportSave(state);
+    setCode(c);
+    setBackup('export');
+    try {
+      await navigator.clipboard.writeText(c);
+      setBackupMsg('Kod panoya kopyalandı. Güvenli bir yere yapıştır.');
+    } catch {
+      setBackupMsg('Kodu seçip kopyala, güvenli bir yere yapıştır.');
+    }
+  };
+  const doImport = () => {
+    const loaded = importSave(code);
+    if (!loaded) { setBackupMsg('Kod geçersiz. Tamamını yapıştırdığından emin ol.'); return; }
+    dispatch({ type: 'load', state: loaded });
+    setBackup('none');
+    setCode('');
+    setBackupMsg('Kayıt yüklendi.');
+  };
   const { stats } = state;
   const capCost = CAPACITY_COST[state.capacityLevel];
   const locCost = LOCATION_COST[state.locationLevel];
   return (
     <section>
       <div className="profile">
-        <div className="avatar" aria-hidden="true">K</div>
+        <img className="avatar" src={portraitUrl(state.age)} alt="" />
         <div>
           <h1>Kerem</h1>
           <div className="muted">{state.age} yaş · {STAGE_LABEL[state.stage]} · Gün {state.day}</div>
@@ -47,6 +77,9 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
         <Meter label="Tamir becerisi" value={state.skill} />
       </div>
 
+      <h2 className="h2">Kasa</h2>
+      <div className="panel"><MoneyChart points={[...state.history, { day: state.day, money: state.money }]} /></div>
+
       <h2 className="h2">Rekorlar</h2>
       <div className="panel">
         <div className="stats stats--flat">
@@ -56,6 +89,8 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
           <div className="stat"><span>Hangi parça</span><strong className="ellipsis">{stats.bestItem ?? '—'}</strong></div>
           <div className="stat"><span>Motora geçiş</span><strong>{stats.stageDay[2] ? `Gün ${stats.stageDay[2]}` : '—'}</strong></div>
           <div className="stat"><span>Galeriye geçiş</span><strong>{stats.stageDay[3] ? `Gün ${stats.stageDay[3]}` : '—'}</strong></div>
+          <div className="stat"><span>{RIVAL}’in kaptığı</span><strong>{stats.rivalTaken}</strong></div>
+          <div className="stat"><span>Holding</span><strong>{stats.stageDay[4] ? `Gün ${stats.stageDay[4]}` : '—'}</strong></div>
         </div>
       </div>
 
@@ -75,7 +110,27 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
         </ul>
       </section>
 
-      {state.stage === 3 ? (
+      {state.stage === 4 ? (
+        <>
+          <h2 className="h2">Şubeler <span className="muted">{state.branches}/{BRANCHES.length}</span></h2>
+          <div className="panel">
+            {BRANCHES.map((b, i) => (
+              <div className="row" key={b.city}>
+                <div>
+                  <div className="row__title">{b.city} şubesi</div>
+                  <div className="row__sub">Günlük {formatTL(b.income)} gelir · her gün +1 alıcı</div>
+                </div>
+                {i < state.branches ? <span className="tag tag--accent">Açık</span>
+                  : i === state.branches ? (
+                    <Button small variant="primary" disabled={state.money < b.cost} onClick={() => dispatch({ type: 'openBranch' })}>{`Aç · ${formatTL(b.cost)}`}</Button>
+                  ) : <span className="muted">Sırada</span>}
+              </div>
+            ))}
+          </div>
+        </>
+      ) : null}
+
+      {state.stage >= 3 ? (
         <>
           <h2 className="h2">Büyüme</h2>
           <div className="panel">
@@ -165,6 +220,51 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
             <span className="switch__hint">Titreşim yalnız Android telefonlarda çalışır.</span>
           </span>
         </label>
+        <label className="switch switch--flat">
+          <input type="checkbox" aria-label="Açık tema" checked={settings.theme === 'acik'} onChange={(e) => change({ ...settings, theme: e.target.checked ? 'acik' : 'koyu' })} />
+          <span className="switch__track" aria-hidden="true" />
+          <span>
+            <span className="switch__label">Açık tema</span>
+            <span className="switch__hint">Gün ışığında daha rahat okunur.</span>
+          </span>
+        </label>
+        <label className="switch switch--flat">
+          <input type="checkbox" aria-label="Büyük yazı" checked={settings.font === 'buyuk'} onChange={(e) => change({ ...settings, font: e.target.checked ? 'buyuk' : 'normal' })} />
+          <span className="switch__track" aria-hidden="true" />
+          <span>
+            <span className="switch__label">Büyük yazı</span>
+            <span className="switch__hint">Tüm ekranı biraz büyütür.</span>
+          </span>
+        </label>
+      </div>
+
+      <h2 className="h2">Kayıt yedeği</h2>
+      <div className="panel">
+        <p className="hint">Kaydını bir koda çevirip başka telefona taşıyabilirsin.</p>
+        <div className="chips">
+          <Button small onClick={() => void showExport()}>Yedek kodu al</Button>
+          <Button small onClick={() => { setBackup('import'); setCode(''); setBackupMsg(null); }}>Yedekten yükle</Button>
+        </div>
+        {backup !== 'none' ? (
+          <label className="field">
+            <span className="field__label">{backup === 'export' ? 'Yedek kodun' : 'Yedek kodunu yapıştır'}</span>
+            <textarea
+              className="field__input field__input--code"
+              aria-label={backup === 'export' ? 'Yedek kodun' : 'Yedek kodunu yapıştır'}
+              readOnly={backup === 'export'}
+              value={code}
+              onFocus={(e) => backup === 'export' && e.currentTarget.select()}
+              onChange={(e) => setCode(e.target.value)}
+            />
+          </label>
+        ) : null}
+        {backup === 'import' ? (
+          <>
+            <p className="hint">Yüklersen şu anki ilerlemenin yerine geçer.</p>
+            <Button small variant="primary" disabled={!code.trim()} onClick={doImport}>Kaydı yükle</Button>
+          </>
+        ) : null}
+        {backupMsg ? <p className="hint" role="status">{backupMsg}</p> : null}
       </div>
 
       <div className="danger-zone">

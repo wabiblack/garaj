@@ -6,6 +6,7 @@ export const CATEGORIES_BY_STAGE: Record<Stage, Category[]> = {
   1: ['bisiklet', 'guvercin', 'konsol', 'telefon'],
   2: ['motor'],
   3: ['araba'],
+  4: ['araba'],
 };
 
 export const CATEGORY_LABEL: Record<Category, string> = {
@@ -67,7 +68,7 @@ function makeDefect(t: Template, baseValue: number, rng: RNG, taken: Defect[]): 
   return { id: rng.id('d'), name, valueHit, repairCost: round10(baseValue * repairShare), known: rng.chance(0.5) };
 }
 
-export function generateItem(category: Category, rng: RNG, opts: { special?: SpecialKind } = {}): Item {
+export function generateItem(category: Category, rng: RNG, opts: { special?: SpecialKind; scale?: number } = {}): Item {
   const t = CATALOG[category];
   let [brand, model] = rng.pick(t.models);
   const tags = new Set<Tag>();
@@ -79,7 +80,7 @@ export function generateItem(category: Category, rng: RNG, opts: { special?: Spe
   } else if (rng.chance(0.04)) {
     tags.add('nadir');
   }
-  let baseValue = round10(rng.range(t.min, t.max));
+  let baseValue = round10(rng.range(t.min, t.max) * (opts.scale ?? 1));
   let condition = rng.int(30, 90);
   let defectCount = rng.int(0, 2);
   if (opts.special === 'hurdalik') {

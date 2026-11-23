@@ -138,11 +138,11 @@ describe('rekorlar ve başarımlar', () => {
     const s = checkAchievements(makeState({ stage: 3, locationLevel: 2, won: true, stats: { ...makeState().stats, disclosedSales: 5 } }));
     expect(s.achievements).toEqual(expect.arrayContaining(['motorcu', 'galerici', 'showroom', 'sampiyon', 'durust-esnaf']));
     expect(checkAchievements(s).achievements).toHaveLength(s.achievements.length);
-    expect(Object.keys(ACHIEVEMENTS)).toHaveLength(10);
+    expect(Object.keys(ACHIEVEMENTS)).toHaveLength(14);
   });
   test('aşama geçiş günü kaydedilir', () => {
     const s = checkAchievements(makeState({ stage: 2, day: 9 }));
-    expect(s.stats.stageDay).toEqual({ 2: 9, 3: null });
+    expect(s.stats.stageDay).toEqual({ 2: 9, 3: null, 4: null });
   });
 });
 

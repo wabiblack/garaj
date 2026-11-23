@@ -19,6 +19,9 @@ import { BankruptScreen } from './screens/BankruptScreen';
 import { IntroScreen } from './screens/IntroScreen';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { isBankrupt } from '../game/progression';
+import { AuctionSheet } from './screens/AuctionSheet';
+import { StoryScreen } from './screens/StoryScreen';
+import type { Listing } from '../game/types';
 
 export default function App() {
   return (
@@ -33,6 +36,7 @@ function Game() {
   const [introDone, setIntroDone] = useState(false);
   const [tab, setTab] = useState<Tab>('ilanlar');
   const [listingId, setListingId] = useState<string | null>(null);
+  const [auction, setAuction] = useState<Listing | null>(null);
   const achievement = useFeedback(view);
 
   if (broken || !view) return <BrokenSaveScreen onReset={reset} />;
@@ -43,9 +47,11 @@ function Game() {
     ? <TransitionScreen to={state.pendingTransition} onContinue={() => dispatch({ type: 'completeTransition' })} />
     : state.phase === 'evening'
       ? <EveningScreen view={view} dispatch={dispatch} />
-      : state.won && !state.wonSeen
+      : (state.won && !state.wonSeen) || (state.stage === 4 && state.branches >= 3 && !state.finalSeen)
         ? <EndScreen state={state} onContinue={() => dispatch({ type: 'dismissWin' })} />
-        : isBankrupt(state)
+        : state.story.pending
+          ? <StoryScreen id={state.story.pending} state={state} onChoose={(index) => dispatch({ type: 'storyChoice', index })} />
+          : isBankrupt(state)
           ? <BankruptScreen state={state} onRestart={() => dispatch({ type: 'restartStage' })} />
           : null;
 
@@ -53,7 +59,16 @@ function Game() {
     <div className="app">
       <TopBar state={state} onEndDay={() => dispatch({ type: 'endDay' })} />
       <main className="screen">
-        {tab === 'ilanlar' ? <ListingsScreen state={state} onOpen={setListingId} /> : null}
+        {tab === 'ilanlar' ? (
+          <ListingsScreen
+            state={state}
+            onOpen={(id) => {
+              const l = state.listings.find((x) => x.id === id);
+              if (l?.special === 'mezat' && l.auctionMax !== undefined) setAuction(l);
+              else setListingId(id);
+            }}
+          />
+        ) : null}
         {tab === 'garaj' ? <GarageScreen view={view} dispatch={dispatch} /> : null}
         {tab === 'satis' ? <SalesScreen view={view} dispatch={dispatch} /> : null}
         {tab === 'profil' ? <ProfileScreen view={view} dispatch={dispatch} onNewGame={reset} /> : null}
@@ -69,8 +84,18 @@ function Game() {
           onGoGarage={() => setTab('garaj')}
         />
       ) : null}
+      {auction ? (
+        <AuctionSheet
+          key={auction.id}
+          listing={auction}
+          view={view}
+          dispatch={dispatch}
+          onClose={() => setAuction(null)}
+          onGoGarage={() => setTab('garaj')}
+        />
+      ) : null}
       {overlay}
-      {!listingId && !overlay ? <Toast message={view.message} stamp={view} /> : null}
+      {!listingId && !auction && !overlay ? <Toast message={view.message} stamp={view} /> : null}
       {achievement ? <div className="achievement-toast" role="status"><span aria-hidden="true">★</span>{achievement}</div> : null}
     </div>
   );

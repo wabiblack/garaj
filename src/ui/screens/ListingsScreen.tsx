@@ -3,8 +3,10 @@ import { ItemCard } from '../components/ItemCard';
 import { PERSONALITY_LABEL, storageLimit } from '../../game/negotiation';
 import { EVENT_INFO } from '../../game/day';
 import { formatTL } from '../../game/format';
+import { orderTitle } from '../../game/orders';
+import { RIVAL } from '../../game/rival';
 
-const SPECIAL_LABEL = { mezat: 'Mezat', hurdalik: 'Hurdalık', klasik: 'Nadir klasik' } as const;
+const SPECIAL_LABEL = { mezat: 'Canlı mezat', hurdalik: 'Hurdalık', klasik: 'Nadir klasik' } as const;
 
 function QuestRow({ q }: { q: Quest }) {
   const shown = q.kind === 'kar' ? (q.done ? 1 : 0) : q.progress;
@@ -43,6 +45,22 @@ export function ListingsScreen({ state, onOpen }: { state: GameState; onOpen(id:
           <ul>{state.quests.map((q) => <QuestRow key={q.id} q={q} />)}</ul>
         </section>
       ) : null}
+      {state.orders.length > 0 ? (
+        <section className="orders" aria-label="Siparişler">
+          <h2 className="quests__head">Müşteri siparişleri</h2>
+          <ul>
+            {state.orders.map((o) => (
+              <li key={o.id} className="order">
+                <div className="order__main">
+                  <div className="quest__title">{orderTitle(o)}</div>
+                  <div className="order__sub">Durumu en az %{o.minCondition}, kusursuz · piyasa değerinin %{Math.round(o.bonus * 100)} fazlasını öder</div>
+                </div>
+                <span className="order__days">{o.daysLeft} gün</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       <div className="section-head">
         <h1>İlanlar</h1>
         <span className="muted">Depo {state.inventory.length}/{storageLimit(state)}</span>
@@ -60,6 +78,7 @@ export function ListingsScreen({ state, onOpen }: { state: GameState; onOpen(id:
               badge={
                 <>
                   {l.special ? <span className="tag tag--accent">{SPECIAL_LABEL[l.special]}</span> : null}
+                  {l.rivalEye ? <span className="tag tag--rival">{RIVAL} göz koydu</span> : null}
                   {l.personality !== 'normal' ? <span className={'tag tag--persona tag--' + l.personality}>{PERSONALITY_LABEL[l.personality]}</span> : null}
                 </>
               }

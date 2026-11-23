@@ -2,7 +2,7 @@ import { checkProgress, completeTransition, hasWon, STAGE_GOALS } from '../../sr
 import { marketValue } from '../../src/game/pricing';
 import { makeItem, makeState } from '../helpers';
 
-test('hedefler', () => expect(STAGE_GOALS).toEqual({ 1: 50000, 2: 500000 }));
+test('hedefler', () => expect(STAGE_GOALS).toEqual({ 1: 50000, 2: 500000, 3: 20_000_000 }));
 
 describe('checkProgress', () => {
   test('aşama 1: 50.000 TL → geçiş 2', () => {

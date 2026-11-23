@@ -1,11 +1,16 @@
-import type { Employees, GameState, Item } from './types';
+import type { Employees, GameState, Item, Listing } from './types';
 import { createRng } from './rng';
 import { canBuy, inspect, inspectionCost, respondToOffer, type BuyBlock, type OfferResult } from './negotiation';
-import { care, clean, paint, repair } from './prep';
+import { care, clean, paint, repair, repairDiscount } from './prep';
+import { rivalMove } from './rival';
+import { orderMatches, orderPrice } from './orders';
+import { applyStoryChoice } from './story';
+import { rivalsWillRaise } from './auction';
+import { round10 } from './pricing';
 import { counterOffer, settleSale } from './selling';
 import { endDay, startNextDay } from './day';
 import { checkProgress, completeTransition, isBankrupt, restartStage } from './progression';
-import { fire, hire, repayLoan, takeLoan, upgradeCapacity, upgradeLocation, type GrowthBlock } from './growth';
+import { fire, hire, openBranch, repayLoan, takeLoan, upgradeCapacity, upgradeLocation, type GrowthBlock } from './growth';
 import { newGame } from './newGame';
 import { checkAchievements, recordPurchase, recordSale, unlockAchievement } from './career';
 import type { RNG } from './rng';
@@ -13,7 +18,7 @@ import type { RNG } from './rng';
 export type Action =
   | { type: 'offer'; listingId: string; amount: number }
   | { type: 'inspect'; listingId: string }
-  | { type: 'repair'; itemId: string; defectId: string }
+  | { type: 'repair'; itemId: string; defectId: string; quality?: number }
   | { type: 'clean' | 'paint' | 'care'; itemId: string }
   | { type: 'listForSale'; itemId: string; price: number; disclosed: boolean }
   | { type: 'unlist'; itemId: string }
@@ -25,6 +30,12 @@ export type Action =
   | { type: 'hire' | 'fire'; role: keyof Employees }
   | { type: 'takeLoan'; amount: number } | { type: 'repayLoan' }
   | { type: 'restartStage' }
+  | { type: 'fulfillOrder'; orderId: string; itemId: string }
+  | { type: 'storyChoice'; index: number }
+  | { type: 'winAuction'; listingId: string; price: number }
+  | { type: 'auctionLost'; listingId: string }
+  | { type: 'openBranch' }
+  | { type: 'load'; state: GameState }
   | { type: 'newGame'; seed: number };
 
 export interface GameView { state: GameState; message: string | null; lastOffer: OfferResult | null }
@@ -36,6 +47,7 @@ const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock>, string> = {
   'en-ust-seviye': 'Zaten en üst seviyede',
   'zaten-var': 'Zaten çalışıyor',
   'kredi-var': 'Önce mevcut krediyi öde',
+  'asama-4-degil': 'Şubeler holding kurunca açılır',
 };
 
 const validAmount = (n: number) => Number.isFinite(n) && n > 0;
@@ -46,6 +58,23 @@ function spend(s: GameState, cost: number): GameState {
 
 function replaceItem(s: GameState, item: Item): GameState {
   return { ...s, inventory: s.inventory.map((i) => (i.id === item.id ? item : i)) };
+}
+
+/** İlanı satın alır: parayı düşer, malı depoya koyar, kariyere işler. */
+function buy(s: GameState, listing: Listing, price: number): GameState {
+  const bought = spend(
+    { ...s, inventory: [...s.inventory, { ...listing.item, boughtFor: price }], listings: s.listings.filter((l) => l.id !== listing.id) },
+    price,
+  );
+  const counted = { ...bought, summary: { ...bought.summary, bought: bought.summary.bought + 1 } };
+  const recorded = recordPurchase(counted, listing, price);
+  return listing.rivalEye ? unlockAchievement(recorded, 'rakip') : recorded;
+}
+
+/** Zaman geçer: Cevdet göz koyduğu ilanı kapabilir. */
+function withRival(v: GameView, listingId: string): GameView {
+  const r = rivalMove(v.state, listingId);
+  return r.message ? { ...v, state: r.state, message: v.message ?? r.message } : v;
 }
 
 /** Satışı tamamlar ve kariyere (istatistik, görev, başarım) işler. */
@@ -66,27 +95,19 @@ function step(view: GameView, action: Action): GameView {
     case 'offer': {
       const listing = s.listings.find((l) => l.id === action.listingId);
       if (!day || !listing || !validAmount(action.amount)) return same();
+      if (listing.special === 'mezat' && listing.auctionMax !== undefined) return same();
       const amount = Math.round(action.amount);
       if (listing.lastRejected === amount) return same();
       const block = canBuy(s, amount);
       if (block) return same(BLOCK_MESSAGE[block]);
       const { result, listing: updated } = respondToOffer(listing, amount);
       if (result.kind === 'accepted') {
-        const bought = spend(
-          {
-            ...s,
-            inventory: [...s.inventory, { ...listing.item, boughtFor: result.price }],
-            listings: s.listings.filter((l) => l.id !== listing.id),
-          },
-          result.price,
-        );
-        const counted = { ...bought, summary: { ...bought.summary, bought: bought.summary.bought + 1 } };
-        return { state: recordPurchase(counted, listing, result.price), message: null, lastOffer: result };
+        return withRival({ state: buy(s, listing, result.price), message: null, lastOffer: result }, listing.id);
       }
       const listings = result.kind === 'walked'
         ? s.listings.filter((l) => l.id !== listing.id)
         : s.listings.map((l) => (l.id === listing.id ? updated : l));
-      return { state: { ...s, listings }, message: null, lastOffer: result };
+      return withRival({ state: { ...s, listings }, message: null, lastOffer: result }, listing.id);
     }
     case 'inspect': {
       const listing = s.listings.find((l) => l.id === action.listingId);
@@ -95,7 +116,7 @@ function step(view: GameView, action: Action): GameView {
       const rng = createRng(s.rngState);
       const res = inspect(listing, s.stage, rng, s.season);
       const next = spend({ ...s, listings: s.listings.map((l) => (l.id === listing.id ? res.listing : l)), rngState: rng.state() }, res.cost);
-      return to(next);
+      return withRival(to(next), listing.id);
     }
     case 'repair':
     case 'clean':
@@ -109,8 +130,9 @@ function step(view: GameView, action: Action): GameView {
         : action.type === 'paint' ? paint(item, s)
         : care(item);
       if (!res) return same();
-      if (s.money < res.cost) return same(BLOCK_MESSAGE['yetersiz-para']);
-      let next = spend(replaceItem(s, res.item), res.cost);
+      const cost = action.type === 'repair' ? round10(res.cost * (1 - repairDiscount(action.quality ?? 0))) : res.cost;
+      if (s.money < cost) return same(BLOCK_MESSAGE['yetersiz-para']);
+      let next = spend(replaceItem(s, res.item), cost);
       if (action.type === 'repair' && s.stage >= 2) next = { ...next, skill: Math.min(100, s.skill + 2) };
       return to(next);
     }
@@ -149,7 +171,7 @@ function step(view: GameView, action: Action): GameView {
     case 'completeTransition':
       return to(completeTransition(s));
     case 'dismissWin':
-      return to({ ...s, wonSeen: true });
+      return to({ ...s, wonSeen: true, finalSeen: s.finalSeen || s.branches >= 3 });
     case 'upgradeCapacity':
     case 'upgradeLocation':
     case 'hire':
@@ -171,6 +193,44 @@ function step(view: GameView, action: Action): GameView {
       return isBankrupt(s) ? { state: restartStage(s), message: null, lastOffer: null } : same();
     case 'newGame':
       return { state: newGame(action.seed), message: null, lastOffer: null };
+    case 'load':
+      return { state: action.state, message: 'Kayıt yüklendi', lastOffer: null };
+    case 'fulfillOrder': {
+      const order = s.orders.find((o) => o.id === action.orderId);
+      const item = s.inventory.find((i) => i.id === action.itemId);
+      if (!day || !order || !item || !orderMatches(order, item)) return same();
+      const rng = createRng(s.rngState);
+      const sold = sell(s, item.id, orderPrice(order, item, s.season), rng);
+      const next = {
+        ...sold,
+        reputation: Math.min(100, sold.reputation + 3),
+        orders: sold.orders.filter((o) => o.id !== order.id),
+        rngState: rng.state(),
+      };
+      return to(unlockAchievement(next, 'siparisci'), `${order.buyerName} çok memnun kaldı`);
+    }
+    case 'storyChoice': {
+      const next = applyStoryChoice(s, action.index);
+      return next ? to(next) : same();
+    }
+    case 'winAuction': {
+      const listing = s.listings.find((l) => l.id === action.listingId);
+      if (!day || !listing || listing.special !== 'mezat' || listing.auctionMax === undefined) return same();
+      if (!validAmount(action.price) || rivalsWillRaise(listing, action.price)) return same();
+      const price = Math.round(action.price);
+      const block = canBuy(s, price);
+      if (block) return same(BLOCK_MESSAGE[block]);
+      return to(unlockAchievement(buy(s, listing, price), 'mezatci'));
+    }
+    case 'auctionLost':
+      if (!s.listings.some((l) => l.id === action.listingId)) return same();
+      return to({ ...s, listings: s.listings.filter((l) => l.id !== action.listingId) });
+    case 'openBranch': {
+      const res = openBranch(s);
+      if (res === null) return same();
+      if (typeof res === 'string') return same(BLOCK_MESSAGE[res]);
+      return to(res);
+    }
   }
 }
 

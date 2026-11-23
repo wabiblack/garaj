@@ -31,6 +31,14 @@ export function paint(item: Item, state: GameState): PrepResult {
   return { item: { ...item, painted: true, condition: Math.min(100, item.condition + 20) }, cost: paintCost(item, state) };
 }
 
+/** Tamir oyunu: ibre bu aralıkta durursa isabet. */
+export const HIT_ZONE = [0.38, 0.62] as const;
+export const isHit = (pos: number) => pos >= HIT_ZONE[0] && pos <= HIT_ZONE[1];
+/** Her isabet tamiri %10 ucuzlatır (en çok 3 isabet). */
+export function repairDiscount(hits: number): number {
+  return Math.max(0, Math.min(3, Math.floor(Number.isFinite(hits) ? hits : 0))) * 0.1;
+}
+
 export const MAX_CARE = 5;
 
 export function careCost(item: Item): number {

@@ -18,10 +18,11 @@ describe('generateListings', () => {
     const r = createRng(2);
     for (let i = 0; i < 20; i++) {
       const ls = generateListings(makeState({ stage: 2 }), r);
-      expect(ls.length).toBeGreaterThanOrEqual(4);
-      expect(ls.length).toBeLessThanOrEqual(6);
+      const normal = ls.filter((l) => l.special === null);
+      expect(normal.length).toBeGreaterThanOrEqual(4);
+      expect(normal.length).toBeLessThanOrEqual(6);
       for (const l of ls) expect(l.item.category).toBe('motor');
-      expect(ls.every((l) => l.special === null)).toBe(true);
+      expect(ls.every((l) => l.special === null || l.special === 'mezat')).toBe(true);
     }
   });
   test('aşama 3te yaklaşık %20 ihtimalle bir özel ilan eklenir', () => {
@@ -63,7 +64,8 @@ describe('startNextDay', () => {
     expect(n).toMatchObject({ day: 11, phase: 'day', season: 'yaz', offers: [] });
     expect(n.listings.length).toBeGreaterThanOrEqual(4);
     expect(n.inventory[0].caredToday).toBe(false);
-    expect(n.summary).toEqual({ day: 11, bought: 0, sold: 0, spent: 0, earned: 0, notes: [] });
+    expect(n.summary).toMatchObject({ day: 11, bought: 0, sold: 0, spent: 0, earned: 0 });
+    expect(n.summary.notes).not.toContain('eski');
   });
   test('gizlenen kusur yakalanınca itibar −15 ve not', () => {
     const n = startNextDay(evening({ reputation: 50, pendingCatch: [{ itemName: 'Serçe Şehir 26' }, { itemName: 'Kanat BMX' }] }));

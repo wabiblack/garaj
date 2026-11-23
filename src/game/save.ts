@@ -9,9 +9,9 @@ function looksValid(s: unknown): s is GameState {
   if (typeof s !== 'object' || s === null) return false;
   const g = s as Record<string, unknown>;
   return (
-    (g.version === 1 || g.version === 2) &&
+    (g.version === 1 || g.version === 2 || g.version === 3) &&
     typeof g.money === 'number' && typeof g.day === 'number' && typeof g.rngState === 'number' &&
-    [1, 2, 3].includes(g.stage as number) &&
+    [1, 2, 3, 4].includes(g.stage as number) &&
     Array.isArray(g.inventory) && Array.isArray(g.listings) && Array.isArray(g.forSale) && Array.isArray(g.offers) &&
     typeof g.employees === 'object' && g.employees !== null &&
     (g.phase === 'day' || g.phase === 'evening') &&
@@ -39,12 +39,45 @@ export function saveGame(storage: Storage, state: GameState): void {
   }
 }
 
-/** Sürüm 1 kaydını (kariyer özellikleri öncesi) sürüm 2'ye taşır. */
+/** Yedek kodu: kaydın Türkçe karakter güvenli base64 hâli. */
+export function exportSave(state: GameState): string {
+  const bytes = new TextEncoder().encode(JSON.stringify(state));
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin);
+}
+
+export function importSave(code: string): GameState | null {
+  try {
+    const bin = atob(code.replace(/\s/g, ''));
+    const parsed: unknown = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
+    return looksValid(parsed) ? migrate(parsed) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Eski kayıtları sırayla güncel sürüme taşır. */
 function migrate(s: GameState): GameState {
-  if ((s.version as number) === 2) return s;
+  const v = s.version as number;
+  if (v === 3) return s;
+  const v2 = v === 1 ? migrate1to2(s) : s;
+  return {
+    ...v2,
+    version: 3,
+    orders: [],
+    story: { seen: [], pending: null },
+    history: [],
+    branches: 0,
+    finalSeen: false,
+    stats: { ...v2.stats, rivalTaken: v2.stats.rivalTaken ?? 0, stageDay: { ...v2.stats.stageDay, 4: v2.stats.stageDay[4] ?? null } },
+  };
+}
+
+/** Sürüm 1 kaydını (kariyer özellikleri öncesi) sürüm 2'ye taşır. */
+function migrate1to2(s: GameState): GameState {
   const base: GameState = {
     ...s,
-    version: 2,
     event: null,
     quests: [],
     stats: emptyStats(),

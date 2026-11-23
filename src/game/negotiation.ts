@@ -17,8 +17,10 @@ export function makeListing(item: Item, season: Season, rng: RNG, special: Speci
   const mv = marketValue(item, season);
   let askPrice: number;
   let minPrice: number;
+  let auctionMax: number | undefined;
   if (special === 'mezat') {
-    askPrice = minPrice = round10(mv * 0.7);
+    askPrice = minPrice = round10(mv * 0.5);
+    auctionMax = round10(mv * rng.range(0.65, 0.95));
   } else {
     askPrice = round10(mv * rng.range(ASK_MIN, ASK_MAX));
     minPrice = round10(trueValue(item, season) * rng.range(MIN_LO, MIN_HI));
@@ -29,6 +31,7 @@ export function makeListing(item: Item, season: Season, rng: RNG, special: Speci
   }
   return {
     id: rng.id('l'), item, askPrice, minPrice, patience: PATIENCE[personality], inspected: false, special, personality,
+    ...(auctionMax !== undefined ? { auctionMax } : {}),
     sellerName: special === 'mezat' ? 'Mezat' : special === 'hurdalik' ? 'Hurdacı ' + rng.pick(SELLERS) : rng.pick(SELLERS),
   };
 }

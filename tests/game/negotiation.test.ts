@@ -21,11 +21,14 @@ describe('makeListing', () => {
       expect(l.sellerName).toBeTruthy();
     }
   });
-  test('mezat: piyasa değerinin %70i, pazarlık yok', () => {
+  test('mezat: açılış piyasa değerinin %50si, rakip sınırı %65–95', () => {
     const item = makeItem();
     const l = buildListing(item, 'ilkbahar', createRng(1), 'mezat');
-    expect(l.askPrice).toBe(Math.round((marketValue(item, 'ilkbahar') * 0.7) / 10) * 10);
+    const mv = marketValue(item, 'ilkbahar');
+    expect(l.askPrice).toBe(Math.round((mv * 0.5) / 10) * 10);
     expect(l.minPrice).toBe(l.askPrice);
+    expect(l.auctionMax!).toBeGreaterThanOrEqual(mv * 0.65 - 10);
+    expect(l.auctionMax!).toBeLessThanOrEqual(mv * 0.95 + 10);
   });
 });
 
