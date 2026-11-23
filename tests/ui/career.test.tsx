@@ -2,13 +2,13 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../src/ui/App';
 import { makeItem, makeListing, makeState } from '../helpers';
-import { seedSave } from './uiHelpers';
+import { renderGame, seedSave } from './uiHelpers';
 
 const quest = { id: 'q', kind: 'sat' as const, target: 2, progress: 1, reward: 1000, done: false, title: '2 satış yap' };
 
 test('ilanlarda kişilik rozeti, olay kartı ve görevler görünür', () => {
   seedSave(makeState({ event: 'fuar', quests: [quest], listings: [makeListing({ personality: 'acele' })] }));
-  render(<App />);
+  renderGame();
   expect(screen.getByText('Acelesi var')).toBeInTheDocument();
   expect(screen.getByText('Fuar günü')).toBeInTheDocument();
   const q = screen.getByRole('region', { name: 'Görevler' });
@@ -21,7 +21,7 @@ test('profilde rekorlar ve başarımlar', async () => {
     achievements: ['ilk-satis'],
     stats: { sales: 4, profit: 3200, bestProfit: 1500, bestItem: 'Kanat BMX', disclosedSales: 1, rivalTaken: 0, stageDay: { 2: null, 3: null, 4: null } },
   }));
-  render(<App />);
+  renderGame();
   await userEvent.click(screen.getByRole('tab', { name: 'Profil' }));
   expect(screen.getByText('Kanat BMX')).toBeInTheDocument();
   expect(screen.getByText('3.200 TL')).toBeInTheDocument();
@@ -33,14 +33,14 @@ test('profilde rekorlar ve başarımlar', async () => {
 test('yeni başarım bildirimi', async () => {
   const it = makeItem({ boughtFor: 1000 });
   seedSave(makeState({ phase: 'evening', money: 0, inventory: [it], offers: [{ id: 'o', itemId: it.id, amount: 2000, buyerName: 'A' }] }));
-  render(<App />);
+  renderGame();
   await userEvent.click(screen.getByRole('button', { name: 'Kabul' }));
   expect(screen.getByText('Başarım: İlk satış')).toBeInTheDocument();
 });
 
 test('ses ayarı profilde açılıp kapanır ve hatırlanır', async () => {
   seedSave(makeState());
-  render(<App />);
+  renderGame();
   await userEvent.click(screen.getByRole('tab', { name: 'Profil' }));
   const toggle = screen.getByLabelText('Ses ve titreşim');
   expect(toggle).toBeChecked();
@@ -75,11 +75,11 @@ test('şapkalı harfler de çevrilir', async () => {
 });
 
 test('yeni oyunda giriş ekranı çıkar, Başla ile kapanır; kayıtlı oyunda çıkmaz', async () => {
-  const { unmount } = render(<App />);
+  const { unmount } = renderGame();
   expect(screen.getByRole('dialog', { name: 'Hikâye' })).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Başla' }));
   expect(screen.queryByRole('dialog', { name: 'Hikâye' })).toBeNull();
   unmount();
-  render(<App />);
+  renderGame();
   expect(screen.queryByRole('dialog', { name: 'Hikâye' })).toBeNull();
 });

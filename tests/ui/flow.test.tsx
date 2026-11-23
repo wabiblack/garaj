@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../src/ui/App';
 import { makeItem, makeListing, makeState } from '../helpers';
-import { seedSave } from './uiHelpers';
+import { renderGame, seedSave } from './uiHelpers';
 import { newGame } from '../../src/game/newGame';
 
 const defect = { id: 'd1', name: 'Fren tutmuyor', repairCost: 200, valueHit: 0.2, known: true };
@@ -17,7 +17,7 @@ describe('Garaj', () => {
         makeItem({ id: 'g', category: 'guvercin', brand: 'Taklacı', model: 'Ankara', baseValue: 1000 }),
       ],
     }));
-    render(<App />);
+    renderGame();
     await goGarage();
     expect(screen.getByRole('button', { name: 'Tamir et: Fren tutmuyor · 200 TL' })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /^Temizle/ })).toHaveLength(2);
@@ -29,13 +29,13 @@ describe('Garaj', () => {
   });
   test('araba için boya butonu', async () => {
     seedSave(makeState({ stage: 3, money: 1e7, inventory: [makeItem({ category: 'araba', brand: 'Doruk', model: 'Sedan', baseValue: 100000 })] }));
-    render(<App />);
+    renderGame();
     await goGarage();
     expect(screen.getByRole('button', { name: 'Boya · 6.000 TL' })).toBeInTheDocument();
   });
   test('satışa koy: varsayılan piyasa değeri, kusur varsa belirtme anahtarı', async () => {
     seedSave(makeState({ inventory: [makeItem({ defects: [defect], baseValue: 2000, condition: 100 })] }));
-    render(<App />);
+    renderGame();
     await goGarage();
     await userEvent.click(screen.getByRole('button', { name: 'Satışa koy' }));
     const dialog = screen.getByRole('dialog', { name: 'Satışa koy' });
@@ -50,7 +50,7 @@ describe('Garaj', () => {
 test('Satış: satıştan çekilir', async () => {
   const it = makeItem();
   seedSave(makeState({ inventory: [it], forSale: [{ itemId: it.id, price: 2500, disclosed: false }] }));
-  render(<App />);
+  renderGame();
   await userEvent.click(screen.getByRole('tab', { name: /Satış/ }));
   expect(screen.getByText('Serçe Şehir 26')).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Satıştan çek' }));
@@ -64,7 +64,7 @@ test('Gün sonu: özet, teklifler, yeni gün', async () => {
     offers: [{ id: 'o1', itemId: it.id, amount: 1900, buyerName: 'Ali' }, { id: 'o2', itemId: it.id, amount: 1700, buyerName: 'Can' }],
     summary: { day: 1, bought: 1, sold: 0, spent: 1500, earned: 0, notes: [] },
   }));
-  render(<App />);
+  renderGame();
   const ev = screen.getByRole('dialog', { name: 'Gün sonu' });
   expect(within(ev).getByText('Gün 1 bitti')).toBeInTheDocument();
   expect(within(ev).getByText('Ali')).toBeInTheDocument();
@@ -78,7 +78,7 @@ test('Gün sonu: özet, teklifler, yeni gün', async () => {
 test('Gün sonu: karşı teklif', async () => {
   const it = makeItem();
   seedSave(makeState({ phase: 'evening', money: 0, inventory: [it], offers: [{ id: 'o1', itemId: it.id, amount: 1000, buyerName: 'Ali' }] }));
-  render(<App />);
+  renderGame();
   const ev = screen.getByRole('dialog', { name: 'Gün sonu' });
   await userEvent.click(within(ev).getByRole('button', { name: 'Karşı teklif' }));
   const input = within(ev).getByLabelText('Karşı teklifin (TL)');
@@ -90,7 +90,7 @@ test('Gün sonu: karşı teklif', async () => {
 
 test('Geçiş ekranı', async () => {
   seedSave(makeState({ money: 50000, pendingTransition: 2 }));
-  render(<App />);
+  renderGame();
   expect(screen.getByText('4 yıl sonra…')).toBeInTheDocument();
   expect(screen.getByText(/Kerem 16 yaşında/)).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Devam' }));
@@ -99,7 +99,7 @@ test('Geçiş ekranı', async () => {
 
 test('Geçiş ekranı: galerici', () => {
   seedSave(makeState({ stage: 2, money: 500000, pendingTransition: 3 }));
-  render(<App />);
+  renderGame();
   expect(screen.getByText('2 yıl sonra…')).toBeInTheDocument();
   expect(screen.getByText(/ehliyetini aldı/)).toBeInTheDocument();
 });
@@ -107,7 +107,7 @@ test('Geçiş ekranı: galerici', () => {
 describe('Profil', () => {
   test('itibar ve beceri; aşama 1de büyüme yok', async () => {
     seedSave(makeState());
-    render(<App />);
+    renderGame();
     await userEvent.click(screen.getByRole('tab', { name: 'Profil' }));
     expect(screen.getByText('İtibar')).toBeInTheDocument();
     expect(screen.getByText('Tamir becerisi')).toBeInTheDocument();
@@ -115,7 +115,7 @@ describe('Profil', () => {
   });
   test('aşama 3te büyüme: yükseltme, işe alma, kredi', async () => {
     seedSave(makeState({ stage: 3, age: 18, money: 500_000 }));
-    render(<App />);
+    renderGame();
     await userEvent.click(screen.getByRole('tab', { name: 'Profil' }));
     expect(screen.getByText('Büyüme')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Mekânı yükselt/ })).toBeDisabled();
@@ -130,7 +130,7 @@ describe('Profil', () => {
 
 test('Bitiş ekranı', async () => {
   seedSave(makeState({ stage: 3, won: true, wonSeen: false }));
-  render(<App />);
+  renderGame();
   expect(screen.getByText('Şehrin en büyük galericisi oldun!')).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Devam et' }));
   expect(screen.queryByText('Şehrin en büyük galericisi oldun!')).toBeNull();
@@ -139,7 +139,7 @@ test('Bitiş ekranı', async () => {
 test('uçtan uca: al, temizle, satışa koy, günü bitir, teklif kabul', async () => {
   const listing = makeListing({ item: makeItem({ baseValue: 2000, condition: 80 }), askPrice: 1800, minPrice: 1200 });
   seedSave({ ...newGame(1), listings: [listing], money: 2000, reputation: 100, locationLevel: 2 });
-  render(<App />);
+  renderGame();
   await userEvent.click(screen.getByRole('button', { name: /Serçe Şehir 26/ }));
   const neg = screen.getByRole('dialog', { name: 'Pazarlık' });
   const input = within(neg).getByLabelText('Teklifin (TL)');

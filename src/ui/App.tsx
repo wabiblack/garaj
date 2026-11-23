@@ -23,6 +23,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { isBankrupt } from '../game/progression';
 import { AuctionSheet } from './screens/AuctionSheet';
 import { StoryScreen } from './screens/StoryScreen';
+import { MenuScreen } from './screens/MenuScreen';
 import type { Listing } from '../game/types';
 
 export default function App() {
@@ -36,14 +37,24 @@ export default function App() {
 function Game() {
   const { view, broken, fresh, dispatch, reset } = useGame();
   const [introDone, setIntroDone] = useState(false);
+  const [inMenu, setInMenu] = useState(true);
   const [tab, setTab] = useState<Tab>('ilanlar');
   const [listingId, setListingId] = useState<string | null>(null);
   const [auction, setAuction] = useState<Listing | null>(null);
   const achievement = useFeedback(view);
   useDailyStreak(view !== null, dispatch);
 
-  if (broken || !view) return <BrokenSaveScreen onReset={reset} />;
+  const newGame = (hard: boolean) => {
+    reset(hard);
+    setIntroDone(false);
+    setTab('ilanlar');
+    setInMenu(false);
+  };
+  if (broken || !view) return <BrokenSaveScreen onReset={() => newGame(false)} />;
   const { state } = view;
+  if (inMenu) {
+    return <MenuScreen state={state} dispatch={dispatch} onPlay={() => setInMenu(false)} onNewGame={newGame} />;
+  }
   const overlay = fresh && !introDone && state.day === 1 && state.stats.sales === 0
     ? <IntroScreen onStart={() => setIntroDone(true)} />
     : state.pendingTransition !== null
@@ -51,7 +62,7 @@ function Game() {
     : state.phase === 'evening'
       ? <EveningScreen view={view} dispatch={dispatch} />
       : (state.won && !state.wonSeen) || (state.stage === 4 && state.branches >= 3 && !state.finalSeen)
-        ? <EndScreen state={state} onContinue={() => dispatch({ type: 'dismissWin' })} onHardMode={() => reset(true)} />
+        ? <EndScreen state={state} onContinue={() => dispatch({ type: 'dismissWin' })} onHardMode={() => newGame(true)} />
         : state.story.pending
           ? <StoryScreen id={state.story.pending} state={state} onChoose={(index) => dispatch({ type: 'storyChoice', index })} />
           : isBankrupt(state)
@@ -74,7 +85,7 @@ function Game() {
         ) : null}
         {tab === 'garaj' ? <GarageScreen view={view} dispatch={dispatch} /> : null}
         {tab === 'satis' ? <SalesScreen view={view} dispatch={dispatch} /> : null}
-        {tab === 'profil' ? <ProfileScreen view={view} dispatch={dispatch} onNewGame={reset} /> : null}
+        {tab === 'profil' ? <ProfileScreen view={view} dispatch={dispatch} onMenu={() => setInMenu(true)} /> : null}
       </main>
       <TabBar active={tab} onChange={setTab} badges={{ satis: state.forSale.length }} />
       {listingId ? (

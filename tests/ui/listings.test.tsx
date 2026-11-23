@@ -4,11 +4,11 @@ import App from '../../src/ui/App';
 import { ItemCard } from '../../src/ui/components/ItemCard';
 import { SAVE_KEY } from '../../src/game/save';
 import { makeItem, makeListing, makeState } from '../helpers';
-import { seedSave } from './uiHelpers';
+import { renderGame, seedSave } from './uiHelpers';
 
 test('ilana dokununca pazarlık açılır, kabul edilen teklifle eşya garaja girer', async () => {
   seedSave(makeState({ listings: [makeListing()] }));
-  render(<App />);
+  renderGame();
   await userEvent.click(screen.getByRole('button', { name: /Serçe Şehir 26/ }));
   const dialog = screen.getByRole('dialog', { name: 'Pazarlık' });
   const input = within(dialog).getByLabelText('Teklifin (TL)');
@@ -24,7 +24,7 @@ test('ilana dokununca pazarlık açılır, kabul edilen teklifle eşya garaja gi
 
 test('düşük teklife karşı teklif gösterilir', async () => {
   seedSave(makeState({ listings: [makeListing()] }));
-  render(<App />);
+  renderGame();
   await userEvent.click(screen.getByRole('button', { name: /Serçe Şehir 26/ }));
   const dialog = screen.getByRole('dialog', { name: 'Pazarlık' });
   const input = within(dialog).getByLabelText('Teklifin (TL)');
@@ -36,14 +36,14 @@ test('düşük teklife karşı teklif gösterilir', async () => {
 
 test('aşama 1de "Bir bakayım", aşama 2de ekspertiz butonu', async () => {
   seedSave(makeState({ listings: [makeListing()] }));
-  const { unmount } = render(<App />);
+  const { unmount } = renderGame();
   await userEvent.click(screen.getByRole('button', { name: /Serçe Şehir 26/ }));
   expect(screen.getByRole('button', { name: 'Bir bakayım' })).toBeInTheDocument();
   unmount();
   localStorage.clear();
   const motor = makeItem({ category: 'motor', brand: 'Kartal', model: 'K125', baseValue: 100000 });
   seedSave(makeState({ stage: 2, money: 60000, listings: [makeListing({ item: motor, askPrice: 120000, minPrice: 90000 })] }));
-  render(<App />);
+  renderGame();
   await userEvent.click(screen.getByRole('button', { name: /Kartal K125/ }));
   expect(screen.getByRole('button', { name: 'Ekspertiz (2.000 TL)' })).toBeInTheDocument();
 });

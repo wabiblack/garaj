@@ -2,10 +2,12 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import pkg from './package.json' with { type: 'json' }
 
 export default defineConfig({
   // GitHub Pages depo alt yolunda yayınlanır: https://<kullanıcı>.github.io/garaj/
   base: process.env.GITHUB_PAGES ? '/garaj/' : '/',
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [
     react(),
     VitePWA({
@@ -33,6 +35,6 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./tests/setup.ts', './tests/ui/uiHelpers.ts'],
+    setupFiles: ['./tests/setup.ts', './tests/ui/uiHelpers.tsx'],
   },
 })

@@ -7,18 +7,16 @@ import {
 import { CATEGORIES_BY_STAGE, CATEGORY_LABEL } from '../../game/catalog';
 import { EXPERT_DISCOUNT, EXPERT_MAX, EXPERT_STEP, expertLevel } from '../../game/expertise';
 import { shareRecordCard } from '../shareCard';
+import { SettingsPanel } from '../components/SettingsPanel';
 import { formatTL } from '../../game/format';
 import { STAGE_LABEL } from '../components/TopBar';
 import { Button } from '../components/Button';
 import { ACHIEVEMENTS } from '../../game/career';
 import type { AchievementId } from '../../game/types';
-import { isSoundOn, setSoundOn } from '../feedback';
 import { BRANCHES } from '../../game/growth';
-import { exportSave, importSave } from '../../game/save';
 import { RIVAL } from '../../game/rival';
 import { portraitUrl } from '../art';
 import { MoneyChart } from '../components/MoneyChart';
-import { loadSettings, saveSettings, type Settings } from '../settings';
 
 function Meter({ label, value }: { label: string; value: number }) {
   return (
@@ -36,35 +34,9 @@ const ROLE_HELP: Record<keyof Employees, string> = {
   satis: 'Her gün +1 alıcı',
 };
 
-export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; dispatch(a: Action): void; onNewGame(): void }) {
+export function ProfileScreen({ view, dispatch, onMenu }: { view: GameView; dispatch(a: Action): void; onMenu(): void }) {
   const { state } = view;
-  const [confirm, setConfirm] = useState(false);
-  const [sound, setSound] = useState(isSoundOn);
-  const [settings, setSettings] = useState<Settings>(loadSettings);
-  const [backup, setBackup] = useState<'none' | 'export' | 'import'>('none');
-  const [code, setCode] = useState('');
-  const [backupMsg, setBackupMsg] = useState<string | null>(null);
   const [shareMsg, setShareMsg] = useState<string | null>(null);
-  const change = (s: Settings) => { setSettings(s); saveSettings(s); };
-  const showExport = async () => {
-    const c = exportSave(state);
-    setCode(c);
-    setBackup('export');
-    try {
-      await navigator.clipboard.writeText(c);
-      setBackupMsg('Kod panoya kopyalandı. Güvenli bir yere yapıştır.');
-    } catch {
-      setBackupMsg('Kodu seçip kopyala, güvenli bir yere yapıştır.');
-    }
-  };
-  const doImport = () => {
-    const loaded = importSave(code);
-    if (!loaded) { setBackupMsg('Kod geçersiz. Tamamını yapıştırdığından emin ol.'); return; }
-    dispatch({ type: 'load', state: loaded });
-    setBackup('none');
-    setCode('');
-    setBackupMsg('Kayıt yüklendi.');
-  };
   const { stats } = state;
   const capCost = CAPACITY_COST[state.capacityLevel];
   const locCost = LOCATION_COST[state.locationLevel];
@@ -234,79 +206,10 @@ export function ProfileScreen({ view, dispatch, onNewGame }: { view: GameView; d
       )}
 
       <h2 className="h2">Ayarlar</h2>
-      <div className="panel">
-        <label className="switch switch--flat">
-          <input
-            type="checkbox"
-            aria-label="Ses ve titreşim"
-            checked={sound}
-            onChange={(e) => { setSound(e.target.checked); setSoundOn(e.target.checked); }}
-          />
-          <span className="switch__track" aria-hidden="true" />
-          <span>
-            <span className="switch__label">Ses ve titreşim</span>
-            <span className="switch__hint">Titreşim yalnız Android telefonlarda çalışır.</span>
-          </span>
-        </label>
-        <label className="switch switch--flat">
-          <input type="checkbox" aria-label="Açık tema" checked={settings.theme === 'acik'} onChange={(e) => change({ ...settings, theme: e.target.checked ? 'acik' : 'koyu' })} />
-          <span className="switch__track" aria-hidden="true" />
-          <span>
-            <span className="switch__label">Açık tema</span>
-            <span className="switch__hint">Gün ışığında daha rahat okunur.</span>
-          </span>
-        </label>
-        <label className="switch switch--flat">
-          <input type="checkbox" aria-label="Büyük yazı" checked={settings.font === 'buyuk'} onChange={(e) => change({ ...settings, font: e.target.checked ? 'buyuk' : 'normal' })} />
-          <span className="switch__track" aria-hidden="true" />
-          <span>
-            <span className="switch__label">Büyük yazı</span>
-            <span className="switch__hint">Tüm ekranı biraz büyütür.</span>
-          </span>
-        </label>
-      </div>
-
-      <h2 className="h2">Kayıt yedeği</h2>
-      <div className="panel">
-        <p className="hint">Kaydını bir koda çevirip başka telefona taşıyabilirsin.</p>
-        <div className="chips">
-          <Button small onClick={() => void showExport()}>Yedek kodu al</Button>
-          <Button small onClick={() => { setBackup('import'); setCode(''); setBackupMsg(null); }}>Yedekten yükle</Button>
-        </div>
-        {backup !== 'none' ? (
-          <label className="field">
-            <span className="field__label">{backup === 'export' ? 'Yedek kodun' : 'Yedek kodunu yapıştır'}</span>
-            <textarea
-              className="field__input field__input--code"
-              aria-label={backup === 'export' ? 'Yedek kodun' : 'Yedek kodunu yapıştır'}
-              readOnly={backup === 'export'}
-              value={code}
-              onFocus={(e) => backup === 'export' && e.currentTarget.select()}
-              onChange={(e) => setCode(e.target.value)}
-            />
-          </label>
-        ) : null}
-        {backup === 'import' ? (
-          <>
-            <p className="hint">Yüklersen şu anki ilerlemenin yerine geçer.</p>
-            <Button small variant="primary" disabled={!code.trim()} onClick={doImport}>Kaydı yükle</Button>
-          </>
-        ) : null}
-        {backupMsg ? <p className="hint" role="status">{backupMsg}</p> : null}
-      </div>
+      <SettingsPanel state={state} dispatch={dispatch} />
 
       <div className="danger-zone">
-        {confirm ? (
-          <>
-            <p className="hint">Tüm ilerleme silinecek. Bu geri alınamaz.</p>
-            <div className="chips">
-              <Button small variant="danger" onClick={() => { setConfirm(false); onNewGame(); }}>Evet, sıfırla</Button>
-              <Button small variant="ghost" onClick={() => setConfirm(false)}>Vazgeç</Button>
-            </div>
-          </>
-        ) : (
-          <Button small variant="ghost" onClick={() => setConfirm(true)}>Yeni oyun</Button>
-        )}
+        <Button small variant="ghost" onClick={onMenu}>Ana menüye dön</Button>
       </div>
     </section>
   );
