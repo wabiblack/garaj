@@ -13,7 +13,7 @@ function PetCard({ pet, img, role }: { pet: Pet; img: string | undefined; role: 
       <div className="pet__body">
         <div className="row__title">{pet.name} <span className="muted">· {role}</span></div>
         <div className="meter__track"><div className="meter__fill" style={{ width: `${pet.happiness}%` }} /></div>
-        <div className="row__sub">{pet.fed ? 'Bu hafta karnı tok' : 'Bu hafta mama bekliyor'}</div>
+        <div className="row__sub">{pet.fed ? 'Bu ay karnı tok' : 'Bu ay mama bekliyor'}</div>
       </div>
     </div>
   );

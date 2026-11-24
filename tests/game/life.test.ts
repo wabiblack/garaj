@@ -6,12 +6,12 @@ import { generateListings, startNextDay } from '../../src/game/day';
 import { createRng } from '../../src/game/rng';
 import { gameReducer, type GameView } from '../../src/game/reducer';
 import { initialTalents } from '../../src/game/talents';
-import { weekOfYear } from '../../src/game/calendar';
+import { monthOfYear } from '../../src/game/calendar';
 import type { GameState } from '../../src/game/types';
 import { makeItem, makeListing, makeState } from '../helpers';
 
 const view = (over: Partial<GameState> = {}): GameView => ({ state: makeState(over), message: null, lastOffer: null });
-const dayOfWeek = (w: number) => Array.from({ length: 52 }, (_, i) => i + 1).find((d) => weekOfYear(d) === w)!;
+const dayOfWeek = (m: number) => Array.from({ length: 12 }, (_, i) => i + 1).find((d) => monthOfYear(d) === m)!;
 
 test('araç alırken noter masrafı ödenir; ekspertiz raporlu araç daha değerli satılır', () => {
   expect(notaryFee(makeItem({ category: 'araba' }), 500000)).toBe(5000);
@@ -26,7 +26,7 @@ test('araç alırken noter masrafı ödenir; ekspertiz raporlu araç daha değer
   expect(buyerValue({ ...car, report: true }, true, s)).toBeGreaterThan(buyerValue(car, true, s));
 });
 
-test('ehliyet sınavı: motor ve araba için ayrı sorular; geçemezsen bir hafta sonra tekrar', () => {
+test('ehliyet sınavı: motor ve araba için ayrı sorular; geçemezsen bir ay sonra tekrar', () => {
   expect(EXAMS[2].length).toBeGreaterThanOrEqual(3);
   expect(EXAMS[3].length).toBeGreaterThanOrEqual(3);
   const q = examFor(2, 7);
@@ -53,10 +53,10 @@ test('ikinci el sitesi: başka şehirden ilan, satıcı puanı; mal kargoyla bir
   expect(gameReducer(v, { type: 'listForSale', itemId: it.id, price: 2000, disclosed: true }).message).toMatch(/kargo/i);
 });
 
-test('karne: okul haftalarında az iş yapan iyi not alır, aile güveni artar', () => {
-  const end = dayOfWeek(24);
+test('karne: okul aylarında az iş yapan iyi not alır, aile güveni artar', () => {
+  const end = dayOfWeek(5);
   expect(gradeFor({ weeks: 10, used: 20 })).toBe('Pekiyi');
-  expect(gradeFor({ weeks: 10, used: 40 })).toBe('Orta');
+  expect(gradeFor({ weeks: 10, used: 55 })).toBe('Orta');
   const good = settleSchool(makeState({ day: end, term: { weeks: 9, used: 10 } }));
   expect(good.family.trust).toBeGreaterThan(60);
   expect(good.term).toEqual({ weeks: 0, used: 0 });

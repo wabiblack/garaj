@@ -49,7 +49,7 @@ describe('olaylar', () => {
   test('yeni günde yaklaşık %30 olay çıkar ve not düşülür; hediye para verir, ceza eksiye düşürmez', () => {
     let events = 0;
     for (let seed = 1; seed <= 300; seed++) {
-      const s = startNextDay(makeState({ phase: 'evening', rngState: seed, money: 100 }));
+      const s = startNextDay(makeState({ phase: 'evening', rngState: seed, money: 100, age: 18 }));
       if (s.event) {
         events++;
         expect(s.summary.notes.length).toBeGreaterThan(0);

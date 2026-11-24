@@ -1,9 +1,9 @@
-import { seasonOfWeek } from './calendar';
+import { seasonOf } from './calendar';
 import type { Item, Season } from './types';
 
-/** Turun (haftanın) mevsimi; takvim: calendar.ts. */
+/** Turun (ayın) mevsimi; takvim: calendar.ts. */
 export function seasonForDay(day: number): Season {
-  return seasonOfWeek(day);
+  return seasonOf(day);
 }
 
 export function round10(x: number): number {

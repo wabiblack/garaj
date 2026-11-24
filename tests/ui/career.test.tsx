@@ -10,7 +10,7 @@ test('ilanlarda kişilik rozeti, olay kartı ve görevler görünür', () => {
   seedSave(makeState({ event: 'fuar', quests: [quest], listings: [makeListing({ personality: 'acele' })] }));
   renderGame();
   expect(screen.getByText('Acelesi var')).toBeInTheDocument();
-  expect(screen.getByText('Fuar haftası')).toBeInTheDocument();
+  expect(screen.getByText('Fuar ayı')).toBeInTheDocument();
   const q = screen.getByRole('region', { name: 'Görevler' });
   expect(within(q).getByText('2 satış yap')).toBeInTheDocument();
   expect(within(q).getByText('1/2')).toBeInTheDocument();

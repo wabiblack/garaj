@@ -3,11 +3,11 @@ import { generateItem } from '../../src/game/catalog';
 import { createRng } from '../../src/game/rng';
 import { generateListings, startNextDay } from '../../src/game/day';
 import { gameReducer, type GameView } from '../../src/game/reducer';
-import { weekOfYear } from '../../src/game/calendar';
+import { monthOfYear } from '../../src/game/calendar';
 import { makeItem, makeListing, makeState } from '../helpers';
 
 const view = (over = {}): GameView => ({ state: makeState(over), message: null, lastOffer: null });
-const dayOfWeek = (w: number) => Array.from({ length: 52 }, (_, i) => i + 1).find((d) => weekOfYear(d) === w)!;
+const dayOfWeek = (m: number) => Array.from({ length: 12 }, (_, i) => i + 1).find((d) => monthOfYear(d) === m)!;
 
 test('araçlar model yaşı ve kilometreyle gelir; eski ve çok kullanılmış araç ucuzdur', () => {
   const rng = createRng(4);
@@ -30,12 +30,12 @@ test('elde tutulan araç için haftalık sigorta ve vergi ödenir', () => {
   expect(s.summary.notes.some((n) => n.includes('sigorta'))).toBe(true);
 });
 
-test('okul açılışında bisiklet ve telefon aranır; bayram haftasında herkes alışverişte', () => {
-  const school = makeState({ day: dayOfWeek(36) });
+test('okul açılışında bisiklet ve telefon aranır; bayram ayında herkes alışverişte', () => {
+  const school = makeState({ day: dayOfWeek(9) });
   expect(demand(school, 'bisiklet').buyers).toBeGreaterThan(0);
   expect(demand(school, 'motor').buyers).toBe(0);
-  expect(demand(makeState({ day: dayOfWeek(14) }), 'motor').buyers).toBeGreaterThan(0);
-  expect(demand(makeState({ day: dayOfWeek(30) }), 'bisiklet')).toEqual({ buyers: 0, note: null });
+  expect(demand(makeState({ day: dayOfWeek(4) }), 'motor').buyers).toBeGreaterThan(0);
+  expect(demand(makeState({ day: dayOfWeek(11) }), 'bisiklet')).toEqual({ buyers: 0, note: null });
 });
 
 test('bazı ilanlar çalıntı ya da sahte; bakınca anlaşılır', () => {

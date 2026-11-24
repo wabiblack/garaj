@@ -88,7 +88,7 @@ export function ListingsScreen({ state, onOpen, dispatch }: { state: GameState; 
                   <div className="quest__title">{orderTitle(o)}</div>
                   <div className="order__sub">Durumu en az %{o.minCondition}, kusursuz · piyasa değerinin %{Math.round(o.bonus * 100)} fazlasını öder</div>
                 </div>
-                <span className="order__days">{o.daysLeft} hafta</span>
+                <span className="order__days">{o.daysLeft} ay</span>
               </li>
             ))}
           </ul>
@@ -99,7 +99,7 @@ export function ListingsScreen({ state, onOpen, dispatch }: { state: GameState; 
         <span className="muted">Depo {state.inventory.length}/{storageLimit(state)}</span>
       </div>
       {state.listings.length === 0 ? (
-        <div className="empty">Bu haftalık ilan kalmadı. Haftayı bitirip yenilerini bekle.</div>
+        <div className="empty">Bu aylık ilan kalmadı. Ayı bitirip yenilerini bekle.</div>
       ) : (
         <div className="list">
           {state.listings.map((l) => (

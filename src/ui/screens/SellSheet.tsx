@@ -30,7 +30,7 @@ export function SellSheet({ item, state, dispatch, onClose }: { item: Item; stat
         <span className="field__label">Satış fiyatı (TL)</span>
         <input className="field__input" inputMode="numeric" maxLength={10} value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ''))} />
       </label>
-      <p className="hint">Değerin üstüne çıktıkça teklif gelme ihtimali düşer. Teklifler hafta sonunda gelir.</p>
+      <p className="hint">Değerin üstüne çıktıkça teklif gelme ihtimali düşer. Teklifler ay sonunda gelir.</p>
       {hasKnown ? (
         <label className="switch">
           <input type="checkbox" aria-label="Kusurları belirt" checked={disclosed} onChange={(e) => setDisclosed(e.target.checked)} />

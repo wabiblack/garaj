@@ -31,9 +31,9 @@ function rollPersonality(rng: RNG): Personality {
 }
 
 export const EVENT_INFO: Record<GameEventId, { title: string; text: string }> = {
-  fuar: { title: 'Fuar haftası', text: 'Bu hafta fuar var: alıcılar her zamankinden kalabalık.' },
-  durgun: { title: 'Piyasa durgun', text: 'Piyasa durgun: bu hafta alıcı az.' },
-  firsat: { title: 'Nakit sıkıntısı', text: 'Satıcılar nakit sıkıntısında: bu hafta pazarlık daha kolay.' },
+  fuar: { title: 'Fuar ayı', text: 'Bu ay fuar var: alıcılar her zamankinden kalabalık.' },
+  durgun: { title: 'Piyasa durgun', text: 'Piyasa durgun: bu ay alıcı az.' },
+  firsat: { title: 'Nakit sıkıntısı', text: 'Satıcılar nakit sıkıntısında: bu ay pazarlık daha kolay.' },
   hediye: { title: 'Hediye', text: 'Komşun yardımların için para verdi' },
   ceza: { title: 'Park cezası', text: 'Park cezası yedin' },
 };
@@ -170,7 +170,7 @@ export function startNextDay(evening: GameState): GameState {
   return {
     ...next, listings, money, event, quests, orders: orders.orders,
     story: { ...next.story, pending },
-    history: [...state.history, { day: state.day, money: state.money }].slice(-HISTORY_DAYS),
+    history: [...state.history, { day: state.day, money: evening.money }].slice(-HISTORY_DAYS),
     summary: { ...next.summary, notes: dayNotes }, rngState: rng.state(),
   };
 }

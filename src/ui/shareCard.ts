@@ -1,3 +1,4 @@
+import { dateLabel } from '../game/calendar';
 // Rekor kartı: tuval üzerine çizilen PNG. Telefon destekliyorsa paylaşım menüsü açılır, yoksa indirilir.
 import type { GameState } from '../game/types';
 import { formatTL } from '../game/format';
@@ -34,7 +35,7 @@ export function drawRecordCard(state: GameState): HTMLCanvasElement | null {
   g.fillText('Garaj', 80, 250);
   g.font = '500 44px system-ui, sans-serif';
   g.fillStyle = '#9aa4b2';
-  g.fillText(`${state.player.name} · ${state.age} yaş · ${STAGE_LABEL[state.stage]} · Hafta ${state.day}${state.hard ? ' · Zor mod' : ''}`, 80, 320);
+  g.fillText(`${state.player.name} · ${state.age} yaş · ${STAGE_LABEL[state.stage]} · ${dateLabel(state.day)}${state.hard ? ' · Zor mod' : ''}`, 80, 320);
   let y = 470;
   for (const [label, value] of recordLines(state)) {
     g.font = '500 40px system-ui, sans-serif';

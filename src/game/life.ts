@@ -1,6 +1,6 @@
 // Hayatın kendisi: ehliyet sınavı, okul karnesi ve 18 yaşta meslek seçimi.
 import type { CareerId, GameState, Stage } from './types';
-import { isSchoolWeek, weekOfYear } from './calendar';
+import { isSchoolMonth, monthOfYear } from './calendar';
 import { ADULT_AGE } from './calendar';
 
 export interface ExamQuestion { q: string; options: string[]; answer: number }
@@ -25,33 +25,33 @@ export const EXAMS: Record<2 | 3, ExamQuestion[]> = {
 /** Sınavı geçmek için gereken doğru sayısı (3 sorudan). */
 export const EXAM_PASS = 2;
 
-/** Bu haftanın sınav soruları (haftaya göre değişir). */
+/** Bu ayın sınav soruları (aya göre değişir). */
 export function examFor(stage: 2 | 3, day: number): ExamQuestion[] {
   const pool = EXAMS[stage];
   return [0, 1, 2].map((k) => pool[(day + k * 2) % pool.length]);
 }
 
-/** Sınavda kalınca geçiş bir hafta ertelenir. */
+/** Sınavda kalınca geçiş bir ay ertelenir. */
 export function failExam(s: GameState): GameState {
   return { ...s, pendingTransition: null, examRetry: s.day + 1 };
 }
 
-/** Karne dönemleri: yarıyıl (4. hafta) ve yıl sonu (24. hafta). */
-const REPORT_WEEKS = [4, 24];
+/** Karne ayları: yarıyıl (ocak) ve yıl sonu (mayıs). */
+const REPORT_MONTHS = [1, 5];
 export type Grade = 'Pekiyi' | 'İyi' | 'Orta';
 
-/** Okul haftalarında haftada ortalama kaç iş yaptın: az iş, iyi not. */
+/** Okul aylarında ayda ortalama kaç iş yaptın: az iş, iyi not. */
 export function gradeFor(term: { weeks: number; used: number }): Grade {
   const avg = term.weeks ? term.used / term.weeks : 0;
-  return avg <= 2.5 ? 'Pekiyi' : avg <= 3.5 ? 'İyi' : 'Orta';
+  return avg <= 3 ? 'Pekiyi' : avg <= 4.5 ? 'İyi' : 'Orta';
 }
 const GRADE_TRUST: Record<Grade, number> = { Pekiyi: 10, İyi: 5, Orta: -5 };
 
-/** Biten haftayı döneme yazar; karne haftasıysa notu verir. Yalnız reşit olmayana. */
+/** Biten ayı döneme yazar; karne ayıysa notu verir. Yalnız reşit olmayana. */
 export function settleSchool(s: GameState): GameState {
-  if (s.age >= ADULT_AGE || !isSchoolWeek(s.day)) return s;
+  if (s.age >= ADULT_AGE || !isSchoolMonth(s.day)) return s;
   const term = { weeks: s.term.weeks + 1, used: s.term.used + s.used };
-  if (!REPORT_WEEKS.includes(weekOfYear(s.day))) return { ...s, term };
+  if (!REPORT_MONTHS.includes(monthOfYear(s.day))) return { ...s, term };
   const grade = gradeFor(term);
   const trust = Math.max(0, Math.min(100, s.family.trust + GRADE_TRUST[grade]));
   const text = grade === 'Orta' ? 'ailen biraz üzüldü' : 'ailen gurur duydu';

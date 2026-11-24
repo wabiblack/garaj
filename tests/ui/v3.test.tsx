@@ -82,7 +82,7 @@ test('yedekten yükle: kod girilince kayıt değişir', async () => {
   const box = screen.getByLabelText('Yedek kodunu yapıştır');
   fireEvent.change(box, { target: { value: exportSave(makeState({ money: 77777, day: 9 })) } });
   await userEvent.click(screen.getByRole('button', { name: 'Kaydı yükle' }));
-  expect(screen.getByText(/Hafta 9/, { selector: '.topbar__day' })).toBeInTheDocument();
+  expect(screen.getByText(/Şubat 2027/, { selector: '.topbar__day' })).toBeInTheDocument();
 });
 
 test('4. aşamada şube açılır', async () => {

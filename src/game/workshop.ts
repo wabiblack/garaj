@@ -90,8 +90,8 @@ export function defectInfo(name: string): DefectInfo {
 /** Parça kaynağı: fiyat payı (ustanın fiyatına göre) ve kaç haftada geldiği. */
 export const SOURCES: Record<PartSource, { label: string; share: number; weeks: number; text: string; wear: number }> = {
   orijinal: { label: 'Orijinal', share: 0.7, weeks: 0, text: 'Sanayiden, hemen', wear: 0 },
-  muadil: { label: 'Muadil', share: 0.45, weeks: 1, text: 'İnternetten, hafta sonu kargoda', wear: 2 },
-  cikma: { label: 'Çıkma', share: 0.3, weeks: 1, text: 'Hurdacıdan, hafta sonu kargoda; durumu belirsiz', wear: 6 },
+  muadil: { label: 'Muadil', share: 0.45, weeks: 1, text: 'İnternetten, gelecek ay kargoyla', wear: 2 },
+  cikma: { label: 'Çıkma', share: 0.3, weeks: 1, text: 'Hurdacıdan, gelecek ay kargoyla; durumu belirsiz', wear: 6 },
 };
 
 export type WorkshopBlock = 'yetersiz-para' | 'zaten-var' | 'parca-yolda' | 'parca-yok' | null;

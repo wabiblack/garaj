@@ -1,53 +1,58 @@
-// Takvim: her tur bir hafta. Oyun haziran sonunda (yaz tatilinde) başlar; 52 haftada bir yaş büyür.
+// Takvim: her tur bir ay. Oyun haziranda (yaz tatilinde) başlar; 12 ayda bir yaş büyür.
 import type { GameState, Season } from './types';
 
-export const WEEKS_PER_YEAR = 52;
-/** Oyunun ilk haftası, yılın kaçıncı haftası (haziran sonu). */
-export const START_WEEK = 25;
+export const PERIODS_PER_YEAR = 12;
+/** Oyunun ilk ayı (1 = ocak): haziran. */
+export const START_MONTH = 6;
+/** Oyunun başladığı yıl (yalnız tarih göstermek için). */
+export const START_YEAR = 2026;
 export const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'] as const;
 const MONTH_SEASON: Season[] = ['kis', 'kis', 'ilkbahar', 'ilkbahar', 'ilkbahar', 'yaz', 'yaz', 'yaz', 'sonbahar', 'sonbahar', 'sonbahar', 'kis'];
-/** Okul haftalarında reşit olmayanın haftalık iş hakkı. */
-export const SCHOOL_ACTIONS = 4;
+/** Yaz tatili ayları: haziran, temmuz, ağustos. */
+const HOLIDAY = [6, 7, 8];
+/** Okul aylarında reşit olmayanın aylık iş hakkı. */
+export const SCHOOL_ACTIONS = 6;
 export const ADULT_AGE = 18;
 
-/** Turun yılın kaçıncı haftası olduğu (1–52). */
-export function weekOfYear(day: number): number {
-  return ((day - 1 + START_WEEK - 1) % WEEKS_PER_YEAR) + 1;
-}
-
-function monthIndex(day: number): number {
-  return Math.min(11, Math.floor(((weekOfYear(day) - 1) * 12) / WEEKS_PER_YEAR));
+/** Turun yılın kaçıncı ayı olduğu (1–12). */
+export function monthOfYear(day: number): number {
+  return ((day - 1 + START_MONTH - 1) % PERIODS_PER_YEAR) + 1;
 }
 
 export function monthOf(day: number): (typeof MONTHS)[number] {
-  return MONTHS[monthIndex(day)];
+  return MONTHS[monthOfYear(day) - 1];
 }
 
-export function seasonOfWeek(day: number): Season {
-  return MONTH_SEASON[monthIndex(day)];
+export function yearOf(day: number): number {
+  return START_YEAR + Math.floor((day - 1 + START_MONTH - 1) / PERIODS_PER_YEAR);
 }
 
-/**
- * Okul haftası mı: ocak (yılbaşı haftası hariç), yarıyıl tatili (şubat başı) hariç haziran ortasına kadar
- * ve eylülün ikinci haftasından aralık sonuna kadar. Yaz tatili ve yılbaşı serbest.
- */
-export function isSchoolWeek(day: number): boolean {
-  const w = weekOfYear(day);
-  return (w >= 2 && w <= 4) || (w >= 7 && w <= 24) || (w >= 37 && w <= 51);
+/** "Haziran 2026" */
+export function dateLabel(day: number): string {
+  return `${monthOf(day)} ${yearOf(day)}`;
 }
 
-/** Bir sonraki doğum gününe kalan hafta (doğum günü, oyuna başlanan haftanın yıl dönümü). */
-export function weeksToBirthday(day: number): number {
-  return WEEKS_PER_YEAR * Math.ceil(day / WEEKS_PER_YEAR) + 1 - day;
+export function seasonOf(day: number): Season {
+  return MONTH_SEASON[monthOfYear(day) - 1];
+}
+
+/** Okul ayı mı: yaz tatili (haziran–ağustos) dışındaki aylar. */
+export function isSchoolMonth(day: number): boolean {
+  return !HOLIDAY.includes(monthOfYear(day));
+}
+
+/** Bir sonraki doğum gününe kalan ay (doğum günü, oyuna başlanan ayın yıl dönümü). */
+export function monthsToBirthday(day: number): number {
+  return PERIODS_PER_YEAR * Math.ceil(day / PERIODS_PER_YEAR) + 1 - day;
 }
 
 /** Bu tur doğum günü mü (oyunun ilk turu hariç). */
 export function isBirthday(day: number): boolean {
-  return day > 1 && (day - 1) % WEEKS_PER_YEAR === 0;
+  return day > 1 && (day - 1) % PERIODS_PER_YEAR === 0;
 }
 
-/** Bu hafta kalan iş hakkı: okul haftasında reşit olmayana sınırlı, yoksa sınırsız. */
+/** Bu ay kalan iş hakkı: okul aylarında reşit olmayana sınırlı, yoksa sınırsız. */
 export function actionsLeft(s: Pick<GameState, 'age' | 'day' | 'used'>): number {
-  if (s.age >= ADULT_AGE || !isSchoolWeek(s.day)) return Infinity;
+  if (s.age >= ADULT_AGE || !isSchoolMonth(s.day)) return Infinity;
   return Math.max(0, SCHOOL_ACTIONS - (s.used ?? 0));
 }

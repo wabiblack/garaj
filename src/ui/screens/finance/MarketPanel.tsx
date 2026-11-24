@@ -6,7 +6,7 @@ import { Change, Spark } from '../../components/Spark';
 export function MarketPanel({ state }: { state: GameState }) {
   return (
     <section aria-label="Piyasa">
-      <p className="hint">Fiyatlar her hafta değişir. Endeks yüksekken sat, düşükken al. Fuar haftaları piyasayı ısıtır, durgun haftalar soğutur.</p>
+      <p className="hint">Fiyatlar her ay değişir. Endeks yüksekken sat, düşükken al. Fuar ayları piyasayı ısıtır, durgun aylar soğutur.</p>
       <div className="panel">
         {[...categoriesFor(state)].reverse().map((c) => {
           const idx = marketIndex(state.market, c);

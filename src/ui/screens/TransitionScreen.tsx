@@ -37,7 +37,7 @@ function Exam({ stage, day, onPass, onFail }: { stage: 2 | 3; day: number; onPas
       <div className="exam" role="group" aria-label="Ehliyet sınavı">
         <h2>{pass ? 'Tebrikler, ehliyetini aldın!' : 'Sınavı geçemedin'}</h2>
         <p className="muted">{correct}/{qs.length} doğru{pass ? '' : `. Geçmek için en az ${EXAM_PASS} doğru gerekiyor.`}</p>
-        <Button variant="primary" block onClick={pass ? onPass : onFail}>{pass ? 'Devam' : 'Haftaya tekrar dene'}</Button>
+        <Button variant="primary" block onClick={pass ? onPass : onFail}>{pass ? 'Devam' : 'Gelecek ay tekrar dene'}</Button>
       </div>
     );
   }

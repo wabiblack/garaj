@@ -4,8 +4,8 @@ import type { GameState, Pet, Stage } from './types';
 import type { RNG } from './rng';
 import { formatTL } from './format';
 
-/** Haftalık mama, hayvan başına. */
-export const PET_FOOD: Record<Stage, number> = { 1: 100, 2: 300, 3: 1000, 4: 3000 };
+/** Aylık mama, hayvan başına. */
+export const PET_FOOD: Record<Stage, number> = { 1: 300, 2: 900, 3: 3000, 4: 9000 };
 const THIEF_CHANCE = 0.03;
 const MICE_CHANCE = 0.05;
 const MICE_DAMAGE = 10;

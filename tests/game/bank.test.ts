@@ -32,7 +32,8 @@ describe('kredi', () => {
     if (!lim.ok) throw new Error();
     const a = ok(takeLoan(adult(), 1_000_000));
     expect(a.money).toBe(1_100_000);
-    expect(a.loan).toEqual({ debt: 1_000_000 * (1 + LOAN_INTEREST), installment: Math.ceil(1_100_000 / LOAN_DAYS / 10) * 10, daysLeft: LOAN_DAYS, late: 0 });
+    const debt = Math.round(1_000_000 * (1 + LOAN_INTEREST));
+    expect(a.loan).toEqual({ debt, installment: Math.ceil(debt / LOAN_DAYS / 10) * 10, daysLeft: LOAN_DAYS, late: 0 });
     expect(takeLoan(a, 1_000_000)).toBe('kredi-var');
     expect(takeLoan(adult(), lim.limit + 10)).toBe('limit-asimi');
   });
@@ -40,7 +41,7 @@ describe('kredi', () => {
     let s = ok(takeLoan(adult({ money: 20_000 }), 100_000));
     for (let i = 0; i < LOAN_DAYS; i++) s = settleBank(s);
     expect(s.loan).toBeNull();
-    expect(s.money).toBe(10_000);
+    expect(s.money).toBe(120_000 - Math.round(100_000 * (1 + LOAN_INTEREST)));
     expect(s.summary.notes.some((n) => n.includes('Kredi bitti'))).toBe(true);
   });
   test('ödenemeyen taksit gecikmedir: ceza borca eklenir, itibar düşer', () => {
@@ -88,6 +89,7 @@ test('eski kredi kaydı yeni biçime çevrilir, birikim hesabı eklenir', () => 
   localStorage.setItem(SAVE_KEY, JSON.stringify(old));
   const r = loadGame(localStorage);
   if (r.kind !== 'ok') throw new Error();
-  expect(r.state.loan).toEqual({ debt: 1_100_000, installment: Math.ceil(1_100_000 / LOAN_DAYS / 10) * 10, daysLeft: LOAN_DAYS, late: 0 });
+  const debt = Math.round(1_000_000 * (1 + LOAN_INTEREST));
+  expect(r.state.loan).toEqual({ debt, installment: Math.ceil(debt / LOAN_DAYS / 10) * 10, daysLeft: LOAN_DAYS, late: 0 });
   expect(r.state.bank).toEqual({ savings: 0 });
 });

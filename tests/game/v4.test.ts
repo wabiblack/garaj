@@ -61,7 +61,7 @@ test('mevsim: bisiklet yazın pahalı, kışın ucuz; mevsim değişince not dü
   const b = makeItem();
   expect(marketValue(b, 'yaz')).toBeGreaterThan(marketValue(b, 'ilkbahar'));
   expect(marketValue(b, 'kis')).toBeLessThan(marketValue(b, 'ilkbahar'));
-  const next = startNextDay(makeState({ day: 10, phase: 'evening', season: 'ilkbahar' }));
+  const next = startNextDay(makeState({ day: 12, phase: 'evening', season: 'ilkbahar' }));
   expect(next.season).toBe('yaz');
   expect(next.summary.notes).toContain(SEASON_NOTE.yaz);
 });

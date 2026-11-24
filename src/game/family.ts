@@ -10,10 +10,10 @@ export const FAMILY_START: GameState['family'] = { trust: 60, task: null, debt: 
 export const TRUST_GAIN = 8;
 export const TRUST_LOSS = 10;
 export const DEBT_TRUST_LOSS = 15;
-/** Harçlık ayda bir (4 haftada bir). */
-export const ALLOWANCE_EVERY = 4;
+/** Harçlık her ay. */
+export const ALLOWANCE_EVERY = 1;
 export const FAMILY_MIN_TRUST = 50;
-export const FAMILY_DEBT_DAYS = 4;
+export const FAMILY_DEBT_DAYS = 2;
 const TASK_DAYS = 2;
 const TASK_CHANCE_MINOR = 0.35;
 const TASK_CHANCE_ADULT = 0.1;
@@ -32,8 +32,8 @@ function makeTask(kind: FamilyTaskKind, stage: Stage): FamilyTask {
   switch (kind) {
     case 'katki': return { kind, from: 'baba', title: 'Eve katkı', text: `Bu ay masraflar çok. Eve ${formatTL(amount)} katkı verebilir misin?`, amount, daysLeft: TASK_DAYS };
     case 'kardes': return { kind, from: 'anne', title: 'Kardeşinin gezisi', text: `Kardeşinin okul gezisi var. ${formatTL(amount)} ile yardım eder misin?`, amount, daysLeft: TASK_DAYS };
-    case 'ders': return { kind, from: 'baba', title: 'Sınav haftası', text: 'Derslerine odaklan: bir hafta boyunca en çok 1 şey al.', daysLeft: TASK_DAYS };
-    case 'duzen': return { kind, from: 'anne', title: 'Garajı topla', text: 'Garaj çok dağınık. Hafta sonunda depoda en çok 1 eşya kalsın.', daysLeft: TASK_DAYS };
+    case 'ders': return { kind, from: 'baba', title: 'Sınav dönemi', text: 'Derslerine odaklan: bu ay en çok 1 şey al.', daysLeft: TASK_DAYS };
+    case 'duzen': return { kind, from: 'anne', title: 'Garajı topla', text: 'Garaj çok dağınık. Ay sonunda depoda en çok 1 eşya kalsın.', daysLeft: TASK_DAYS };
   }
 }
 
@@ -99,7 +99,7 @@ export function settleFamily(s: GameState, rng: RNG): GameState {
   const pocket = allowance(s);
   if (pocket > 0) {
     money += pocket;
-    notes.push(`Haftalık harçlık: ${formatTL(pocket)}`);
+    notes.push(`Aylık harçlık: ${formatTL(pocket)}`);
   }
 
   if (debt > 0) {

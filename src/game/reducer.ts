@@ -81,11 +81,11 @@ const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | Fam
   'guven-dusuk': 'Ailenin sana güveni az: önce verdiğin sözleri tut',
   'borc-var': 'Önce aileye olan borcunu öde',
   'yetersiz-hisse': 'O kadar hissen yok',
-  'parca-yolda': 'Parça henüz gelmedi; hafta sonu kargoda',
+  'parca-yolda': 'Parça henüz gelmedi; gelecek ay kargoyla gelir',
   'parca-yok': 'Önce parçayı sipariş et',
   'asama-4-degil': 'Şubeler holding kurunca açılır',
-  'okul': 'Bu hafta okul var: iş hakkın bitti. Haftayı bitir',
-  'kargo': 'Bu eşya kargoda; hafta sonu gelecek',
+  'okul': 'Okul var: bu ayki iş hakkın bitti. Ayı bitir',
+  'kargo': 'Bu eşya kargoda; gelecek ay gelecek',
 };
 
 const validAmount = (n: number) => Number.isFinite(n) && n > 0;
@@ -307,7 +307,7 @@ function step(view: GameView, action: Action): GameView {
       return to(res);
     }
     case 'failExam':
-      return s.pendingTransition === null ? same() : to(failExam(s), 'Sınavı geçemedin. Haftaya tekrar girebilirsin.');
+      return s.pendingTransition === null ? same() : to(failExam(s), 'Sınavı geçemedin. Gelecek ay tekrar girebilirsin.');
     case 'chooseCareer': {
       const next = chooseCareer(s, action.id);
       return next ? to(next) : same();

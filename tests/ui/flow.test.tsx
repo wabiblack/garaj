@@ -57,7 +57,7 @@ test('Satış: satıştan çekilir', async () => {
   expect(screen.queryByText('Serçe Şehir 26')).toBeNull();
 });
 
-test('Hafta sonu: özet, teklifler, yeni gün', async () => {
+test('Ay sonu: özet, teklifler, yeni gün', async () => {
   const it = makeItem();
   seedSave(makeState({
     phase: 'evening', money: 0, inventory: [it], forSale: [{ itemId: it.id, price: 2000, disclosed: false }],
@@ -65,21 +65,21 @@ test('Hafta sonu: özet, teklifler, yeni gün', async () => {
     summary: { day: 1, bought: 1, sold: 0, spent: 1500, earned: 0, notes: [] },
   }));
   renderGame();
-  const ev = screen.getByRole('dialog', { name: 'Hafta sonu' });
-  expect(within(ev).getByText('Hafta 1 bitti')).toBeInTheDocument();
+  const ev = screen.getByRole('dialog', { name: 'Ay sonu' });
+  expect(within(ev).getByText('Haziran 2026 bitti')).toBeInTheDocument();
   expect(within(ev).getByText('Ali')).toBeInTheDocument();
   await userEvent.click(within(ev).getAllByRole('button', { name: 'Kabul' })[0]);
   expect(within(ev).queryByText('Can')).toBeNull();
-  await userEvent.click(within(ev).getByRole('button', { name: 'Yeni haftaya başla' }));
-  expect(screen.queryByRole('dialog', { name: 'Hafta sonu' })).toBeNull();
-  expect(screen.getByText('Hafta 2 · Haziran · Tatil')).toBeInTheDocument();
+  await userEvent.click(within(ev).getByRole('button', { name: 'Yeni aya başla' }));
+  expect(screen.queryByRole('dialog', { name: 'Ay sonu' })).toBeNull();
+  expect(screen.getByText('Temmuz 2026 · Yaz tatili')).toBeInTheDocument();
 });
 
-test('Hafta sonu: karşı teklif', async () => {
+test('Ay sonu: karşı teklif', async () => {
   const it = makeItem();
   seedSave(makeState({ phase: 'evening', money: 0, inventory: [it], offers: [{ id: 'o1', itemId: it.id, amount: 1000, buyerName: 'Ali' }] }));
   renderGame();
-  const ev = screen.getByRole('dialog', { name: 'Hafta sonu' });
+  const ev = screen.getByRole('dialog', { name: 'Ay sonu' });
   await userEvent.click(within(ev).getByRole('button', { name: 'Karşı teklif' }));
   const input = within(ev).getByLabelText('Karşı teklifin (TL)');
   await userEvent.clear(input);
@@ -102,13 +102,13 @@ test('Geçiş ekranı: ehliyet sınavını geçince motor dönemine geçilir', a
   expect(screen.getByText(/16 yaş · Motorcu/)).toBeInTheDocument();
 });
 
-test('Geçiş ekranı: sınavda kalınca haftaya ertelenir', async () => {
+test('Geçiş ekranı: sınavda kalınca gelecek aya ertelenir', async () => {
   const { examFor } = await import('../../src/game/life');
   seedSave(makeState({ money: 50000, age: 16, day: 7, pendingTransition: 2 }));
   renderGame();
   await userEvent.click(screen.getByRole('button', { name: 'Ehliyet sınavına gir' }));
   for (const q of examFor(2, 7)) await userEvent.click(screen.getByRole('button', { name: q.options[(q.answer + 1) % q.options.length] }));
-  await userEvent.click(screen.getByRole('button', { name: 'Haftaya tekrar dene' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Gelecek ay tekrar dene' }));
   expect(screen.queryByRole('dialog', { name: 'Yeni dönem' })).toBeNull();
   expect(screen.getByText(/Mahalle çocuğu/)).toBeInTheDocument();
 });
@@ -173,10 +173,10 @@ test('uçtan uca: al, temizle, satışa koy, günü bitir, teklif kabul', async 
   await userEvent.clear(price);
   await userEvent.type(price, '1500');
   await userEvent.click(within(sell).getByRole('button', { name: 'İlana koy' }));
-  await userEvent.click(screen.getByRole('button', { name: 'Haftayı bitir' }));
-  const ev = screen.getByRole('dialog', { name: 'Hafta sonu' });
+  await userEvent.click(screen.getByRole('button', { name: 'Ayı bitir' }));
+  const ev = screen.getByRole('dialog', { name: 'Ay sonu' });
   await userEvent.click(within(ev).getAllByRole('button', { name: 'Kabul' })[0]);
-  await userEvent.click(within(ev).getByRole('button', { name: 'Yeni haftaya başla' }));
+  await userEvent.click(within(ev).getByRole('button', { name: 'Yeni aya başla' }));
   const money = Number(screen.getByText(/TL$/, { selector: '.topbar__money .money' }).textContent!.replace(/\D/g, ''));
   expect(money).toBeGreaterThan(2000 - 1300 - 40);
 });

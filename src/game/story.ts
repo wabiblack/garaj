@@ -8,7 +8,7 @@ export interface Story { stage: Stage; who: string; text: string; choices: Story
 export const STORIES: Record<StoryId, Story> = {
   okul: {
     stage: 1, who: 'Öğretmen Nermin Hanım',
-    text: '{ad}, karne yaklaşıyor. Bu hafta pazara gideceğine biraz ders çalışsan?',
+    text: '{ad}, karne yaklaşıyor. Bu ay pazara gideceğine biraz ders çalışsan?',
     choices: [
       { label: 'Derse çalış', reputation: 3, note: 'Ders çalıştın; mahallede “akıllı çocuk” diye anılıyorsun' },
       { label: 'Pazara git', money: 300, note: 'Pazarda ufak bir iş çevirdin' },

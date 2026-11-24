@@ -61,7 +61,7 @@ describe('startNextDay', () => {
       summary: { day: 10, bought: 2, sold: 1, spent: 5, earned: 9, notes: ['eski'] },
     });
     const n = startNextDay(s);
-    expect(n).toMatchObject({ day: 11, phase: 'day', season: 'yaz', offers: [] });
+    expect(n).toMatchObject({ day: 11, phase: 'day', season: 'ilkbahar', offers: [] });
     expect(n.listings.length).toBeGreaterThanOrEqual(4);
     expect(n.inventory[0].caredToday).toBe(false);
     expect(n.summary).toMatchObject({ day: 11, bought: 0, sold: 0, spent: 0, earned: 0 });

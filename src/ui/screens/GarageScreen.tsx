@@ -63,7 +63,7 @@ export function GarageScreen({ view, dispatch }: { view: GameView; dispatch(a: A
                 subtitle={<>Alış {formatTL(item.boughtFor)} · <span className={profit >= 0 ? 'pos' : 'neg'}>{profit >= 0 ? '+' : ''}{formatTL(profit)}</span></>}
                 badge={transit ? <span className="tag tag--info">Kargoda</span> : sale ? <span className="tag tag--accent">Satışta</span> : null}
               >
-                {transit ? <p className="hint">Kargoda: hafta sonu gelecek. Gelince hazırlayıp satabilirsin.</p> : <>
+                {transit ? <p className="hint">Kargoda: gelecek ay gelecek. Gelince hazırlayıp satabilirsin.</p> : <>
                 {item.defects.filter((d) => d.known).map((d) => {
                   const order = state.parts.find((p) => p.itemId === item.id && p.defectId === d.id);
                   const label = order

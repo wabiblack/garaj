@@ -11,7 +11,7 @@ export const TUTORIAL_STEPS: { id: string; text: string; tab?: Tab; endDay?: boo
   { id: 'al', text: 'Bir ilana dokun, istenenin altında teklif ver.', tab: 'ilanlar' },
   { id: 'hazirla', text: 'Garaj’a geç ve aldığın eşyayı temizle. Kusuru varsa tamir et.', tab: 'garaj' },
   { id: 'sat', text: 'Garaj’da “Satışa koy”a bas, fiyatını belirle.', tab: 'garaj' },
-  { id: 'gun', text: 'Sağ üstten “Haftayı bitir”e bas; hafta sonu alıcılar teklif getirir.', endDay: true },
+  { id: 'gun', text: 'Sağ üstten “Ayı bitir”e bas; ay sonunda alıcılar teklif getirir.', endDay: true },
   { id: 'teklif', text: 'Gelen teklifi kabul et ya da karşı teklif ver.' },
 ];
 

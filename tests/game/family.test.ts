@@ -37,10 +37,9 @@ test('düzen görevi depoda en çok 1 eşya ister; süresi dolan görev güveni 
   expect(failed.summary.notes.some((n) => n.includes('Annen'))).toBe(true);
 });
 
-test('reşit olmayana haftalık harçlık güvene göre verilir', () => {
+test('reşit olmayana aylık harçlık güvene göre verilir', () => {
   const s = makeState({ day: ALLOWANCE_EVERY, family: fam({ trust: 100 }) });
   expect(allowance(s)).toBeGreaterThan(allowance({ ...s, family: fam({ trust: 50 }) }));
-  expect(allowance({ ...s, day: ALLOWANCE_EVERY + 1 })).toBe(0);
   expect(allowance({ ...s, age: 18, stage: 3 })).toBe(0);
   const after = settleFamily(s, createRng(1));
   expect(after.money).toBe(s.money + allowance(s));
@@ -62,7 +61,7 @@ test('reşit olmayan aileden borç alır; reşit olan bankaya gider; güven dü�
 });
 
 test('vadesi geçen aile borcu kendiliğinden alınır, ödenemezse güven düşer', () => {
-  const s = settleFamily(makeState({ money: 100, family: fam({ debt: 1000, debtDays: 1 }) }), createRng(1));
+  const s = settleFamily(makeState({ money: 100, age: 18, family: fam({ debt: 1000, debtDays: 1 }) }), createRng(1));
   expect(s.money).toBe(0);
   expect(s.family.debt).toBe(900);
   expect(s.family.trust).toBeLessThan(FAMILY_START.trust);

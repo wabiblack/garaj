@@ -238,7 +238,7 @@ export function WorkshopSheet({ item, defect, state, dispatch, onClose }: {
       {step === 'bekle' ? (
         <div className="ws-wait">
           <Pic dir="care" id="kargo" label="Kargoda" />
-          <p>{info.partName} hafta sonu kargoyla gelecek. Gelince Garaj’dan montajı yap.</p>
+          <p>{info.partName} gelecek ay kargoyla gelecek. Gelince Garaj’dan montajı yap.</p>
           <Button variant="primary" block onClick={onClose}>Tamam</Button>
         </div>
       ) : null}

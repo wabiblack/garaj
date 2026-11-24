@@ -7,6 +7,7 @@ import { Money } from '../components/Money';
 import { Button } from '../components/Button';
 import { parseAmount } from './NegotiationSheet';
 import { Tutorial } from '../components/Tutorial';
+import { dateLabel } from '../../game/calendar';
 
 function OfferRow({ offer, label, dispatch }: { offer: BuyerOffer; label: string; dispatch(a: Action): void }) {
   const [countering, setCountering] = useState(false);
@@ -44,10 +45,10 @@ export function EveningScreen({ view, dispatch }: { view: GameView; dispatch(a: 
   const s = state.summary;
   const net = s.earned - s.spent;
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-label="Hafta sonu">
+    <div className="overlay" role="dialog" aria-modal="true" aria-label="Ay sonu">
       <div className="overlay__inner">
-        <p className="overlay__kicker">Hafta sonu</p>
-        <h1>Hafta {state.day} bitti</h1>
+        <p className="overlay__kicker">Ay sonu</p>
+        <h1>{dateLabel(state.day)} bitti</h1>
         <Tutorial state={state} />
         <div className="stats">
           <div className="stat"><span>Alınan</span><strong>{s.bought}</strong></div>
@@ -55,14 +56,14 @@ export function EveningScreen({ view, dispatch }: { view: GameView; dispatch(a: 
           <div className="stat"><span>Harcanan</span><strong>{formatTL(s.spent)}</strong></div>
           <div className="stat"><span>Kazanılan</span><strong>{formatTL(s.earned)}</strong></div>
         </div>
-        <div className={'net ' + (net >= 0 ? 'pos' : 'neg')}>Bu hafta: {net >= 0 ? '+' : ''}{formatTL(net)}</div>
+        <div className={'net ' + (net >= 0 ? 'pos' : 'neg')}>Bu ay: {net >= 0 ? '+' : ''}{formatTL(net)}</div>
         {s.notes.length > 0 ? <div className="notice">{s.notes.map((n, i) => <p key={i}>{n}</p>)}</div> : null}
         {view.message ? <p className="result" role="status">{view.message}</p> : null}
 
         <h2 className="overlay__h2">Gelen teklifler</h2>
         {state.offers.length === 0 ? (
           <div className="empty empty--small">
-            {state.forSale.length === 0 ? 'Satışta bir şey yoktu.' : 'Bu hafta kimse teklif vermedi. Fiyatı düşürmeyi dene.'}
+            {state.forSale.length === 0 ? 'Satışta bir şey yoktu.' : 'Bu ay kimse teklif vermedi. Fiyatı düşürmeyi dene.'}
           </div>
         ) : (
           <ul className="offers">
@@ -74,7 +75,7 @@ export function EveningScreen({ view, dispatch }: { view: GameView; dispatch(a: 
         )}
         <div className="overlay__footer">
           {state.offers.length > 0 ? <p className="hint">Yanıtlamadığın teklifler sabah düşer.</p> : null}
-          <Button variant="primary" block onClick={() => dispatch({ type: 'startNextDay' })}>Yeni haftaya başla</Button>
+          <Button variant="primary" block onClick={() => dispatch({ type: 'startNextDay' })}>Yeni aya başla</Button>
         </div>
       </div>
     </div>

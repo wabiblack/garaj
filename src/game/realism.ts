@@ -1,7 +1,7 @@
 // Gerçek hayat ayrıntıları: araç yaşı/kilometresi, sahiplik masrafları, dönemsel talep, riskli ilanlar.
 import type { Category, GameState, Item, Listing } from './types';
 import type { RNG } from './rng';
-import { weekOfYear } from './calendar';
+import { monthOfYear } from './calendar';
 import { formatTL } from './format';
 import { round10 } from './pricing';
 
@@ -11,8 +11,8 @@ export const VEHICLES: Category[] = ['motor', 'araba', 'karavan', 'tekne', 'isma
 const METERED: Category[] = [...VEHICLES, 'escooter'];
 /** Çalışma saatiyle ölçülenler. */
 export const HOURS: Category[] = ['tekne', 'ismakinesi'];
-/** Haftalık sigorta + vergi + muayene payı (değerin yılda ~%8'i). */
-const OWNERSHIP_RATE = 0.0015;
+/** Aylık sigorta + vergi + muayene payı (değerin yılda ~%7'si). */
+const OWNERSHIP_RATE = 0.006;
 
 /** Model yaşı ve kilometreyi belirler, değeri buna göre düşürür (klasikler düşmez). */
 export function wearItem(item: Item, rng: RNG): Item {
@@ -31,7 +31,7 @@ export function ownershipCost(item: Item): number {
   return VEHICLES.includes(item.category) ? round10(item.baseValue * OWNERSHIP_RATE) : 0;
 }
 
-/** Hafta başında elde tutulan araçların masrafı ödenir (para eksiye düşmez). */
+/** Ay başında elde tutulan araçların masrafı ödenir (para eksiye düşmez). */
 export function settleVehicles(s: GameState): GameState {
   const total = s.inventory.reduce((sum, i) => sum + ownershipCost(i), 0);
   if (total === 0) return s;
@@ -40,22 +40,23 @@ export function settleVehicles(s: GameState): GameState {
   return { ...s, money: s.money - paid, summary: { ...s.summary, notes, spent: s.summary.spent + paid } };
 }
 
-const SCHOOL_OPEN = [35, 36, 37];
+/** Okulların açıldığı ay: eylül. */
+const SCHOOL_OPEN = [9];
 const SCHOOL_GOODS: Category[] = ['bisiklet', 'telefon', 'kulaklik', 'bilgisayar', 'kaykay', 'scooter'];
-/** Bayram haftaları (yaklaşık; her yıl aynı haftada sayılır). */
-const BAYRAM = [14, 24];
+/** Bayram ayları (yaklaşık; her yıl aynı ayda sayılır): nisan ve temmuz. */
+const BAYRAM = [4, 7];
 
-/** Haftanın o türe kattığı fazladan alıcı ve haftanın notu. */
+/** Ayın o türe kattığı fazladan alıcı ve ayın notu. */
 export function demand(s: Pick<GameState, 'day'>, category: Category): { buyers: number; note: string | null } {
-  const w = weekOfYear(s.day);
-  if (BAYRAM.includes(w)) return { buyers: 1, note: 'Bayram haftası: herkes alışverişte, alıcılar kalabalık' };
+  const w = monthOfYear(s.day);
+  if (BAYRAM.includes(w)) return { buyers: 1, note: 'Bayram ayı: herkes alışverişte, alıcılar kalabalık' };
   if (SCHOOL_OPEN.includes(w) && SCHOOL_GOODS.includes(category)) return { buyers: 1, note: 'Okullar açılıyor: bisiklet, telefon ve kulaklık aranıyor' };
   return { buyers: 0, note: null };
 }
 
-/** Haftanın başında düşülecek dönem notu. */
+/** Ayın başında düşülecek dönem notu. */
 export function weekNote(day: number): string | null {
-  const w = weekOfYear(day);
+  const w = monthOfYear(day);
   if (BAYRAM.includes(w)) return demand({ day }, 'araba').note;
   if (w === SCHOOL_OPEN[0]) return demand({ day }, 'bisiklet').note;
   return null;
@@ -85,7 +86,7 @@ export function riskOf(l: Listing): string | null {
     : 'Satıcı ürünü göstermiyor, önce kapora istiyor: sahte ilan olabilir.';
 }
 
-/** Hafta başında: çalıntı mala polis el koyabilir. */
+/** Ay başında: çalıntı mala polis el koyabilir. */
 export function settleRisks(s: GameState, rng: RNG): GameState {
   const seized = s.inventory.filter((i) => i.stolen && rng.chance(SEIZE_CHANCE));
   if (seized.length === 0) return s;
@@ -122,5 +123,5 @@ export function remoteListing(l: Listing, rng: RNG): Listing {
   };
 }
 
-/** Kargodaki mal: bu hafta gelmediyse hazırlanamaz ve satılamaz. */
+/** Kargodaki mal: bu ay gelmediyse hazırlanamaz ve satılamaz. */
 export const inTransit = (item: Item, day: number) => item.arrives !== undefined && item.arrives > day;

@@ -26,12 +26,12 @@ test('marketValue yalnız bilinen kusurları düşer, trueValue hepsini', () => 
   expect(marketValue(it, 'ilkbahar')).toBe(100000);
   expect(trueValue(it, 'ilkbahar')).toBe(80000);
 });
-test('mevsim her 10 günde değişir, 1. gün ilkbahar', () => {
+test('mevsim aya göre: 1. tur haziran (yaz)', () => {
   expect(seasonForDay(1)).toBe('yaz');
-  expect(seasonForDay(14)).toBe('sonbahar');
-  expect(seasonForDay(28)).toBe('kis');
-  expect(seasonForDay(40)).toBe('ilkbahar');
-  expect(seasonForDay(41)).toBe('ilkbahar');
+  expect(seasonForDay(4)).toBe('sonbahar');
+  expect(seasonForDay(7)).toBe('kis');
+  expect(seasonForDay(10)).toBe('ilkbahar');
+  expect(seasonForDay(13)).toBe('yaz');
 });
 test('generateItem kategoriye uygun ve değer aralığında', () => {
   const r = createRng(7);

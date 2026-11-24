@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Action } from '../../game/reducer';
 import type { GameState } from '../../game/types';
 import { formatTL } from '../../game/format';
+import { dateLabel } from '../../game/calendar';
 import { STAGE_LABEL } from '../components/TopBar';
 import { Sheet } from '../components/Sheet';
 import { Button } from '../components/Button';
@@ -59,7 +60,7 @@ export function MenuScreen({ state, dispatch, onPlay, onNewGame }: {
           {progress ? (
             <button type="button" className="menu-btn menu-btn--primary" style={rise()} onClick={onPlay}>
               <span className="menu-btn__label">Devam et</span>
-              <span className="menu-btn__sub">Hafta {state.day} · {formatTL(state.money)} · {STAGE_LABEL[state.stage]}{state.hard ? ' · Zor' : ''}</span>
+              <span className="menu-btn__sub">{dateLabel(state.day)} · {formatTL(state.money)} · {STAGE_LABEL[state.stage]}{state.hard ? ' · Zor' : ''}</span>
             </button>
           ) : null}
           <button
