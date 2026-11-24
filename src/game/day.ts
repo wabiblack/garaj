@@ -17,6 +17,7 @@ import { pickStory } from './story';
 import { adjustListing } from './expertise';
 import { marketIndex, stepMarket } from './market';
 import { riskListing, settleRisks, settleVehicles, weekNote } from './realism';
+import { dropOrphanParts } from './workshop';
 
 export function emptySummary(day: number): DaySummary {
   return { day, bought: 0, sold: 0, spent: 0, earned: 0, notes: [] };
@@ -119,7 +120,7 @@ export function startNextDay(evening: GameState): GameState {
   const wn = weekNote(day);
   if (wn) notes.push(wn);
   const repLoss = state.pendingCatch.reduce((sum, c) => sum + (c.knowing === false ? 5 : 15), 0);
-  const next: GameState = settleVehicles(settleBank(applyDailyCosts({
+  const next: GameState = dropOrphanParts(settleVehicles(settleBank(applyDailyCosts({
     ...state,
     day,
     phase: 'day',
@@ -141,7 +142,7 @@ export function startNextDay(evening: GameState): GameState {
       };
     }),
     summary: { ...emptySummary(day), notes: season !== state.season ? [...notes, SEASON_NOTE[season]] : notes },
-  })));
+  }))));
   const rng = createRng(state.rngState);
   let listings = listingsFor(next, rng);
   let money = next.money;

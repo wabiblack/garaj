@@ -14,7 +14,8 @@ import { fire, hire, openBranch, upgradeCapacity, upgradeLocation, type GrowthBl
 import { deposit, repayLoan, takeLoan, withdraw, type BankBlock } from './bank';
 import { familyBorrow, familyPay, familyRepay, type FamilyBlock } from './family';
 import { buyStock, sellStock, type StockBlock } from './stocks';
-import type { StockId, TalentId } from './types';
+import type { PartSource, StockId, TalentId } from './types';
+import { installPart, orderPart, treat, type WorkshopBlock } from './workshop';
 import { XP, gainXp, learnTalent, talentRank } from './talents';
 import { newGame, type StartStage } from './newGame';
 import { checkAchievements, recordPurchase, recordSale, unlockAchievement } from './career';
@@ -42,6 +43,8 @@ export type Action =
   | { type: 'deposit' | 'withdraw'; amount: number }
   | { type: 'buyStock' | 'sellStock'; id: StockId; shares: number }
   | { type: 'learnTalent'; id: TalentId }
+  | { type: 'orderPart'; itemId: string; defectId: string; source: PartSource }
+  | { type: 'installPart' | 'treat'; itemId: string; defectId: string; quality: number }
   | { type: 'familyPay' } | { type: 'familyBorrow'; amount: number } | { type: 'familyRepay' }
   | { type: 'restartStage' }
   | { type: 'fulfillOrder'; orderId: string; itemId: string }
@@ -56,7 +59,7 @@ export type Action =
 
 export interface GameView { state: GameState; message: string | null; lastOffer: OfferResult | null }
 
-const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | FamilyBlock | StockBlock> | 'okul', string> = {
+const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | FamilyBlock | StockBlock | WorkshopBlock> | 'okul', string> = {
   'yetersiz-para': 'Paran yetmiyor',
   'depo-dolu': 'Depon dolu',
   'asama-2-degil': 'Çırak motor işine girince alınır',
@@ -72,6 +75,8 @@ const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | Fam
   'guven-dusuk': 'Ailenin sana güveni az: önce verdiğin sözleri tut',
   'borc-var': 'Önce aileye olan borcunu öde',
   'yetersiz-hisse': 'O kadar hissen yok',
+  'parca-yolda': 'Parça henüz gelmedi; hafta sonu kargoda',
+  'parca-yok': 'Önce parçayı sipariş et',
   'asama-4-degil': 'Şubeler holding kurunca açılır',
   'okul': 'Bu hafta okul var: iş hakkın bitti. Haftayı bitir',
 };
@@ -264,6 +269,19 @@ function step(view: GameView, action: Action): GameView {
         rngState: rng.state(),
       };
       return to(unlockAchievement(next, 'siparisci'), `${order.buyerName} çok memnun kaldı`);
+    }
+    case 'orderPart':
+    case 'installPart':
+    case 'treat': {
+      if (!day) return same();
+      const counts = action.type !== 'orderPart';
+      if (counts && actionsLeft(s) <= 0) return same(BLOCK_MESSAGE.okul);
+      const res = action.type === 'orderPart' ? orderPart(s, action.itemId, action.defectId, action.source)
+        : action.type === 'installPart' ? installPart(s, action.itemId, action.defectId, action.quality)
+        : treat(s, action.itemId, action.defectId, action.quality);
+      if (res === null) return same();
+      if (typeof res === 'string') return same(BLOCK_MESSAGE[res]);
+      return to(counts ? { ...res, used: res.used + 1 } : res);
     }
     case 'learnTalent': {
       const next = learnTalent(s, action.id);

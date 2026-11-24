@@ -97,6 +97,7 @@ function fillV3(s: GameState): GameState {
     stocks: fillStocks(s.stocks),
     talents: s.talents?.ranks ? s.talents : retroTalents(s),
     used: typeof s.used === 'number' ? s.used : 0,
+    parts: Array.isArray(s.parts) ? s.parts : [],
   };
 }
 

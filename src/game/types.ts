@@ -117,6 +117,9 @@ export type TalentId = 'pazarlik' | 'goz' | 'tamir' | 'karizma';
 export type TraitId = 'hesapli' | 'dikkatli' | 'tamirci' | 'girisken' | 'caliskan';
 /** Karakter gelişimi: tecrübe, seviye, harcanmamış puan, yetenek seviyeleri (0–3). */
 export interface Talents { xp: number; level: number; points: number; ranks: Record<TalentId, number> }
+export type PartSource = 'orijinal' | 'muadil' | 'cikma';
+/** Sipariş edilen yedek parça; arrives haftasında takılabilir. */
+export interface PartOrder { itemId: string; defectId: string; source: PartSource; arrives: number }
 export interface DaySummary { day: number; bought: number; sold: number; spent: number; earned: number; notes: string[] }
 
 export interface GameState {
@@ -173,6 +176,8 @@ export interface GameState {
   talents: Talents;
   /** Bu hafta kullanılan iş hakkı (okul haftalarında sınırlı). */
   used: number;
+  /** Sipariş edilmiş, takılmayı bekleyen parçalar. */
+  parts: PartOrder[];
   /** Son alımlar ve satışlar (en çok LEDGER_MAX). */
   ledger: LedgerEntry[];
 }
