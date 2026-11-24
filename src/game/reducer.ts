@@ -13,6 +13,8 @@ import { checkProgress, completeTransition, isBankrupt, restartStage } from './p
 import { fire, hire, openBranch, upgradeCapacity, upgradeLocation, type GrowthBlock } from './growth';
 import { deposit, repayLoan, takeLoan, withdraw, type BankBlock } from './bank';
 import { familyBorrow, familyPay, familyRepay, type FamilyBlock } from './family';
+import { buyStock, sellStock, type StockBlock } from './stocks';
+import type { StockId } from './types';
 import { newGame, type StartStage } from './newGame';
 import { checkAchievements, recordPurchase, recordSale, unlockAchievement } from './career';
 import type { RNG } from './rng';
@@ -36,6 +38,7 @@ export type Action =
   | { type: 'hire' | 'fire'; role: keyof Employees }
   | { type: 'takeLoan'; amount: number } | { type: 'repayLoan' }
   | { type: 'deposit' | 'withdraw'; amount: number }
+  | { type: 'buyStock' | 'sellStock'; id: StockId; shares: number }
   | { type: 'familyPay' } | { type: 'familyBorrow'; amount: number } | { type: 'familyRepay' }
   | { type: 'restartStage' }
   | { type: 'fulfillOrder'; orderId: string; itemId: string }
@@ -50,7 +53,7 @@ export type Action =
 
 export interface GameView { state: GameState; message: string | null; lastOffer: OfferResult | null }
 
-const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | FamilyBlock>, string> = {
+const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | FamilyBlock | StockBlock>, string> = {
   'yetersiz-para': 'Paran yetmiyor',
   'depo-dolu': 'Depon dolu',
   'asama-2-degil': 'Çırak motor işine girince alınır',
@@ -58,13 +61,14 @@ const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | Fam
   'en-ust-seviye': 'Zaten en üst seviyede',
   'zaten-var': 'Zaten çalışıyor',
   'kredi-var': 'Önce mevcut krediyi öde',
-  'resit-degil': '18 yaşından önce bankadan kredi çekemezsin',
+  'resit-degil': '18 yaşından önce kredi çekemez, borsada işlem yapamazsın',
   'itibar-dusuk': 'İtibarın düşük: banka kredi vermiyor',
   'gecmis-yok': 'Banka en az 5 satışlık geçmiş istiyor',
   'limit-asimi': 'Bu tutar limiti aşıyor',
   'resit': 'Artık reşitsin: borç için bankaya git',
   'guven-dusuk': 'Ailenin sana güveni az: önce verdiğin sözleri tut',
   'borc-var': 'Önce aileye olan borcunu öde',
+  'yetersiz-hisse': 'O kadar hissen yok',
   'asama-4-degil': 'Şubeler holding kurunca açılır',
 };
 
@@ -199,7 +203,9 @@ function step(view: GameView, action: Action): GameView {
     case 'withdraw':
     case 'familyPay':
     case 'familyBorrow':
-    case 'familyRepay': {
+    case 'familyRepay':
+    case 'buyStock':
+    case 'sellStock': {
       const res =
         action.type === 'upgradeCapacity' ? upgradeCapacity(s)
         : action.type === 'upgradeLocation' ? upgradeLocation(s)
@@ -210,6 +216,8 @@ function step(view: GameView, action: Action): GameView {
         : action.type === 'familyPay' ? familyPay(s)
         : action.type === 'familyBorrow' ? familyBorrow(s, Math.round(action.amount))
         : action.type === 'familyRepay' ? familyRepay(s)
+        : action.type === 'buyStock' ? buyStock(s, action.id, action.shares)
+        : action.type === 'sellStock' ? sellStock(s, action.id, action.shares)
         : repayLoan(s);
       if (res === null) return same();
       if (typeof res === 'string') return same(BLOCK_MESSAGE[res]);

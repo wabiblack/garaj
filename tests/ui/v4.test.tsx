@@ -221,3 +221,26 @@ test('aile görevi ilanlarda görünür, Finans > Aile’den ödenir', async () 
   await userEvent.click(within(aile).getByRole('button', { name: /Aileden borç al/ }));
   expect(within(aile).getByText(/Aileye borcun/)).toBeInTheDocument();
 });
+
+test('Finans > Borsa: reşit olmayan yalnız izler, reşit olan alır satar', async () => {
+  seedSave(makeState({ stage: 3, age: 18, money: 100_000 }));
+  renderGame();
+  await userEvent.click(screen.getByRole('tab', { name: 'Finans' }));
+  await userEvent.click(screen.getByRole('tab', { name: 'Borsa' }));
+  const borsa = screen.getByRole('region', { name: 'Borsa' });
+  const row = within(borsa).getByRole('group', { name: 'Yıldız Oto' });
+  await userEvent.click(within(row).getByRole('button', { name: /^Al:/ }));
+  expect(within(row).getByText(/^\d+ hisse/)).toBeInTheDocument();
+  await userEvent.click(within(row).getByRole('button', { name: 'Hepsini sat' }));
+  expect(within(row).queryByText(/^\d+ hisse/)).toBeNull();
+});
+
+test('Finans > Borsa reşit olmayana kapalı', async () => {
+  seedSave(makeState());
+  renderGame();
+  await userEvent.click(screen.getByRole('tab', { name: 'Finans' }));
+  await userEvent.click(screen.getByRole('tab', { name: 'Borsa' }));
+  const borsa = screen.getByRole('region', { name: 'Borsa' });
+  expect(within(borsa).getByText(/18 yaşında açılır/)).toBeInTheDocument();
+  expect(within(borsa).queryByRole('button', { name: /^Al:/ })).toBeNull();
+});

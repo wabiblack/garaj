@@ -9,6 +9,7 @@ import { generateOffers } from './selling';
 import { applyDailyCosts } from './growth';
 import { settleBank } from './bank';
 import { settleFamily } from './family';
+import { stepStocks } from './stocks';
 import { updateOrders } from './orders';
 import { markRivalTarget } from './rival';
 import { pickStory } from './story';
@@ -110,6 +111,7 @@ export function startNextDay(evening: GameState): GameState {
     reputation: Math.max(0, state.reputation - repLoss),
     pendingCatch: [],
     market: moved.market,
+    stocks: stepStocks(state.stocks, state.market, moved.market, createRng(state.rngState ^ 0x68e31da4)),
     inventory: state.inventory.map((i) => {
       const held = i.heldDays ?? 0;
       const appreciates = (i.tags.includes('nadir') || i.tags.includes('klasik')) && held < MAX_HELD_DAYS;

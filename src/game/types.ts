@@ -100,6 +100,9 @@ export interface LedgerEntry { day: number; kind: 'al' | 'sat'; name: string; ca
 export type FamilyTaskKind = 'katki' | 'kardes' | 'ders' | 'duzen';
 /** Anne ya da babanın verdiği görev; amount varsa para ister, yoksa gün sonunda kontrol edilir. */
 export interface FamilyTask { kind: FamilyTaskKind; from: 'anne' | 'baba'; title: string; text: string; amount?: number; daysLeft: number }
+export type StockId = 'lastik' | 'parca' | 'galeri' | 'lojistik';
+/** Borsa: fiyat geçmişi (son değer bugünkü), sahip olunan hisse, toplam maliyet. */
+export interface Stocks { prices: Record<StockId, number[]>; owned: Record<StockId, number>; cost: Record<StockId, number> }
 export interface DaySummary { day: number; bought: number; sold: number; spent: number; earned: number; notes: string[] }
 
 export interface GameState {
@@ -152,6 +155,7 @@ export interface GameState {
   bank: { savings: number };
   /** Aile: güven (0–100), açık görev, aileye borç ve kalan gün. */
   family: { trust: number; task: FamilyTask | null; debt: number; debtDays: number };
+  stocks: Stocks;
   /** Son alımlar ve satışlar (en çok LEDGER_MAX). */
   ledger: LedgerEntry[];
 }

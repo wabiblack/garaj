@@ -768,3 +768,11 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .family-task__text { margin: 0; font-size: 14px; line-height: 1.35; }
 .family__faces { display: flex; justify-content: center; gap: 8px; }
 .family__faces img { width: 96px; height: 96px; object-fit: contain; }
+.stock { display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.stock__head { display: flex; align-items: center; gap: 10px; }
+.stock__logo { width: 40px; height: 40px; flex: none; object-fit: contain; }
+.stock__logo--empty { display: grid; place-items: center; border-radius: 50%; background: var(--surface-2); color: var(--accent); font-weight: 900; }
+.stock__name { flex: 1; min-width: 0; }
+.stock .spark { width: 22%; height: 26px; flex: none; }
+.stock__price { text-align: right; font-weight: 800; font-size: 14px; }
+.stock__price .chg { font-size: 12px; }
