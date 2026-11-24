@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import type { Action, GameView } from '../../game/reducer';
 import { storageLimit } from '../../game/negotiation';
-import { careCost, cleanCost, MAX_CARE, paintCost, repairCost } from '../../game/prep';
+import { ANIMALS, PAINTABLE, careCost, cleanCost, MAX_CARE, paintCost, repairCost } from '../../game/prep';
+import { scrapValue } from '../../game/workshop';
+import { PaintSheet } from './PaintSheet';
+import { PetsPanel } from '../components/PetsPanel';
 import { marketValue } from '../../game/pricing';
 import { marketIndex } from '../../game/market';
 import { formatTL } from '../../game/format';
@@ -26,6 +29,8 @@ export function placeName(state: Pick<GameState, 'stage' | 'locationLevel' | 'pl
 export function GarageScreen({ view, dispatch }: { view: GameView; dispatch(a: Action): void }) {
   const { state } = view;
   const [selling, setSelling] = useState<string | null>(null);
+  const [painting, setPainting] = useState<string | null>(null);
+  const paintItem = state.inventory.find((i) => i.id === painting);
   const [fixing, setFixing] = useState<{ itemId: string; defectId: string } | null>(null);
   const sellItem = state.inventory.find((i) => i.id === selling);
   const fixItem = state.inventory.find((i) => i.id === fixing?.itemId);
@@ -38,6 +43,7 @@ export function GarageScreen({ view, dispatch }: { view: GameView; dispatch(a: A
         <h1>Garaj</h1>
         <span className="muted">{place} · {state.inventory.length}/{storageLimit(state)}</span>
       </div>
+      <PetsPanel state={state} dispatch={dispatch} />
       {state.inventory.length === 0 ? (
         <div className="empty">Garajın boş. İlanlardan bir şey al.</div>
       ) : (
@@ -69,11 +75,17 @@ export function GarageScreen({ view, dispatch }: { view: GameView; dispatch(a: A
                 {!item.cleaned ? (
                   <Button small onClick={() => dispatch({ type: 'clean', itemId: item.id })}>{`Temizle · ${formatTL(cleanCost(item))}`}</Button>
                 ) : null}
-                {item.category === 'araba' && !item.painted ? (
-                  <Button small onClick={() => dispatch({ type: 'paint', itemId: item.id })}>{`Boya · ${formatTL(paintCost(item, state))}`}</Button>
+                {PAINTABLE.includes(item.category) && !item.painted ? (
+                  <Button small onClick={() => setPainting(item.id)}>{`Boya · ${formatTL(paintCost(item, state))}`}</Button>
                 ) : null}
-                {item.category === 'guvercin' && item.careCount < MAX_CARE && !item.caredToday ? (
+                {ANIMALS.includes(item.category) && item.careCount < MAX_CARE && !item.caredToday ? (
                   <Button small onClick={() => dispatch({ type: 'care', itemId: item.id })}>{`Bak · ${formatTL(careCost(item))}`}</Button>
+                ) : null}
+                {item.category === 'kopek' && !state.pets.dog ? (
+                  <Button small onClick={() => dispatch({ type: 'keepPet', itemId: item.id })}>Yanında tut</Button>
+                ) : null}
+                {scrapValue(item) > 0 && (item.condition < 40 || item.defects.length >= 2) ? (
+                  <Button small onClick={() => dispatch({ type: 'scrap', itemId: item.id })}>{`Parça parça sat · ${formatTL(scrapValue(item))}`}</Button>
                 ) : null}
                 {state.orders.filter((o) => orderMatches(o, item)).map((o) => (
                   <Button key={o.id} small variant="good" onClick={() => dispatch({ type: 'fulfillOrder', orderId: o.id, itemId: item.id })}>
@@ -89,6 +101,7 @@ export function GarageScreen({ view, dispatch }: { view: GameView; dispatch(a: A
       {fixItem && fixDefect ? (
         <WorkshopSheet item={fixItem} defect={fixDefect} state={state} dispatch={dispatch} onClose={() => setFixing(null)} />
       ) : null}
+      {paintItem ? <PaintSheet item={paintItem} state={state} dispatch={dispatch} onClose={() => setPainting(null)} /> : null}
       {sellItem ? <SellSheet item={sellItem} state={state} dispatch={dispatch} onClose={() => setSelling(null)} /> : null}
     </section>
   );

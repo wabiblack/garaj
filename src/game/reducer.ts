@@ -15,7 +15,8 @@ import { deposit, repayLoan, takeLoan, withdraw, type BankBlock } from './bank';
 import { familyBorrow, familyPay, familyRepay, type FamilyBlock } from './family';
 import { buyStock, sellStock, type StockBlock } from './stocks';
 import type { PartSource, StockId, TalentId } from './types';
-import { installPart, orderPart, treat, type WorkshopBlock } from './workshop';
+import { installPart, orderPart, scrap, treat, type WorkshopBlock } from './workshop';
+import { adoptCat, feedPets, keepPet, type PetBlock } from './pets';
 import { XP, gainXp, learnTalent, talentRank } from './talents';
 import { newGame, type StartStage } from './newGame';
 import { checkAchievements, recordPurchase, recordSale, unlockAchievement } from './career';
@@ -30,7 +31,9 @@ export type Action =
   | { type: 'offer'; listingId: string; amount: number }
   | { type: 'inspect'; listingId: string }
   | { type: 'repair'; itemId: string; defectId: string; quality?: number }
-  | { type: 'clean' | 'paint' | 'care'; itemId: string }
+  | { type: 'clean' | 'care'; itemId: string }
+  | { type: 'paint'; itemId: string; quality?: number }
+  | { type: 'keepPet' | 'scrap'; itemId: string } | { type: 'adoptCat' } | { type: 'feedPets' }
   | { type: 'listForSale'; itemId: string; price: number; disclosed: boolean }
   | { type: 'unlist'; itemId: string }
   | { type: 'acceptOffer'; offerId: string }
@@ -59,7 +62,7 @@ export type Action =
 
 export interface GameView { state: GameState; message: string | null; lastOffer: OfferResult | null }
 
-const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | FamilyBlock | StockBlock | WorkshopBlock> | 'okul', string> = {
+const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | FamilyBlock | StockBlock | WorkshopBlock | PetBlock> | 'okul', string> = {
   'yetersiz-para': 'Paran yetmiyor',
   'depo-dolu': 'Depon dolu',
   'asama-2-degil': 'Çırak motor işine girince alınır',
@@ -166,7 +169,7 @@ function step(view: GameView, action: Action): GameView {
       const res =
         action.type === 'repair' ? repair(item, action.defectId, s)
         : action.type === 'clean' ? clean(item)
-        : action.type === 'paint' ? paint(item, s)
+        : action.type === 'paint' ? paint(item, s, action.quality ?? 1)
         : care(item);
       if (!res) return same();
       const cost = action.type === 'repair' ? round10(res.cost * (1 - repairDiscount(action.quality ?? 0))) : res.cost;
@@ -282,6 +285,18 @@ function step(view: GameView, action: Action): GameView {
       if (res === null) return same();
       if (typeof res === 'string') return same(BLOCK_MESSAGE[res]);
       return to(counts ? { ...res, used: res.used + 1 } : res);
+    }
+    case 'keepPet':
+    case 'adoptCat':
+    case 'feedPets':
+    case 'scrap': {
+      const res = action.type === 'keepPet' ? keepPet(s, action.itemId)
+        : action.type === 'adoptCat' ? adoptCat(s)
+        : action.type === 'feedPets' ? feedPets(s)
+        : day ? scrap(s, action.itemId) : null;
+      if (res === null) return same();
+      if (typeof res === 'string') return same(BLOCK_MESSAGE[res]);
+      return to(res);
     }
     case 'learnTalent': {
       const next = learnTalent(s, action.id);

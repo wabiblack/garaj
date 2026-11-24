@@ -72,7 +72,9 @@ describe('koleksiyon', () => {
   });
   test('nadir ve klasik eşyanın değeri her gün %3 artar, en çok 15 gün', () => {
     const item = makeItem({ tags: ['nadir'], baseValue: 1000 });
-    let s = makeState({ phase: 'evening', inventory: [item] });
+    // Köpek ve kedi var: hırsız ve fare olayları eşyayı etkilemesin.
+    const guard = { name: 'K', happiness: 100, fed: true };
+    let s = makeState({ phase: 'evening', inventory: [item], pets: { dog: guard, cat: guard } });
     s = startNextDay(s);
     expect(s.inventory[0].baseValue).toBe(1030);
     for (let i = 0; i < 30; i++) s = startNextDay({ ...s, phase: 'evening' });

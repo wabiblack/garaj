@@ -2,6 +2,8 @@
 // muadil ya da çıkma (ucuz, hafta sonu kargoyla) sipariş edilir, sonra takılır. Hayvanlar tedavi edilir.
 import type { Defect, GameState, Item, PartSource } from './types';
 import { repairCost } from './prep';
+export { PAINTABLE } from './prep';
+import { addLedger } from './career';
 import { round10 } from './pricing';
 import { XP, gainXp } from './talents';
 
@@ -157,4 +159,25 @@ export function treat(s: GameState, itemId: string, defectId: string, quality: n
 export function dropOrphanParts(s: GameState): GameState {
   const parts = s.parts.filter((p) => s.inventory.some((i) => i.id === p.itemId));
   return parts.length === s.parts.length ? s : { ...s, parts };
+}
+
+/** Parça parça satılabilen türler (hayvan ve kart hariç). */
+const SCRAPPABLE: Item['category'][] = ['bisiklet', 'telefon', 'konsol', 'motor', 'araba', 'escooter', 'bilgisayar', 'kamera', 'karavan', 'tekne', 'ismakinesi'];
+
+/** Hurdacıya parça parça satış: değerin yarısı; durumu ve kusuru ne olursa olsun. */
+export function scrapValue(item: Item): number {
+  return SCRAPPABLE.includes(item.category) ? round10(item.baseValue * 0.5) : 0;
+}
+
+export function scrap(s: GameState, itemId: string): GameState | WorkshopBlock {
+  const item = s.inventory.find((i) => i.id === itemId);
+  const value = item ? scrapValue(item) : 0;
+  if (!item || value === 0) return null;
+  return gainXp({
+    ...s, money: s.money + value,
+    inventory: s.inventory.filter((i) => i.id !== itemId), forSale: s.forSale.filter((f) => f.itemId !== itemId),
+    offers: s.offers.filter((o) => o.itemId !== itemId), parts: s.parts.filter((p) => p.itemId !== itemId),
+    ledger: addLedger(s.ledger, { day: s.day, kind: 'sat', name: `${item.brand} ${item.model} (parça parça)`, category: item.category, price: value, profit: value - item.boughtFor }),
+    summary: { ...s.summary, earned: s.summary.earned + value },
+  }, XP.repair);
 }

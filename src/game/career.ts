@@ -111,7 +111,7 @@ export function recordPurchase(state: GameState, listing: Listing, price: number
 /** Defterde tutulan en çok satır. */
 export const LEDGER_MAX = 60;
 
-function addLedger(ledger: LedgerEntry[] | undefined, entry: LedgerEntry): LedgerEntry[] {
+export function addLedger(ledger: LedgerEntry[] | undefined, entry: LedgerEntry): LedgerEntry[] {
   return [...(ledger ?? []), entry].slice(-LEDGER_MAX);
 }
 

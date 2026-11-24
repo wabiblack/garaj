@@ -120,6 +120,8 @@ export interface Talents { xp: number; level: number; points: number; ranks: Rec
 export type PartSource = 'orijinal' | 'muadil' | 'cikma';
 /** Sipariş edilen yedek parça; arrives haftasında takılabilir. */
 export interface PartOrder { itemId: string; defectId: string; source: PartSource; arrives: number }
+/** Evcil hayvan: mutluluk 0–100, bu hafta beslendi mi. */
+export interface Pet { name: string; brand?: string; model?: string; happiness: number; fed: boolean }
 export interface DaySummary { day: number; bought: number; sold: number; spent: number; earned: number; notes: string[] }
 
 export interface GameState {
@@ -178,6 +180,7 @@ export interface GameState {
   used: number;
   /** Sipariş edilmiş, takılmayı bekleyen parçalar. */
   parts: PartOrder[];
+  pets: { dog: Pet | null; cat: Pet | null };
   /** Son alımlar ve satışlar (en çok LEDGER_MAX). */
   ledger: LedgerEntry[];
 }

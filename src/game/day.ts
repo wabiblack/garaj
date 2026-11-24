@@ -18,6 +18,7 @@ import { adjustListing } from './expertise';
 import { marketIndex, stepMarket } from './market';
 import { riskListing, settleRisks, settleVehicles, weekNote } from './realism';
 import { dropOrphanParts } from './workshop';
+import { settlePets } from './pets';
 
 export function emptySummary(day: number): DaySummary {
   return { day, bought: 0, sold: 0, spent: 0, earned: 0, notes: [] };
@@ -104,8 +105,9 @@ export function startNextDay(evening: GameState): GameState {
   // Aile, biten günün durumuna bakar (alım sayısı, depo); ayrı zar akışı kullanır.
   const family = settleFamily(evening, createRng(evening.rngState ^ 0x2545f491));
   const familyNotes = family.summary.notes.slice(evening.summary.notes.length);
-  const risky = settleRisks({ ...family, summary: evening.summary }, createRng(evening.rngState ^ 0x1b873593));
-  const riskNotes = risky.summary.notes.slice(evening.summary.notes.length);
+  const petted = settlePets(family, createRng(evening.rngState ^ 0x27d4eb2f));
+  const risky = settleRisks({ ...petted, summary: evening.summary }, createRng(evening.rngState ^ 0x1b873593));
+  const riskNotes = [...petted.summary.notes.slice(family.summary.notes.length), ...risky.summary.notes.slice(evening.summary.notes.length)];
   const state = { ...risky, summary: evening.summary };
   const day = state.day + 1;
   const season = seasonForDay(day);

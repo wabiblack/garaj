@@ -98,6 +98,7 @@ function fillV3(s: GameState): GameState {
     talents: s.talents?.ranks ? s.talents : retroTalents(s),
     used: typeof s.used === 'number' ? s.used : 0,
     parts: Array.isArray(s.parts) ? s.parts : [],
+    pets: s.pets && typeof s.pets === 'object' ? { dog: s.pets.dog ?? null, cat: s.pets.cat ?? null } : { dog: null, cat: null },
   };
 }
 

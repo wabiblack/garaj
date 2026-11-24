@@ -328,3 +328,26 @@ test('muadil parça kargoda bekler; hayvan kendin tedavi edilir', async () => {
   for (let k = 0; k < 8; k++) fireEvent.click(within(dialog).getByRole('button', { name: 'Fırçala' }));
   expect(screen.queryByRole('button', { name: /Hasta/ })).toBeNull();
 });
+
+test('garaj: boya mini oyunu, köpeği yanında tut, mama ver, kedi sahiplen, parça parça sat', async () => {
+  const car = makeItem({ id: 'c', category: 'araba', brand: 'Doruk', model: 'Sedan 1.6', baseValue: 100000, condition: 5, defects: [] });
+  const dog = makeItem({ id: 'k', category: 'kopek', brand: 'Kangal', model: 'Sivas' });
+  seedSave(makeState({ stage: 3, age: 18, money: 1e6, inventory: [car, dog] }));
+  renderGame();
+  fireEvent.click(screen.getByRole('tab', { name: 'Garaj' }));
+  fireEvent.click(screen.getByRole('button', { name: /^Boya/ }));
+  const sheet = screen.getByRole('dialog', { name: 'Boya' });
+  const finish = within(sheet).getByRole('button', { name: /Boyayı bitir/ });
+  expect(finish).toBeDisabled();
+  sheet.querySelectorAll('[data-cell]').forEach((c) => fireEvent.click(c));
+  expect(finish).toBeEnabled();
+  fireEvent.click(finish);
+  expect(screen.queryByRole('button', { name: /^Boya/ })).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Yanında tut' }));
+  expect(screen.getByRole('group', { name: 'Kangal' })).toHaveTextContent('Bekçi');
+  fireEvent.click(screen.getByRole('button', { name: 'Sokak kedisini sahiplen' }));
+  fireEvent.click(screen.getByRole('button', { name: /Mama ver/ }));
+  expect(screen.getByRole('group', { name: 'Tekir' })).toHaveTextContent('karnı tok');
+  fireEvent.click(screen.getByRole('button', { name: /Parça parça sat/ }));
+  expect(screen.queryByText('Doruk Sedan 1.6')).toBeNull();
+});

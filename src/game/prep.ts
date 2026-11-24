@@ -27,9 +27,14 @@ export function paintCost(item: Item, state: GameState): number {
   return round10(item.baseValue * 0.06 * (state.employees.boyaci ? 0.7 : 1));
 }
 
-export function paint(item: Item, state: GameState): PrepResult {
-  if (item.category !== 'araba' || item.painted) return null;
-  return { item: { ...item, painted: true, condition: Math.min(100, item.condition + 20) }, cost: paintCost(item, state) };
+/** Boyanabilen türler. */
+export const PAINTABLE: Item['category'][] = ['araba', 'motor', 'karavan', 'tekne'];
+
+/** quality: boya mini oyunundaki işçilik (0–1); iyi boya durumu daha çok artırır. */
+export function paint(item: Item, state: GameState, quality = 1): PrepResult {
+  if (!PAINTABLE.includes(item.category) || item.painted) return null;
+  const q = Math.max(0, Math.min(1, quality));
+  return { item: { ...item, painted: true, condition: Math.min(100, item.condition + Math.round(10 + 10 * q)) }, cost: paintCost(item, state) };
 }
 
 /** Tamir oyunu: ibre bu aralıkta durursa isabet. */
@@ -43,13 +48,15 @@ export function repairDiscount(hits: number): number {
 }
 
 export const MAX_CARE = 5;
+/** Bakım yapılabilen hayvanlar. */
+export const ANIMALS: Item['category'][] = ['guvercin', 'kus', 'balik', 'kopek'];
 
 export function careCost(item: Item): number {
   return round10(item.baseValue * 0.03);
 }
 
 export function care(item: Item): PrepResult {
-  if (item.category !== 'guvercin' || item.caredToday || item.careCount >= MAX_CARE) return null;
+  if (!ANIMALS.includes(item.category) || item.caredToday || item.careCount >= MAX_CARE) return null;
   return {
     item: {
       ...item,
