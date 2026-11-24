@@ -712,3 +712,30 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .badge__img { width: 44px; height: 44px; object-fit: contain; margin-bottom: 4px; }
 .badge:not(.badge--got) .badge__img { filter: grayscale(1) brightness(.6); }
 .menu__bg ~ .menu__inner .logo__word, .menu__bg ~ .menu__inner .logo__tag { text-shadow: 0 2px 12px rgba(0, 0, 0, .6); }
+
+/* ---------- Öğretici ve açılış hikâyesi ---------- */
+.app > .coach { flex: none; margin: 8px 12px 0; }
+.overlay .coach { text-align: left; margin: 0 0 12px; }
+.coach { align-items: center; }
+.coach__face { width: 44px; height: 44px; flex: none; object-fit: contain; }
+.coach__body { flex: 1; min-width: 0; }
+.coach__step { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+.coach__dots, .intro__dots { display: inline-flex; gap: 4px; }
+.intro__dots { justify-content: center; }
+.coach__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--line); transition: background-color .2s; }
+.coach__dot--on { background: var(--accent); }
+.coach .coach__text { margin-top: 2px; }
+@keyframes hint-pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); } 50% { box-shadow: 0 0 0 6px transparent; } }
+.btn--hint { animation: hint-pulse 1.4s ease-in-out infinite; }
+.tab--hint { color: var(--accent); }
+.tab--hint .tab__icon { animation: tab-pop 1.4s ease-in-out infinite; }
+.intro { position: relative; animation: screen-in .3s ease both; }
+.intro__skip {
+  position: absolute; top: calc(-12px + env(safe-area-inset-top)); right: 0; min-height: 40px; padding: 0 14px;
+  border: 0; border-radius: 20px; background: color-mix(in srgb, var(--surface) 70%, transparent); color: var(--muted); font-weight: 700; cursor: pointer;
+}
+.intro__place { width: 100%; border-radius: 18px; aspect-ratio: 320 / 140; }
+.intro__face { width: 140px; height: 140px; margin: 0 auto; border-radius: 50%; }
+.intro__art--big { width: 100%; height: 160px; margin: 0 auto; }
+@media (prefers-reduced-motion: reduce) { .btn--hint, .tab--hint .tab__icon, .intro { animation: none; } }
+.intro__face--bust { border-radius: 0; object-fit: contain; }

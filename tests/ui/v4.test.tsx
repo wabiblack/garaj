@@ -44,7 +44,7 @@ test('oyun bitince zor modda baştan başlanır, başarımlar kalır', async () 
   renderGame();
   await userEvent.click(screen.getByRole('button', { name: 'Zor modda baştan başla' }));
   await userEvent.click(screen.getByRole('button', { name: 'Hikâyeye başla' }));
-  await userEvent.click(screen.getByRole('button', { name: 'Başla' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Atla' }));
   await userEvent.click(screen.getByRole('tab', { name: 'Profil' }));
   expect(screen.getByText(/12 yaş · .* · Zor mod/)).toBeInTheDocument();
   expect(screen.getByText('Başarımlar').parentElement).toHaveTextContent('1/14');
@@ -66,7 +66,7 @@ test('ana menü: yeni oyun onay ister, onaylanınca giriş hikâyesi açılır',
   expect(sheet).toHaveTextContent('geri alınamaz');
   await userEvent.click(within(sheet).getByRole('button', { name: 'Evet, baştan başla' }));
   await userEvent.click(screen.getByRole('button', { name: 'Hikâyeye başla' }));
-  await userEvent.click(screen.getByRole('button', { name: 'Başla' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Atla' }));
   expect(screen.getByText(/Gün 1/, { selector: '.topbar__day' })).toBeInTheDocument();
 });
 
@@ -75,7 +75,7 @@ test('ilk açılışta Oyuna başla; Profil’den ana menüye dönülür', async
   expect(screen.queryByRole('button', { name: /Devam et/ })).toBeNull();
   await userEvent.click(screen.getByRole('button', { name: 'Oyuna başla' }));
   await userEvent.click(screen.getByRole('button', { name: 'Hikâyeye başla' }));
-  await userEvent.click(screen.getByRole('button', { name: 'Başla' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Atla' }));
   await userEvent.click(screen.getByRole('tab', { name: 'Profil' }));
   await userEvent.click(screen.getByRole('button', { name: 'Ana menüye dön' }));
   expect(screen.getByRole('dialog', { name: 'Ana menü' })).toBeInTheDocument();
@@ -104,7 +104,7 @@ test('karakter oluşturma: isim ve görünüm oyuna geçer, hikâyede doğru ekl
   expect(within(creator).getByLabelText('Gözlüklü')).toBeChecked();
   await userEvent.click(within(creator).getByRole('button', { name: 'Hikâyeye başla' }));
   expect(screen.getByRole('heading', { name: /Ali 12 yaşında/ })).toBeInTheDocument();
-  await userEvent.click(screen.getByRole('button', { name: 'Başla' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Atla' }));
   expect(screen.getByText(/^Ali · 12 yaş/)).toBeInTheDocument();
 });
 
@@ -159,6 +159,6 @@ test('karakter ekranında seçilen yaş, oyunun başlangıç yaşı olur', async
   await userEvent.click(within(ages).getByLabelText('16 yaş'));
   await userEvent.click(within(creator).getByRole('button', { name: 'Hikâyeye başla' }));
   expect(screen.getByRole('heading', { name: /16 yaşında/ })).toBeInTheDocument();
-  await userEvent.click(screen.getByRole('button', { name: 'Başla' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Atla' }));
   expect(screen.getByText(/· 16 yaş/)).toBeInTheDocument();
 });

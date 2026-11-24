@@ -7,20 +7,6 @@ import { formatTL } from '../../game/format';
 import { orderTitle } from '../../game/orders';
 import { RIVAL } from '../../game/rival';
 import { expertLevel } from '../../game/expertise';
-import { coachDismissed, coachTip, dismissCoach } from '../coach';
-
-function Coach({ state }: { state: GameState }) {
-  const [hidden, setHidden] = useState(coachDismissed);
-  const tip = hidden ? null : coachTip(state);
-  if (!tip) return null;
-  return (
-    <aside className="coach" aria-label="Rehber">
-      <span className="coach__icon" aria-hidden="true">💡</span>
-      <p className="coach__text">{tip}</p>
-      <button type="button" className="coach__close" aria-label="Rehberi kapat" onClick={() => { dismissCoach(); setHidden(true); }}>×</button>
-    </aside>
-  );
-}
 
 const SPECIAL_LABEL = { mezat: 'Canlı mezat', hurdalik: 'Hurdalık', klasik: 'Nadir klasik' } as const;
 
@@ -77,7 +63,6 @@ function Quests({ quests }: { quests: Quest[] }) {
 export function ListingsScreen({ state, onOpen }: { state: GameState; onOpen(id: string): void }) {
   return (
     <section>
-      <Coach state={state} />
       {state.event ? (
         <div className="event">
           <div className="event__title">{EVENT_INFO[state.event].title}</div>

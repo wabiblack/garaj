@@ -7,8 +7,10 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'profil', label: 'Profil', icon: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20.5a7.5 7.5 0 0 1 15 0' },
 ];
 
-export function TabBar({ active, onChange, badges = {} }: {
+export function TabBar({ active, onChange, hint, badges = {} }: {
   active: Tab;
+  /** Öğreticinin gösterdiği sekme. */
+  hint?: Tab;
   onChange(tab: Tab): void;
   badges?: Partial<Record<Tab, number>>;
 }) {
@@ -19,7 +21,7 @@ export function TabBar({ active, onChange, badges = {} }: {
           key={t.id}
           role="tab"
           aria-selected={active === t.id}
-          className={'tab' + (active === t.id ? ' tab--active' : '')}
+          className={'tab' + (active === t.id ? ' tab--active' : '') + (hint === t.id && active !== t.id ? ' tab--hint' : '')}
           onClick={() => onChange(t.id)}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true" className="tab__icon">

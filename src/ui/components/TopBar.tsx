@@ -22,7 +22,7 @@ function goal(state: GameState): { label: string; pct: number } {
   return { label: `Hedef: ${LOCATIONS[2]} + itibar 90`, pct };
 }
 
-export function TopBar({ state, onEndDay }: { state: GameState; onEndDay(): void }) {
+export function TopBar({ state, hint, onEndDay }: { state: GameState; hint?: boolean; onEndDay(): void }) {
   const g = goal(state);
   return (
     <header className="topbar">
@@ -39,7 +39,7 @@ export function TopBar({ state, onEndDay }: { state: GameState; onEndDay(): void
           <div className="goal__track"><div className="goal__fill" style={{ width: `${g.pct}%` }} /></div>
         </div>
         {state.phase === 'day' ? (
-          <button type="button" className="btn btn--primary btn--small" onClick={onEndDay}>Günü bitir</button>
+          <button type="button" className={'btn btn--primary btn--small' + (hint ? ' btn--hint' : '')} onClick={onEndDay}>Günü bitir</button>
         ) : null}
       </div>
     </header>

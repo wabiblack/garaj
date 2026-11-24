@@ -6,6 +6,7 @@ import { formatTL } from '../../game/format';
 import { Money } from '../components/Money';
 import { Button } from '../components/Button';
 import { parseAmount } from './NegotiationSheet';
+import { Tutorial } from '../components/Tutorial';
 
 function OfferRow({ offer, label, dispatch }: { offer: BuyerOffer; label: string; dispatch(a: Action): void }) {
   const [countering, setCountering] = useState(false);
@@ -47,6 +48,7 @@ export function EveningScreen({ view, dispatch }: { view: GameView; dispatch(a: 
       <div className="overlay__inner">
         <p className="overlay__kicker">Akşam oldu</p>
         <h1>Gün {state.day} bitti</h1>
+        <Tutorial state={state} />
         <div className="stats">
           <div className="stat"><span>Alınan</span><strong>{s.bought}</strong></div>
           <div className="stat"><span>Satılan</span><strong>{s.sold}</strong></div>

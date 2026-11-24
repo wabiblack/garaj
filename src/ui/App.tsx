@@ -19,6 +19,7 @@ import { TransitionScreen } from './screens/TransitionScreen';
 import { EndScreen } from './screens/EndScreen';
 import { BankruptScreen } from './screens/BankruptScreen';
 import { IntroScreen } from './screens/IntroScreen';
+import { Tutorial, tutorialTarget } from './components/Tutorial';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { isBankrupt } from '../game/progression';
 import { AuctionSheet } from './screens/AuctionSheet';
@@ -46,6 +47,7 @@ function Game() {
   const [tab, setTab] = useState<Tab>('ilanlar');
   const [listingId, setListingId] = useState<string | null>(null);
   const [auction, setAuction] = useState<Listing | null>(null);
+  const [, setTutorialTick] = useState(0);
   const achievement = useFeedback(view);
   useDailyStreak(view !== null, dispatch);
 
@@ -83,7 +85,7 @@ function Game() {
     );
   }
   const overlay = fresh && !introDone && state.day === 1 && state.stats.sales === 0
-    ? <IntroScreen name={state.player.name} age={state.age} money={state.money} onStart={() => setIntroDone(true)} />
+    ? <IntroScreen state={state} onStart={() => setIntroDone(true)} />
     : state.pendingTransition !== null
     ? <TransitionScreen to={state.pendingTransition} player={state.player} onContinue={() => dispatch({ type: 'completeTransition' })} />
     : state.phase === 'evening'
@@ -96,9 +98,12 @@ function Game() {
           ? <BankruptScreen state={state} onRestart={() => dispatch({ type: 'restartStage' })} />
           : null;
 
+  const hint = overlay ? null : tutorialTarget(state);
+
   return (
     <div className="app">
-      <TopBar state={state} onEndDay={() => dispatch({ type: 'endDay' })} />
+      <TopBar state={state} hint={hint?.endDay} onEndDay={() => dispatch({ type: 'endDay' })} />
+      {state.phase === 'day' ? <Tutorial state={state} onClose={() => setTutorialTick((n) => n + 1)} /> : null}
       <main className="screen" key={tab}>
         {tab === 'ilanlar' ? (
           <ListingsScreen
@@ -114,7 +119,7 @@ function Game() {
         {tab === 'satis' ? <SalesScreen view={view} dispatch={dispatch} /> : null}
         {tab === 'profil' ? <ProfileScreen view={view} dispatch={dispatch} onMenu={() => setInMenu(true)} onEditLook={() => setCreator('edit')} /> : null}
       </main>
-      <TabBar active={tab} onChange={setTab} badges={{ satis: state.forSale.length }} />
+      <TabBar active={tab} onChange={setTab} hint={hint?.tab} badges={{ satis: state.forSale.length }} />
       {listingId ? (
         <NegotiationSheet
           key={listingId}

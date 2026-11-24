@@ -80,7 +80,7 @@ test('şapkalı harfler de çevrilir', async () => {
 test('yeni oyunda giriş ekranı çıkar, Başla ile kapanır; kayıtlı oyunda çıkmaz', async () => {
   const { unmount } = renderGame();
   expect(screen.getByRole('dialog', { name: 'Hikâye' })).toBeInTheDocument();
-  await userEvent.click(screen.getByRole('button', { name: 'Başla' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Atla' }));
   expect(screen.queryByRole('dialog', { name: 'Hikâye' })).toBeNull();
   unmount();
   renderGame();
