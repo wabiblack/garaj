@@ -1,6 +1,7 @@
 import type { Category, Defect, Item, SpecialKind, Stage, Tag } from './types';
 import type { RNG } from './rng';
 import { round10 } from './pricing';
+import { wearItem } from './realism';
 
 /** Her türün açıldığı yaş ve aşama (motor ehliyetle 16, araba 18, iş makinesi holdingde). */
 export const CATEGORY_OPEN: Record<Category, { age: number; stage: Stage }> = {
@@ -207,10 +208,10 @@ export function generateItem(category: Category, rng: RNG, opts: { special?: Spe
     const d = makeDefect(t, baseValue, rng, defects);
     if (d) defects.push(d);
   }
-  return {
+  return wearItem({
     id: rng.id('it'), category, brand, model, baseValue, condition, defects, tags: [...tags],
     cleaned: false, painted: false, careCount: 0, caredToday: false, boughtFor: 0,
-  };
+  }, rng);
 }
 
 /** Kurnaz satıcı: eşyaya gizli bir kusur ekler (yoksa yerine en ağırını gizler). */

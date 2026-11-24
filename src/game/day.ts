@@ -16,6 +16,7 @@ import { markRivalTarget } from './rival';
 import { pickStory } from './story';
 import { adjustListing } from './expertise';
 import { marketIndex, stepMarket } from './market';
+import { riskListing, settleRisks, settleVehicles, weekNote } from './realism';
 
 export function emptySummary(day: number): DaySummary {
   return { day, bought: 0, sold: 0, spent: 0, earned: 0, notes: [] };
@@ -76,7 +77,7 @@ export function generateListings(state: ListingContext, rng: RNG): Listing[] {
     const item = generateItem('araba', rng, { ...(kind === 'mezat' ? {} : { special: kind }), ...(state.stage === 4 ? { scale: 2 } : {}) });
     listings.unshift(makeListing(item, state.season, rng, kind, 'normal', marketIndex(state.market, 'araba')));
   }
-  return listings.map((l) => adjustListing(l, state));
+  return listings.map((l) => adjustListing(riskListing(l, rng), state));
 }
 
 /**
@@ -102,7 +103,9 @@ export function startNextDay(evening: GameState): GameState {
   // Aile, biten günün durumuna bakar (alım sayısı, depo); ayrı zar akışı kullanır.
   const family = settleFamily(evening, createRng(evening.rngState ^ 0x2545f491));
   const familyNotes = family.summary.notes.slice(evening.summary.notes.length);
-  const state = { ...family, summary: evening.summary };
+  const risky = settleRisks({ ...family, summary: evening.summary }, createRng(evening.rngState ^ 0x1b873593));
+  const riskNotes = risky.summary.notes.slice(evening.summary.notes.length);
+  const state = { ...risky, summary: evening.summary };
   const day = state.day + 1;
   const season = seasonForDay(day);
   const notes = state.pendingCatch.map((c) =>
@@ -112,9 +115,11 @@ export function startNextDay(evening: GameState): GameState {
   const moved = stepMarket(state.market, createRng(state.rngState ^ 0x5bd1e995), state.event);
   if (moved.note) notes.push(moved.note);
   if (isBirthday(day)) notes.push(`İyi ki doğdun! ${state.player.name} artık ${state.age + 1} yaşına girdi`);
-  notes.push(...familyNotes);
+  notes.push(...familyNotes, ...riskNotes);
+  const wn = weekNote(day);
+  if (wn) notes.push(wn);
   const repLoss = state.pendingCatch.reduce((sum, c) => sum + (c.knowing === false ? 5 : 15), 0);
-  const next: GameState = settleBank(applyDailyCosts({
+  const next: GameState = settleVehicles(settleBank(applyDailyCosts({
     ...state,
     day,
     phase: 'day',
@@ -136,7 +141,7 @@ export function startNextDay(evening: GameState): GameState {
       };
     }),
     summary: { ...emptySummary(day), notes: season !== state.season ? [...notes, SEASON_NOTE[season]] : notes },
-  }));
+  })));
   const rng = createRng(state.rngState);
   let listings = listingsFor(next, rng);
   let money = next.money;

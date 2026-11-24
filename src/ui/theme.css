@@ -793,3 +793,4 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 /* Resimli sahnede yazı altta durur; resmin önemli kısmı (üst %55) açık kalır. */
 .overlay--scene .overlay__inner--center { margin: auto auto 0; }
 .intro__skip { position: fixed; top: calc(12px + env(safe-area-inset-top)); right: 16px; z-index: 1; }
+.risk { margin: 0 0 10px; padding: 8px 10px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); font-weight: 700; font-size: 13px; }

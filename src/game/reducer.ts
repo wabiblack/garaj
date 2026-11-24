@@ -130,6 +130,10 @@ function step(view: GameView, action: Action): GameView {
       if (block) return same(BLOCK_MESSAGE[block]);
       const { result, listing: updated } = respondToOffer(listing, amount);
       if (result.kind === 'accepted') {
+        if (listing.risk === 'sahte') {
+          const lost = spend({ ...s, listings: s.listings.filter((l) => l.id !== listing.id) }, result.price);
+          return { state: lost, message: 'Dolandırıldın! Satıcı kaporayı alıp ortadan kayboldu.', lastOffer: result };
+        }
         return withRival({ state: buy(s, listing, result.price), message: null, lastOffer: result }, listing.id);
       }
       const listings = result.kind === 'walked'

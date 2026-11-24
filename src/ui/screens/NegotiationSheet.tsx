@@ -3,6 +3,8 @@ import type { Action, GameView } from '../../game/reducer';
 import type { Listing } from '../../game/types';
 import { inspectionCost } from '../../game/negotiation';
 import { talentRank } from '../../game/talents';
+import { riskOf } from '../../game/realism';
+import { usage } from '../components/ItemCard';
 import { marketValue, round10 } from '../../game/pricing';
 import { marketChange, marketIndex } from '../../game/market';
 import { Change } from '../components/Spark';
@@ -66,8 +68,10 @@ export function NegotiationSheet({ listingId, view, dispatch, onClose, onGoGarag
         </div>
       </div>
       <TagRow item={item} />
+      {riskOf(listing) ? <p className="risk" role="alert">⚠ {riskOf(listing)}</p> : null}
 
       <dl className="kv">
+        {usage(item) ? <div><dt>Kullanım</dt><dd>{usage(item)}</dd></div> : null}
         <div><dt>İstenen</dt><dd><Money value={listing.askPrice} className="money--accent" /></dd></div>
         <div><dt>Piyasa değeri</dt><dd><Money value={marketValue(item, state.season, marketIndex(state.market, item.category))} /></dd></div>
         <div><dt>Piyasa bu hafta</dt><dd><Change value={marketChange(state.market, item.category)} /></dd></div>

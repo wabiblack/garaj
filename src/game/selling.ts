@@ -3,6 +3,7 @@ import type { RNG } from './rng';
 import { marketValue, round10 } from './pricing';
 import { marketIndex } from './market';
 import { TALENT_EFFECT, talentRank } from './talents';
+import { demand } from './realism';
 
 export const OFFER_LO = 0.94, OFFER_HI = 1.05;
 /** Alıcı, gözündeki değerin bu katından fazlasını asla teklif etmez. */
@@ -44,7 +45,8 @@ export function generateOffers(state: GameState, rng: RNG): BuyerOffer[] {
     const p = Math.min(0.95, Math.max(0, 1.8 - sale.price / Math.max(1, value)));
     const bonus = (1 + 0.03 * state.locationLevel) * (item.tags.includes('klasik') ? 1.15 : 1) * (1 + TALENT_EFFECT.karizma * talentRank(state, 'karizma'));
     const cap = value * OFFER_CAP * bonus;
-    for (let i = 0; i < buyerCount(state); i++) {
+    const buyers = buyerCount(state) + demand(state, item.category).buyers;
+    for (let i = 0; i < buyers; i++) {
       if (!rng.chance(p)) continue;
       const amount = Math.min(cap, sale.price * rng.range(OFFER_LO, OFFER_HI) * bonus);
       offers.push({ id: rng.id('o'), itemId: item.id, amount: round10(amount), buyerName: rng.pick(BUYERS) });

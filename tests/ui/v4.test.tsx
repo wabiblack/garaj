@@ -294,3 +294,13 @@ test('görünüm düzenlenirken kişilik sekmesi yok', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Görünümü değiştir' }));
   expect(screen.queryByRole('tab', { name: 'Kişilik' })).toBeNull();
 });
+
+test('pazarlıkta araç yaşı/kilometresi ve incelenmiş riskli ilanın uyarısı görünür', async () => {
+  const car = makeItem({ category: 'araba', brand: 'Doruk', model: 'Sedan 1.6', modelAge: 8, km: 120000, baseValue: 500000 });
+  seedSave(makeState({ stage: 3, age: 18, money: 1e6, listings: [makeListing({ item: car, risk: 'calinti', inspected: true })] }));
+  renderGame();
+  await userEvent.click(screen.getByText('Doruk Sedan 1.6'));
+  const sheet = screen.getByRole('dialog', { name: 'Pazarlık' });
+  expect(within(sheet).getByText('8 yıllık · 120.000 km')).toBeInTheDocument();
+  expect(within(sheet).getByRole('alert')).toHaveTextContent(/çalıntı/);
+});

@@ -73,6 +73,14 @@ export function TagRow({ item }: { item: Item }) {
   );
 }
 
+/** Araçlarda model yaşı ve kilometre (tekne, iş makinesinde çalışma saati). */
+export function usage(item: Item): string | null {
+  if (item.modelAge === undefined || item.km === undefined) return null;
+  const age = item.modelAge === 0 ? 'Sıfır ayarında' : `${item.modelAge} yıllık`;
+  const unit = item.category === 'tekne' || item.category === 'ismakinesi' ? 'saat' : 'km';
+  return `${age} · ${item.km.toLocaleString('tr-TR')} ${unit}`;
+}
+
 export function ItemCard({ item, price, priceLabel, subtitle, onClick, badge, children }: {
   item: Item;
   price?: number;
@@ -93,6 +101,7 @@ export function ItemCard({ item, price, priceLabel, subtitle, onClick, badge, ch
         </div>
         <div className="card__title ellipsis">{name}</div>
         {subtitle ? <div className="card__sub">{subtitle}</div> : null}
+        {usage(item) ? <div className="card__sub">{usage(item)}</div> : null}
         <ConditionBar value={item.condition} />
         <TagRow item={item} />
       </div>

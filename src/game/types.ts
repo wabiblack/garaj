@@ -38,6 +38,11 @@ export interface Item {
   boughtFor: number;
   /** Nadir/klasik eşyanın elde tutulduğu gün (değer artışı en çok 15 gün). */
   heldDays?: number;
+  /** Araçlarda model yaşı (yıl) ve kilometre (tekne/iş makinesinde çalışma saati). */
+  modelAge?: number;
+  km?: number;
+  /** Çalıntı mal: polis el koyabilir. */
+  stolen?: boolean;
 }
 
 export interface Listing {
@@ -56,6 +61,8 @@ export interface Listing {
   rivalEye?: boolean;
   /** Mezatta rakiplerin çıkabileceği en yüksek fiyat (gizli). */
   auctionMax?: number;
+  /** Riskli ilan: çalıntı mal ya da kapora isteyen sahte ilan. */
+  risk?: 'calinti' | 'sahte';
 }
 
 /** Müşteri siparişi: belirli bir türde mal arayan alıcı, piyasa değerinin üstünü öder. */
