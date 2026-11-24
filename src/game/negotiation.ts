@@ -13,8 +13,8 @@ const SELLERS = ['Ahmet', 'Ayşe', 'Mehmet', 'Fatma', 'Hasan', 'Zeynep', 'Murat'
 export const PERSONALITY_LABEL: Record<Personality, string> = { normal: 'Normal', acele: 'Acelesi var', inatci: 'İnatçı', kurnaz: 'Kurnaz' };
 const PATIENCE: Record<Personality, number> = { normal: 3, acele: 2, inatci: 4, kurnaz: 3 };
 
-export function makeListing(item: Item, season: Season, rng: RNG, special: SpecialKind | null, personality: Personality = 'normal'): Listing {
-  const mv = marketValue(item, season);
+export function makeListing(item: Item, season: Season, rng: RNG, special: SpecialKind | null, personality: Personality = 'normal', index = 1): Listing {
+  const mv = marketValue(item, season, index);
   let askPrice: number;
   let minPrice: number;
   let auctionMax: number | undefined;
@@ -23,7 +23,7 @@ export function makeListing(item: Item, season: Season, rng: RNG, special: Speci
     auctionMax = round10(mv * rng.range(0.65, 0.95));
   } else {
     askPrice = round10(mv * rng.range(ASK_MIN, ASK_MAX));
-    minPrice = round10(trueValue(item, season) * rng.range(MIN_LO, MIN_HI));
+    minPrice = round10(trueValue(item, season, index) * rng.range(MIN_LO, MIN_HI));
     if (personality === 'acele') minPrice = round10(minPrice * 0.85);
     if (personality === 'inatci') minPrice = round10(minPrice * 1.1);
     if (personality === 'kurnaz') askPrice = round10(askPrice * 1.1);

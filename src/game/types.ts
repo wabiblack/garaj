@@ -92,6 +92,10 @@ export interface Stats {
   categorySales: Record<Category, number>;
   stageDay: { 2: number | null; 3: number | null; 4: number | null };
 }
+/** Türe göre piyasa endeksi geçmişi; son değer bugünkü (1 = normal). */
+export type Market = Record<Category, number[]>;
+/** Al-sat defteri satırı. */
+export interface LedgerEntry { day: number; kind: 'al' | 'sat'; name: string; category: Category; price: number; profit?: number }
 export interface DaySummary { day: number; bought: number; sold: number; spent: number; earned: number; notes: string[] }
 
 export interface GameState {
@@ -139,4 +143,7 @@ export interface GameState {
   prices: Record<string, { day: number; price: number }[]>;
   /** Oyuncunun karakteri (isim, görünüm). */
   player: Player;
+  market: Market;
+  /** Son alımlar ve satışlar (en çok LEDGER_MAX). */
+  ledger: LedgerEntry[];
 }

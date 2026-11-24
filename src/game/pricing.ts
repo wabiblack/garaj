@@ -25,19 +25,19 @@ function seasonFactor(item: Item, season: Season): number {
   return 1;
 }
 
-function value(item: Item, season: Season, onlyKnown: boolean): number {
+function value(item: Item, season: Season, onlyKnown: boolean, index: number): number {
   const defectFactor = item.defects
     .filter((d) => !onlyKnown || d.known)
     .reduce((f, d) => f * (1 - d.valueHit), 1);
-  return round10(item.baseValue * (0.4 + (0.6 * item.condition) / 100) * seasonFactor(item, season) * defectFactor);
+  return round10(item.baseValue * (0.4 + (0.6 * item.condition) / 100) * seasonFactor(item, season) * defectFactor * index);
 }
 
-/** Alıcının gördüğü değer: yalnız bilinen kusurlar düşülür. */
-export function marketValue(item: Item, season: Season): number {
-  return value(item, season, true);
+/** Alıcının gördüğü değer: yalnız bilinen kusurlar düşülür. index: türün piyasa endeksi. */
+export function marketValue(item: Item, season: Season, index = 1): number {
+  return value(item, season, true, index);
 }
 
 /** Gerçek değer: tüm kusurlar düşülür. */
-export function trueValue(item: Item, season: Season): number {
-  return value(item, season, false);
+export function trueValue(item: Item, season: Season, index = 1): number {
+  return value(item, season, false, index);
 }

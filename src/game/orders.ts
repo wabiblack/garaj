@@ -19,8 +19,8 @@ export function orderMatches(order: Order, item: Item): boolean {
   );
 }
 
-export function orderPrice(order: Order, item: Item, season: Season): number {
-  return round10(marketValue(item, season) * (1 + order.bonus));
+export function orderPrice(order: Order, item: Item, season: Season, index = 1): number {
+  return round10(marketValue(item, season, index) * (1 + order.bonus));
 }
 
 export function orderTitle(order: Order): string {

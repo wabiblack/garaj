@@ -4,6 +4,8 @@ import type { Action, GameView } from '../../game/reducer';
 import type { Listing } from '../../game/types';
 import { AUCTION_BIDDERS, HAMMER_MS, auctionStep, rivalsWillRaise, startPrice } from '../../game/auction';
 import { marketValue } from '../../game/pricing';
+import { marketChange, marketIndex } from '../../game/market';
+import { Change } from '../components/Spark';
 import { formatTL } from '../../game/format';
 import { itemName } from '../../game/selling';
 import { canBuy } from '../../game/negotiation';
@@ -92,7 +94,8 @@ export function AuctionSheet({ listing, view, dispatch, onClose, onGoGarage }: {
       <ConditionBar value={item.condition} />
       <TagRow item={item} />
       <dl className="kv">
-        <div><dt>Piyasa değeri</dt><dd><Money value={marketValue(item, state.season)} /></dd></div>
+        <div><dt>Piyasa değeri</dt><dd><Money value={marketValue(item, state.season, marketIndex(state.market, item.category))} /></dd></div>
+        <div><dt>Piyasa bugün</dt><dd><Change value={marketChange(state.market, item.category)} /></dd></div>
         <div><dt>Güncel fiyat</dt><dd><Money value={price} className="money--accent" /></dd></div>
         <div><dt>Önde</dt><dd className={leader === 'Sen' ? 'pos' : ''}>{leader}</dd></div>
       </dl>

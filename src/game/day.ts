@@ -11,6 +11,7 @@ import { updateOrders } from './orders';
 import { markRivalTarget } from './rival';
 import { pickStory } from './story';
 import { adjustListing } from './expertise';
+import { marketIndex, stepMarket } from './market';
 
 export function emptySummary(day: number): DaySummary {
   return { day, bought: 0, sold: 0, spent: 0, earned: 0, notes: [] };
@@ -42,7 +43,7 @@ export const SEASON_NOTE: Record<Season, string> = {
   kis: 'Kış geldi: bisiklet ve motor ucuzladı, 4x4 aranıyor.',
 };
 
-export type ListingContext = Pick<GameState, 'stage' | 'season'> & Partial<Pick<GameState, 'stats' | 'hard'>>;
+export type ListingContext = Pick<GameState, 'stage' | 'season'> & Partial<Pick<GameState, 'stats' | 'hard' | 'market'>>;
 
 export function generateListings(state: ListingContext, rng: RNG): Listing[] {
   const cats = CATEGORIES_BY_STAGE[state.stage];
@@ -52,14 +53,14 @@ export function generateListings(state: ListingContext, rng: RNG): Listing[] {
     const personality = rollPersonality(rng);
     let item = generateItem(rng.pick(cats), rng, state.stage === 4 ? { scale: 2 } : {});
     if (personality === 'kurnaz') item = addHiddenDefect(item, rng);
-    listings.push(makeListing(item, state.season, rng, null, personality));
+    listings.push(makeListing(item, state.season, rng, null, personality, marketIndex(state.market, item.category)));
   }
   if (state.stage === 2 && rng.chance(0.15)) {
-    listings.unshift(makeListing(generateItem('motor', rng), state.season, rng, 'mezat'));
+    listings.unshift(makeListing(generateItem('motor', rng), state.season, rng, 'mezat', 'normal', marketIndex(state.market, 'motor')));
   } else if (state.stage >= 3 && rng.chance(0.2)) {
     const kind = rng.pick<SpecialKind>(['mezat', 'hurdalik', 'klasik']);
     const item = generateItem('araba', rng, { ...(kind === 'mezat' ? {} : { special: kind }), ...(state.stage === 4 ? { scale: 2 } : {}) });
-    listings.unshift(makeListing(item, state.season, rng, kind));
+    listings.unshift(makeListing(item, state.season, rng, kind, 'normal', marketIndex(state.market, 'araba')));
   }
   return listings.map((l) => adjustListing(l, state));
 }
@@ -89,6 +90,9 @@ export function startNextDay(state: GameState): GameState {
   const notes = state.pendingCatch.map((c) =>
     c.knowing === false ? `${c.itemName} alıcısı fark etmediğin bir kusur buldu` : `${c.itemName} satışında gizlenen kusur ortaya çıktı`,
   );
+  // Piyasa ayrı bir zar akışıyla oynar; böylece günün ilan/olay zarları değişmez.
+  const moved = stepMarket(state.market, createRng(state.rngState ^ 0x5bd1e995), state.event);
+  if (moved.note) notes.push(moved.note);
   const repLoss = state.pendingCatch.reduce((sum, c) => sum + (c.knowing === false ? 5 : 15), 0);
   const next: GameState = applyDailyCosts({
     ...state,
@@ -98,6 +102,7 @@ export function startNextDay(state: GameState): GameState {
     offers: [],
     reputation: Math.max(0, state.reputation - repLoss),
     pendingCatch: [],
+    market: moved.market,
     inventory: state.inventory.map((i) => {
       const held = i.heldDays ?? 0;
       const appreciates = (i.tags.includes('nadir') || i.tags.includes('klasik')) && held < MAX_HELD_DAYS;
@@ -122,6 +127,8 @@ export function startNextDay(state: GameState): GameState {
     const extra = event === 'hediye' || event === 'ceza' ? `: ${formatTL(amount)}` : '';
     dayNotes.push(EVENT_INFO[event].text + extra);
   }
+  // Ceza parayı düşürdüyse elinde eşyası olmayan oyuncu yine en az bir ilanı alabilmeli.
+  if (next.inventory.length === 0 && !listings.some((l) => l.minPrice <= money)) listings = listingsFor({ ...next, money }, rng);
   const quests = generateQuests(next, rng, next.quests.filter((q) => !q.done));
   const orders = updateOrders(next, rng);
   dayNotes.push(...orders.notes);

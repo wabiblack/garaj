@@ -1,4 +1,4 @@
-import type { AchievementId, GameState, Item, Listing, Quest, QuestKind, Stage, Stats } from './types';
+import type { AchievementId, GameState, Item, LedgerEntry, Listing, Quest, QuestKind, Stage, Stats } from './types';
 import type { RNG } from './rng';
 import { CATEGORIES_BY_STAGE, CATEGORY_LABEL } from './catalog';
 import { formatTL } from './format';
@@ -98,11 +98,21 @@ export function recordSale(state: GameState, item: Item, amount: number, disclos
   if (profit >= 100000) ids.push('buyuk-vurgun');
   const name = itemName(item);
   const prices = { ...state.prices, [name]: [...(state.prices[name] ?? []), { day: state.day, price: amount }].slice(-PRICE_MEMORY) };
-  return unlock({ ...state, money, stats, quests, prices, summary: { ...state.summary, notes } }, ids);
+  const ledger = addLedger(state.ledger, { day: state.day, kind: 'sat', name, category: item.category, price: amount, profit });
+  return unlock({ ...state, money, stats, quests, prices, ledger, summary: { ...state.summary, notes } }, ids);
 }
 
 export function recordPurchase(state: GameState, listing: Listing, price: number): GameState {
-  return price <= listing.askPrice * 0.7 ? unlock(state, ['pazarlikci']) : state;
+  const { item } = listing;
+  const next = { ...state, ledger: addLedger(state.ledger, { day: state.day, kind: 'al', name: itemName(item), category: item.category, price }) };
+  return price <= listing.askPrice * 0.7 ? unlock(next, ['pazarlikci']) : next;
+}
+
+/** Defterde tutulan en çok satır. */
+export const LEDGER_MAX = 60;
+
+function addLedger(ledger: LedgerEntry[] | undefined, entry: LedgerEntry): LedgerEntry[] {
+  return [...(ledger ?? []), entry].slice(-LEDGER_MAX);
 }
 
 export function unlockAchievement(state: GameState, id: AchievementId): GameState {

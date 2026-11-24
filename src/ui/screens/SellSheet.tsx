@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Action } from '../../game/reducer';
 import type { GameState, Item } from '../../game/types';
 import { marketValue } from '../../game/pricing';
+import { marketIndex } from '../../game/market';
 import { buyerValue, itemName } from '../../game/selling';
 import { formatTL } from '../../game/format';
 import { Sheet } from '../components/Sheet';
@@ -10,7 +11,7 @@ import { parseAmount } from './NegotiationSheet';
 
 export function SellSheet({ item, state, dispatch, onClose }: { item: Item; state: GameState; dispatch(a: Action): void; onClose(): void }) {
   const existing = state.forSale.find((f) => f.itemId === item.id);
-  const [price, setPrice] = useState(String(existing?.price ?? marketValue(item, state.season)));
+  const [price, setPrice] = useState(String(existing?.price ?? marketValue(item, state.season, marketIndex(state.market, item.category))));
   const [disclosed, setDisclosed] = useState(existing?.disclosed ?? false);
   const hasKnown = item.defects.some((d) => d.known);
   const value = buyerValue(item, disclosed, state);

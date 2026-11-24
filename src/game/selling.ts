@@ -1,6 +1,7 @@
 import type { BuyerOffer, GameState, Item, SaleListing } from './types';
 import type { RNG } from './rng';
 import { marketValue, round10 } from './pricing';
+import { marketIndex } from './market';
 
 export const OFFER_LO = 0.94, OFFER_HI = 1.05;
 /** Alıcı, gözündeki değerin bu katından fazlasını asla teklif etmez. */
@@ -30,7 +31,7 @@ function cirakOffer(state: GameState, offers: BuyerOffer[], rng: RNG): BuyerOffe
 
 /** Alıcının gözündeki değer: kusurlar belirtildiyse bilinenler düşülür, değilse kusursuz sanılır. */
 export function buyerValue(item: Item, disclosed: boolean, state: GameState): number {
-  return marketValue(disclosed ? item : { ...item, defects: [] }, state.season);
+  return marketValue(disclosed ? item : { ...item, defects: [] }, state.season, marketIndex(state.market, item.category));
 }
 
 export function generateOffers(state: GameState, rng: RNG): BuyerOffer[] {

@@ -3,6 +3,8 @@ import type { Action, GameView } from '../../game/reducer';
 import type { Listing } from '../../game/types';
 import { inspectionCost } from '../../game/negotiation';
 import { marketValue, round10 } from '../../game/pricing';
+import { marketChange, marketIndex } from '../../game/market';
+import { Change } from '../components/Spark';
 import { formatTL } from '../../game/format';
 import { itemName } from '../../game/selling';
 import { Sheet } from '../components/Sheet';
@@ -66,7 +68,8 @@ export function NegotiationSheet({ listingId, view, dispatch, onClose, onGoGarag
 
       <dl className="kv">
         <div><dt>İstenen</dt><dd><Money value={listing.askPrice} className="money--accent" /></dd></div>
-        <div><dt>Piyasa değeri</dt><dd><Money value={marketValue(item, state.season)} /></dd></div>
+        <div><dt>Piyasa değeri</dt><dd><Money value={marketValue(item, state.season, marketIndex(state.market, item.category))} /></dd></div>
+        <div><dt>Piyasa bugün</dt><dd><Change value={marketChange(state.market, item.category)} /></dd></div>
         {state.prices[itemName(item)]?.length ? (
           <div><dt>Son sattıkların</dt><dd className="price-history">{state.prices[itemName(item)].slice(-3).map((p) => `${formatTL(p.price)} (Gün ${p.day})`).join(' · ')}</dd></div>
         ) : null}

@@ -3,6 +3,7 @@ import { createRng } from './rng';
 import { marketValue, round10 } from './pricing';
 import { generateListings, listingsFor } from './day';
 import { generateQuests } from './career';
+import { marketIndex } from './market';
 
 /** 3 → 4 geçişi için ayrıca şehrin en büyük galericisi olmak gerekir. */
 export const STAGE_GOALS: Record<1 | 2 | 3, number> = { 1: 50000, 2: 500000, 3: 20_000_000 };
@@ -33,7 +34,7 @@ export function completeTransition(state: GameState): GameState {
       quests: generateQuests({ ...state, stage }, rng4), rngState: rng4.state(),
     };
   }
-  const sellOff = state.inventory.reduce((sum, i) => sum + round10(marketValue(i, state.season) * 0.8), 0);
+  const sellOff = state.inventory.reduce((sum, i) => sum + round10(marketValue(i, state.season, marketIndex(state.market, i.category)) * 0.8), 0);
   const notes = state.inventory.length > 0 ? [...state.summary.notes, `${state.player.name} eski eşyalarını elden çıkardı`] : state.summary.notes;
   const rng = createRng(state.rngState);
   const listings = generateListings({ ...state, stage }, rng);

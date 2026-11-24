@@ -162,3 +162,21 @@ test('karakter ekranında seçilen yaş, oyunun başlangıç yaşı olur', async
   await userEvent.click(screen.getByRole('button', { name: 'Atla' }));
   expect(screen.getByText(/· 16 yaş/)).toBeInTheDocument();
 });
+
+test('Finans sekmesinde piyasa endeksi ve al-sat defteri görünür', async () => {
+  const { initialMarket } = await import('../../src/game/market');
+  const market = { ...initialMarket(), bisiklet: [1, 1.1] };
+  seedSave(makeState({ market, ledger: [
+    { day: 1, kind: 'al', name: 'Kanat BMX', category: 'bisiklet', price: 1000 },
+    { day: 2, kind: 'sat', name: 'Kanat BMX', category: 'bisiklet', price: 1600, profit: 600 },
+  ] }));
+  renderGame();
+  await userEvent.click(screen.getByRole('tab', { name: 'Finans' }));
+  const piyasa = screen.getByRole('region', { name: 'Piyasa' });
+  expect(within(piyasa).getByText('Bisiklet')).toBeInTheDocument();
+  expect(within(piyasa).getByText('▲ %10')).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('tab', { name: 'Defter' }));
+  const defter = screen.getByRole('region', { name: 'Al-sat defteri' });
+  expect(within(defter).getAllByText('Kanat BMX')).toHaveLength(2);
+  expect(within(defter).getByText('+600 TL')).toBeInTheDocument();
+});

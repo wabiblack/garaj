@@ -3,6 +3,7 @@ import type { Action, GameView } from '../../game/reducer';
 import { storageLimit } from '../../game/negotiation';
 import { careCost, cleanCost, MAX_CARE, paintCost, repairCost } from '../../game/prep';
 import { marketValue } from '../../game/pricing';
+import { marketIndex } from '../../game/market';
 import { formatTL } from '../../game/format';
 import { LOCATIONS } from '../../game/growth';
 import { ItemCard } from '../components/ItemCard';
@@ -42,7 +43,7 @@ export function GarageScreen({ view, dispatch }: { view: GameView; dispatch(a: A
         <div className="list">
           {state.inventory.map((item) => {
             const sale = state.forSale.find((f) => f.itemId === item.id);
-            const mv = marketValue(item, state.season);
+            const mv = marketValue(item, state.season, marketIndex(state.market, item.category));
             const profit = mv - item.boughtFor;
             return (
               <ItemCard

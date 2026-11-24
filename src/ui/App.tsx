@@ -14,6 +14,7 @@ import { BrokenSaveScreen } from './screens/BrokenSaveScreen';
 import { GarageScreen } from './screens/GarageScreen';
 import { SalesScreen } from './screens/SalesScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
+import { FinanceScreen } from './screens/FinanceScreen';
 import { EveningScreen } from './screens/EveningScreen';
 import { TransitionScreen } from './screens/TransitionScreen';
 import { EndScreen } from './screens/EndScreen';
@@ -117,6 +118,7 @@ function Game() {
         ) : null}
         {tab === 'garaj' ? <GarageScreen view={view} dispatch={dispatch} /> : null}
         {tab === 'satis' ? <SalesScreen view={view} dispatch={dispatch} /> : null}
+        {tab === 'finans' ? <FinanceScreen view={view} dispatch={dispatch} /> : null}
         {tab === 'profil' ? <ProfileScreen view={view} dispatch={dispatch} onMenu={() => setInMenu(true)} onEditLook={() => setCreator('edit')} /> : null}
       </main>
       <TabBar active={tab} onChange={setTab} hint={hint?.tab} badges={{ satis: state.forSale.length }} />

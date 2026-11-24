@@ -2,6 +2,7 @@ import type { GameState, Listing } from './types';
 import { createRng } from './rng';
 import { emptyStats, generateQuests } from './career';
 import { cleanPlayer } from './player';
+import { fillMarket } from './market';
 
 export const SAVE_KEY = 'garaj.save';
 export type LoadResult = { kind: 'ok'; state: GameState } | { kind: 'empty' } | { kind: 'broken' };
@@ -84,6 +85,8 @@ function fillV3(s: GameState): GameState {
     hard: s.hard ?? false,
     prices: s.prices ?? {},
     player: cleanPlayer(s.player),
+    market: fillMarket(s.market),
+    ledger: Array.isArray(s.ledger) ? s.ledger : [],
   };
 }
 

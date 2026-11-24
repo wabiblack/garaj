@@ -17,6 +17,7 @@ import type { RNG } from './rng';
 import { streakBonus } from './streak';
 import { cleanPlayer, type Player } from './player';
 import { formatTL } from './format';
+import { marketIndex } from './market';
 
 export type Action =
   | { type: 'offer'; listingId: string; amount: number }
@@ -213,7 +214,7 @@ function step(view: GameView, action: Action): GameView {
       const item = s.inventory.find((i) => i.id === action.itemId);
       if (!day || !order || !item || !orderMatches(order, item)) return same();
       const rng = createRng(s.rngState);
-      const sold = sell(s, item.id, orderPrice(order, item, s.season), rng);
+      const sold = sell(s, item.id, orderPrice(order, item, s.season, marketIndex(s.market, item.category)), rng);
       const next = {
         ...sold,
         reputation: Math.min(100, sold.reputation + 3),
