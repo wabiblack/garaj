@@ -29,7 +29,7 @@ export function SalesScreen({ view, dispatch }: { view: GameView; dispatch(a: Ac
               item={item}
               price={sale.price}
               priceLabel="İlan"
-              subtitle={sale.disclosed ? <span className="pos">Kusurlar belirtildi</span> : 'Teklifler gün sonunda gelir'}
+              subtitle={sale.disclosed ? <span className="pos">Kusurlar belirtildi</span> : 'Teklifler hafta sonunda gelir'}
             >
               <Button small onClick={() => setEditing(item.id)}>Fiyatı değiştir</Button>
               <Button small variant="ghost" onClick={() => dispatch({ type: 'unlist', itemId: item.id })}>Satıştan çek</Button>

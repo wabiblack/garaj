@@ -11,7 +11,7 @@ export function simulate(seed: number, _policy: 'basit'): { daysToStage2: number
   let stage2Day = 0;
   let stage3Day = 0;
 
-  for (let guard = 0; guard < 400 && !stage3Day; guard++) {
+  for (let guard = 0; guard < 1500 && !stage3Day; guard++) {
     const s = v.state;
     if (s.pendingTransition) {
       if (s.pendingTransition === 2) stage2Day = s.day;

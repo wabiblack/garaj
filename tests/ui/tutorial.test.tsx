@@ -52,12 +52,12 @@ test('öğretici adım sayısını gösterir ve gidilecek sekmeyi vurgular', () 
   expect(screen.getByRole('tab', { name: /Garaj/ })).toHaveClass('tab--hint');
 });
 
-test('satışa koyunca Günü bitir düğmesi vurgulanır', () => {
+test('satışa koyunca Haftayı bitir düğmesi vurgulanır', () => {
   const it = makeItem({ cleaned: true });
   seedSave(makeState({ inventory: [it], forSale: [{ itemId: it.id, price: 100, disclosed: true }] }));
   renderGame();
   expect(screen.getByRole('complementary', { name: 'Rehber' })).toHaveTextContent('Adım 4/5');
-  expect(screen.getByRole('button', { name: 'Günü bitir' })).toHaveClass('btn--hint');
+  expect(screen.getByRole('button', { name: 'Haftayı bitir' })).toHaveClass('btn--hint');
 });
 
 test('akşam ekranında teklif adımı görünür', () => {

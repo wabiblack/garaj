@@ -32,7 +32,7 @@ describe('kredi', () => {
     if (!lim.ok) throw new Error();
     const a = ok(takeLoan(adult(), 1_000_000));
     expect(a.money).toBe(1_100_000);
-    expect(a.loan).toEqual({ debt: 1_000_000 * (1 + LOAN_INTEREST), installment: 110_000, daysLeft: LOAN_DAYS, late: 0 });
+    expect(a.loan).toEqual({ debt: 1_000_000 * (1 + LOAN_INTEREST), installment: Math.ceil(1_100_000 / LOAN_DAYS / 10) * 10, daysLeft: LOAN_DAYS, late: 0 });
     expect(takeLoan(a, 1_000_000)).toBe('kredi-var');
     expect(takeLoan(adult(), lim.limit + 10)).toBe('limit-asimi');
   });
@@ -88,6 +88,6 @@ test('eski kredi kaydı yeni biçime çevrilir, birikim hesabı eklenir', () => 
   localStorage.setItem(SAVE_KEY, JSON.stringify(old));
   const r = loadGame(localStorage);
   if (r.kind !== 'ok') throw new Error();
-  expect(r.state.loan).toEqual({ debt: 1_100_000, installment: 110_000, daysLeft: LOAN_DAYS, late: 0 });
+  expect(r.state.loan).toEqual({ debt: 1_100_000, installment: Math.ceil(1_100_000 / LOAN_DAYS / 10) * 10, daysLeft: LOAN_DAYS, late: 0 });
   expect(r.state.bank).toEqual({ savings: 0 });
 });

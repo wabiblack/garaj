@@ -95,7 +95,7 @@ export function AuctionSheet({ listing, view, dispatch, onClose, onGoGarage }: {
       <TagRow item={item} />
       <dl className="kv">
         <div><dt>Piyasa değeri</dt><dd><Money value={marketValue(item, state.season, marketIndex(state.market, item.category))} /></dd></div>
-        <div><dt>Piyasa bugün</dt><dd><Change value={marketChange(state.market, item.category)} /></dd></div>
+        <div><dt>Piyasa bu hafta</dt><dd><Change value={marketChange(state.market, item.category)} /></dd></div>
         <div><dt>Güncel fiyat</dt><dd><Money value={price} className="money--accent" /></dd></div>
         <div><dt>Önde</dt><dd className={leader === 'Sen' ? 'pos' : ''}>{leader}</dd></div>
       </dl>

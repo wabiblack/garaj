@@ -8,7 +8,7 @@ export function EndScreen({ state, onContinue, onHardMode }: { state: GameState;
   return (
     <div className="overlay overlay--center" role="dialog" aria-modal="true" aria-label="Tebrikler">
       <div className="overlay__inner overlay__inner--center">
-        <p className="overlay__kicker">Gün {state.day}</p>
+        <p className="overlay__kicker">Hafta {state.day}</p>
         <img className="story__face" src={portraitUrl(state.age, state.player.look)} alt="" />
         <h1 className="transition__title">{state.stage === 4 ? `${state.player.name} Holding üç şehirde!` : 'Şehrin en büyük galericisi oldun!'}</h1>
         <p className="muted">12 yaşında bir bisikletle başladın. Bugün kasanda {formatTL(state.money)} var.</p>

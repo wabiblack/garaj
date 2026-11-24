@@ -180,12 +180,12 @@ describe('tamir oyunu', () => {
 
 describe('4. aşama: holding', () => {
   test('şampiyon galerici 20M olunca holding aşamasına geçer', () => {
-    const s = makeState({ stage: 3, won: true, wonSeen: true, money: STAGE_GOALS[3] });
+    const s = makeState({ stage: 3, age: 22, won: true, wonSeen: true, money: STAGE_GOALS[3] });
     const p = checkProgress(s);
     expect(p.pendingTransition).toBe(4);
     const t = completeTransition(p);
     expect(t.stage).toBe(4);
-    expect(t.age).toBe(25);
+    expect(t.age).toBe(22);
     expect(t.locationLevel).toBe(s.locationLevel);
   });
   test('şampiyon olmadan geçmez', () => {

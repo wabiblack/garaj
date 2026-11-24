@@ -57,7 +57,7 @@ test('Satış: satıştan çekilir', async () => {
   expect(screen.queryByText('Serçe Şehir 26')).toBeNull();
 });
 
-test('Gün sonu: özet, teklifler, yeni gün', async () => {
+test('Hafta sonu: özet, teklifler, yeni gün', async () => {
   const it = makeItem();
   seedSave(makeState({
     phase: 'evening', money: 0, inventory: [it], forSale: [{ itemId: it.id, price: 2000, disclosed: false }],
@@ -65,21 +65,21 @@ test('Gün sonu: özet, teklifler, yeni gün', async () => {
     summary: { day: 1, bought: 1, sold: 0, spent: 1500, earned: 0, notes: [] },
   }));
   renderGame();
-  const ev = screen.getByRole('dialog', { name: 'Gün sonu' });
-  expect(within(ev).getByText('Gün 1 bitti')).toBeInTheDocument();
+  const ev = screen.getByRole('dialog', { name: 'Hafta sonu' });
+  expect(within(ev).getByText('Hafta 1 bitti')).toBeInTheDocument();
   expect(within(ev).getByText('Ali')).toBeInTheDocument();
   await userEvent.click(within(ev).getAllByRole('button', { name: 'Kabul' })[0]);
   expect(within(ev).queryByText('Can')).toBeNull();
-  await userEvent.click(within(ev).getByRole('button', { name: 'Yeni güne başla' }));
-  expect(screen.queryByRole('dialog', { name: 'Gün sonu' })).toBeNull();
-  expect(screen.getByText('Gün 2 · İlkbahar')).toBeInTheDocument();
+  await userEvent.click(within(ev).getByRole('button', { name: 'Yeni haftaya başla' }));
+  expect(screen.queryByRole('dialog', { name: 'Hafta sonu' })).toBeNull();
+  expect(screen.getByText('Hafta 2 · Haziran · Tatil')).toBeInTheDocument();
 });
 
-test('Gün sonu: karşı teklif', async () => {
+test('Hafta sonu: karşı teklif', async () => {
   const it = makeItem();
   seedSave(makeState({ phase: 'evening', money: 0, inventory: [it], offers: [{ id: 'o1', itemId: it.id, amount: 1000, buyerName: 'Ali' }] }));
   renderGame();
-  const ev = screen.getByRole('dialog', { name: 'Gün sonu' });
+  const ev = screen.getByRole('dialog', { name: 'Hafta sonu' });
   await userEvent.click(within(ev).getByRole('button', { name: 'Karşı teklif' }));
   const input = within(ev).getByLabelText('Karşı teklifin (TL)');
   await userEvent.clear(input);
@@ -89,18 +89,18 @@ test('Gün sonu: karşı teklif', async () => {
 });
 
 test('Geçiş ekranı', async () => {
-  seedSave(makeState({ money: 50000, pendingTransition: 2 }));
+  seedSave(makeState({ money: 50000, age: 16, pendingTransition: 2 }));
   renderGame();
-  expect(screen.getByText('4 yıl sonra…')).toBeInTheDocument();
-  expect(screen.getByText(/Kerem 16 yaşında/)).toBeInTheDocument();
+  expect(screen.getByText('Motor ehliyeti')).toBeInTheDocument();
+  expect(screen.getByText(/Kerem 16 yaşına girdi/)).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Devam' }));
   expect(screen.getByText(/16 yaş · Motorcu/)).toBeInTheDocument();
 });
 
 test('Geçiş ekranı: galerici', () => {
-  seedSave(makeState({ stage: 2, money: 500000, pendingTransition: 3 }));
+  seedSave(makeState({ stage: 2, age: 18, money: 500000, pendingTransition: 3 }));
   renderGame();
-  expect(screen.getByText('2 yıl sonra…')).toBeInTheDocument();
+  expect(screen.getByText('Reşit oldu')).toBeInTheDocument();
   expect(screen.getByText(/ehliyetini aldı/)).toBeInTheDocument();
 });
 
@@ -152,10 +152,10 @@ test('uçtan uca: al, temizle, satışa koy, günü bitir, teklif kabul', async 
   await userEvent.clear(price);
   await userEvent.type(price, '1500');
   await userEvent.click(within(sell).getByRole('button', { name: 'İlana koy' }));
-  await userEvent.click(screen.getByRole('button', { name: 'Günü bitir' }));
-  const ev = screen.getByRole('dialog', { name: 'Gün sonu' });
+  await userEvent.click(screen.getByRole('button', { name: 'Haftayı bitir' }));
+  const ev = screen.getByRole('dialog', { name: 'Hafta sonu' });
   await userEvent.click(within(ev).getAllByRole('button', { name: 'Kabul' })[0]);
-  await userEvent.click(within(ev).getByRole('button', { name: 'Yeni güne başla' }));
+  await userEvent.click(within(ev).getByRole('button', { name: 'Yeni haftaya başla' }));
   const money = Number(screen.getByText(/TL$/, { selector: '.topbar__money .money' }).textContent!.replace(/\D/g, ''));
   expect(money).toBeGreaterThan(2000 - 1300 - 40);
 });

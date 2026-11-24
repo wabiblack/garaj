@@ -66,7 +66,7 @@ describe('çift dokunma ve olmayan hedefler', () => {
 
 test('50.000 TLyi geçen satış geçişi tetikler', () => {
   const item = makeItem();
-  const v = gameReducer(view({ phase: 'evening', money: 49000, inventory: [item], offers: [{ id: 'o', itemId: item.id, amount: 2000, buyerName: 'A' }] }), { type: 'acceptOffer', offerId: 'o' });
+  const v = gameReducer(view({ phase: 'evening', age: 16, money: 49000, inventory: [item], offers: [{ id: 'o', itemId: item.id, amount: 2000, buyerName: 'A' }] }), { type: 'acceptOffer', offerId: 'o' });
   expect(v.state.pendingTransition).toBe(2);
 });
 
@@ -165,7 +165,7 @@ describe('fix I3: iflas', () => {
   test('restartStage aşamanın başlangıç parasıyla devam ettirir, borç ve çalışanlar silinir', () => {
     const v = gameReducer(view({ stage: 3, age: 18, money: 10, day: 40, loan: { debt: 2e6, installment: 2e5, daysLeft: 10, late: 0 }, employees: { usta: true, boyaci: false, satis: false, cirak: false }, listings: [makeListing({ minPrice: 90000 })] }), { type: 'restartStage' });
     expect(v.state).toMatchObject({ stage: 3, age: 18, money: 500000, loan: null, employees: { usta: false, boyaci: false, satis: false, cirak: false }, day: 40 });
-    expect(v.state.listings.every((l) => l.item.category === 'araba')).toBe(true);
+    expect(v.state.listings.some((l) => l.item.category === 'araba')).toBe(true);
   });
   test('iflas değilken restartStage bir şey yapmaz', () => {
     const start = view();

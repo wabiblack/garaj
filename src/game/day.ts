@@ -1,6 +1,6 @@
 import type { DaySummary, GameEventId, GameState, Listing, Personality, Season, SpecialKind, Stage } from './types';
 import { createRng, type RNG } from './rng';
-import { CATEGORIES_BY_STAGE, addHiddenDefect, generateItem } from './catalog';
+import { addHiddenDefect, generateItem, pickCategory } from './catalog';
 import { makeListing } from './negotiation';
 import { round10, seasonForDay } from './pricing';
 import { formatTL } from './format';
@@ -8,6 +8,7 @@ import { generateQuests } from './career';
 import { generateOffers } from './selling';
 import { applyDailyCosts } from './growth';
 import { settleBank } from './bank';
+import { isBirthday } from './calendar';
 import { settleFamily } from './family';
 import { stepStocks } from './stocks';
 import { updateOrders } from './orders';
@@ -26,9 +27,9 @@ function rollPersonality(rng: RNG): Personality {
 }
 
 export const EVENT_INFO: Record<GameEventId, { title: string; text: string }> = {
-  fuar: { title: 'Fuar günü', text: 'Bugün fuar var: alıcılar her zamankinden kalabalık.' },
-  durgun: { title: 'Piyasa durgun', text: 'Piyasa durgun: bugün alıcı az.' },
-  firsat: { title: 'Nakit sıkıntısı', text: 'Satıcılar nakit sıkıntısında: bugün pazarlık daha kolay.' },
+  fuar: { title: 'Fuar haftası', text: 'Bu hafta fuar var: alıcılar her zamankinden kalabalık.' },
+  durgun: { title: 'Piyasa durgun', text: 'Piyasa durgun: bu hafta alıcı az.' },
+  firsat: { title: 'Nakit sıkıntısı', text: 'Satıcılar nakit sıkıntısında: bu hafta pazarlık daha kolay.' },
   hediye: { title: 'Hediye', text: 'Komşun yardımların için para verdi' },
   ceza: { title: 'Park cezası', text: 'Park cezası yedin' },
 };
@@ -56,15 +57,15 @@ export const SEASON_NOTE: Record<Season, string> = {
   kis: 'Kış geldi: bisiklet ve motor ucuzladı, 4x4 aranıyor.',
 };
 
-export type ListingContext = Pick<GameState, 'stage' | 'season'> & Partial<Pick<GameState, 'stats' | 'hard' | 'market' | 'talents'>>;
+export type ListingContext = Pick<GameState, 'stage' | 'season'> & Partial<Pick<GameState, 'age' | 'stats' | 'hard' | 'market' | 'talents'>>;
 
 export function generateListings(state: ListingContext, rng: RNG): Listing[] {
-  const cats = CATEGORIES_BY_STAGE[state.stage];
   const count = rng.int(4, 6);
   const listings: Listing[] = [];
   for (let i = 0; i < count; i++) {
     const personality = rollPersonality(rng);
-    let item = generateItem(rng.pick(cats), rng, state.stage === 4 ? { scale: 2 } : {});
+    const category = pickCategory(state, rng);
+    let item = generateItem(category, rng, state.stage === 4 && category === 'araba' ? { scale: 2 } : {});
     if (personality === 'kurnaz') item = addHiddenDefect(item, rng);
     listings.push(makeListing(item, state.season, rng, null, personality, marketIndex(state.market, item.category)));
   }
@@ -110,6 +111,7 @@ export function startNextDay(evening: GameState): GameState {
   // Piyasa ayrı bir zar akışıyla oynar; böylece günün ilan/olay zarları değişmez.
   const moved = stepMarket(state.market, createRng(state.rngState ^ 0x5bd1e995), state.event);
   if (moved.note) notes.push(moved.note);
+  if (isBirthday(day)) notes.push(`İyi ki doğdun! ${state.player.name} artık ${state.age + 1} yaşına girdi`);
   notes.push(...familyNotes);
   const repLoss = state.pendingCatch.reduce((sum, c) => sum + (c.knowing === false ? 5 : 15), 0);
   const next: GameState = settleBank(applyDailyCosts({
@@ -120,6 +122,8 @@ export function startNextDay(evening: GameState): GameState {
     offers: [],
     reputation: Math.max(0, state.reputation - repLoss),
     pendingCatch: [],
+    used: 0,
+    age: isBirthday(day) ? state.age + 1 : state.age,
     market: moved.market,
     stocks: stepStocks(state.stocks, state.market, moved.market, createRng(state.rngState ^ 0x68e31da4)),
     inventory: state.inventory.map((i) => {

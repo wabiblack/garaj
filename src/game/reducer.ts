@@ -23,6 +23,7 @@ import { streakBonus } from './streak';
 import { cleanPlayer, type Player } from './player';
 import { formatTL } from './format';
 import { marketIndex } from './market';
+import { actionsLeft } from './calendar';
 
 export type Action =
   | { type: 'offer'; listingId: string; amount: number }
@@ -55,7 +56,7 @@ export type Action =
 
 export interface GameView { state: GameState; message: string | null; lastOffer: OfferResult | null }
 
-const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | FamilyBlock | StockBlock>, string> = {
+const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | FamilyBlock | StockBlock> | 'okul', string> = {
   'yetersiz-para': 'Paran yetmiyor',
   'depo-dolu': 'Depon dolu',
   'asama-2-degil': 'Çırak motor işine girince alınır',
@@ -72,6 +73,7 @@ const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | Fam
   'borc-var': 'Önce aileye olan borcunu öde',
   'yetersiz-hisse': 'O kadar hissen yok',
   'asama-4-degil': 'Şubeler holding kurunca açılır',
+  'okul': 'Bu hafta okul var: iş hakkın bitti. Haftayı bitir',
 };
 
 const validAmount = (n: number) => Number.isFinite(n) && n > 0;
@@ -90,7 +92,7 @@ function buy(s: GameState, listing: Listing, price: number): GameState {
     { ...s, inventory: [...s.inventory, { ...listing.item, boughtFor: price }], listings: s.listings.filter((l) => l.id !== listing.id) },
     price,
   );
-  const counted = { ...bought, summary: { ...bought.summary, bought: bought.summary.bought + 1 } };
+  const counted = { ...bought, used: bought.used + 1, summary: { ...bought.summary, bought: bought.summary.bought + 1 } };
   const recorded = gainXp(recordPurchase(counted, listing, price), XP.buy);
   return listing.rivalEye ? unlockAchievement(recorded, 'rakip') : recorded;
 }
@@ -123,6 +125,7 @@ function step(view: GameView, action: Action): GameView {
       if (listing.special === 'mezat' && listing.auctionMax !== undefined) return same();
       const amount = Math.round(action.amount);
       if (listing.lastRejected === amount) return same();
+      if (actionsLeft(s) <= 0) return same(BLOCK_MESSAGE.okul);
       const block = canBuy(s, amount);
       if (block) return same(BLOCK_MESSAGE[block]);
       const { result, listing: updated } = respondToOffer(listing, amount);
@@ -150,6 +153,7 @@ function step(view: GameView, action: Action): GameView {
     case 'care': {
       const item = s.inventory.find((i) => i.id === action.itemId);
       if (!day || !item) return same();
+      if (actionsLeft(s) <= 0) return same(BLOCK_MESSAGE.okul);
       const res =
         action.type === 'repair' ? repair(item, action.defectId, s)
         : action.type === 'clean' ? clean(item)
@@ -158,7 +162,7 @@ function step(view: GameView, action: Action): GameView {
       if (!res) return same();
       const cost = action.type === 'repair' ? round10(res.cost * (1 - repairDiscount(action.quality ?? 0))) : res.cost;
       if (s.money < cost) return same(BLOCK_MESSAGE['yetersiz-para']);
-      let next = spend(replaceItem(s, res.item), cost);
+      let next = { ...spend(replaceItem(s, res.item), cost), used: s.used + 1 };
       if (action.type === 'repair' && s.stage >= 2) next = { ...next, skill: Math.min(100, s.skill + 2) };
       if (action.type === 'repair') next = gainXp(next, XP.repair);
       return to(next);
@@ -270,6 +274,7 @@ function step(view: GameView, action: Action): GameView {
       if (!day || !listing || listing.special !== 'mezat' || listing.auctionMax === undefined) return same();
       if (!validAmount(action.price) || rivalsWillRaise(listing, action.price)) return same();
       const price = Math.round(action.price);
+      if (actionsLeft(s) <= 0) return same(BLOCK_MESSAGE.okul);
       const block = canBuy(s, price);
       if (block) return same(BLOCK_MESSAGE[block]);
       return to(unlockAchievement(buy(s, listing, price), 'mezatci'));

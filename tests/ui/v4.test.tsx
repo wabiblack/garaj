@@ -27,7 +27,7 @@ test('pazarlıkta aynı modelin son satışları görünür', async () => {
   seedSave(makeState({ day: 9, listings: [makeListing()], prices: { 'Serçe Şehir 26': [{ day: 4, price: 2300 }] } }));
   renderGame();
   await userEvent.click(screen.getByRole('button', { name: /Serçe Şehir 26/ }));
-  expect(screen.getByText(/2\.300 TL \(Gün 4\)/)).toBeInTheDocument();
+  expect(screen.getByText(/2\.300 TL \(Hafta 4\)/)).toBeInTheDocument();
 });
 
 test('motor işinde çırak alınır', async () => {
@@ -54,7 +54,7 @@ test('ana menü: kayıt varsa Devam et ilerlemeyi gösterir, zor mod kilitli', (
   seedSave(makeState({ day: 7, money: 4500 }));
   render(<App />);
   const menu = screen.getByRole('dialog', { name: 'Ana menü' });
-  expect(within(menu).getByRole('button', { name: /Devam et.*Gün 7.*4\.500 TL/ })).toBeInTheDocument();
+  expect(within(menu).getByRole('button', { name: /Devam et.*Hafta 7.*4\.500 TL/ })).toBeInTheDocument();
   expect(within(menu).getByRole('button', { name: /Zor mod/ })).toBeDisabled();
 });
 
@@ -67,7 +67,7 @@ test('ana menü: yeni oyun onay ister, onaylanınca giriş hikâyesi açılır',
   await userEvent.click(within(sheet).getByRole('button', { name: 'Evet, baştan başla' }));
   await userEvent.click(screen.getByRole('button', { name: 'Hikâyeye başla' }));
   await userEvent.click(screen.getByRole('button', { name: 'Atla' }));
-  expect(screen.getByText(/Gün 1/, { selector: '.topbar__day' })).toBeInTheDocument();
+  expect(screen.getByText(/Hafta 1/, { selector: '.topbar__day' })).toBeInTheDocument();
 });
 
 test('ilk açılışta Oyuna başla; Profil’den ana menüye dönülür', async () => {

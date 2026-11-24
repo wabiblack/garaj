@@ -24,7 +24,7 @@ export function BankPanel({ state, dispatch }: { state: GameState; dispatch(a: A
         <div className="row">
           <div>
             <div className="row__title">Birikim: {formatTL(savings)}</div>
-            <div className="row__sub">Günlük %{(SAVINGS_RATE * 100).toLocaleString('tr-TR')} faiz · istediğin an çekebilirsin</div>
+            <div className="row__sub">Haftalık %{(SAVINGS_RATE * 100).toLocaleString('tr-TR')} faiz · istediğin an çekebilirsin</div>
           </div>
         </div>
         <div className="chips">
@@ -42,7 +42,7 @@ export function BankPanel({ state, dispatch }: { state: GameState; dispatch(a: A
             <div className="row">
               <div>
                 <div className="row__title">Borç: {formatTL(state.loan.debt)}</div>
-                <div className="row__sub">Günlük taksit {formatTL(state.loan.installment)} · {state.loan.daysLeft} gün kaldı{state.loan.late ? ` · ${state.loan.late} gecikme` : ''}</div>
+                <div className="row__sub">Haftalık taksit {formatTL(state.loan.installment)} · {state.loan.daysLeft} hafta kaldı{state.loan.late ? ` · ${state.loan.late} gecikme` : ''}</div>
               </div>
             </div>
             <Button small variant="primary" disabled={state.money < state.loan.debt} onClick={() => dispatch({ type: 'repayLoan' })}>{`Borcu kapat · ${formatTL(state.loan.debt)}`}</Button>
@@ -50,7 +50,7 @@ export function BankPanel({ state, dispatch }: { state: GameState; dispatch(a: A
         ) : credit.ok ? (
           <>
             <div className="row__title">Kredi limitin: {formatTL(credit.limit)}</div>
-            <p className="hint">{LOAN_DAYS} gün, eşit günlük taksit, toplam %{LOAN_INTEREST * 100} faiz. Taksit ödenmezse %{LATE_PENALTY * 100} ceza eklenir, itibarın {LATE_REP} düşer. Limit itibarına ve satış geçmişine göre.</p>
+            <p className="hint">{LOAN_DAYS} hafta, eşit haftalık taksit, toplam %{LOAN_INTEREST * 100} faiz. Taksit ödenmezse %{LATE_PENALTY * 100} ceza eklenir, itibarın {LATE_REP} düşer. Limit itibarına ve satış geçmişine göre.</p>
             <div className="chips">
               {unique([part(credit.limit, 0.25, 1000), part(credit.limit, 0.5, 1000), credit.limit]).map((a) => (
                 <Button key={a} small onClick={() => dispatch({ type: 'takeLoan', amount: a })}>{`${formatTL(a)} kredi çek`}</Button>

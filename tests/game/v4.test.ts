@@ -119,7 +119,7 @@ test('seçilen başlangıç yaşından başlanır: aşama, yaş, para ve ilanlar
   const { STAGE_RESTART_MONEY } = await import('../../src/game/progression');
   const g16 = newGame(7, { stage: 2 });
   expect(g16).toMatchObject({ stage: 2, age: 16, money: STAGE_RESTART_MONEY[2] });
-  expect(g16.listings.every((l) => l.item.category === 'motor')).toBe(true);
+  expect(g16.listings.every((l) => l.item.category !== 'bisiklet' && l.item.category !== 'araba')).toBe(true);
   expect(newGame(7, { stage: 3 })).toMatchObject({ stage: 3, age: 18, money: STAGE_RESTART_MONEY[3] });
   expect(newGame(7, { stage: 2, hard: true }).money).toBe(STAGE_RESTART_MONEY[2] / 2);
   expect(newGame(7)).toMatchObject({ stage: 1, age: 12, money: 2000 });

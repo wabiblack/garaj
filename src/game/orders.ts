@@ -1,6 +1,6 @@
 import type { GameState, Item, Order, Season, Tag } from './types';
 import type { RNG } from './rng';
-import { CATEGORIES_BY_STAGE, CATEGORY_LABEL } from './catalog';
+import { CATEGORY_LABEL, categoriesFor } from './catalog';
 import { marketValue, round10 } from './pricing';
 
 const BUYERS = ['Derya', 'Kemal', 'Oya', 'Nihat', 'Selim', 'Gül', 'Tarık', 'Melek', 'Rıza', 'Sevda'];
@@ -33,7 +33,7 @@ function newOrder(state: GameState, rng: RNG): Order {
   return {
     id: rng.id('or'),
     buyerName: rng.pick(BUYERS),
-    category: rng.pick(CATEGORIES_BY_STAGE[state.stage]),
+    category: rng.pick(categoriesFor(state)),
     ...(tag ? { tag } : {}),
     minCondition: rng.int(10, 15) * 5,
     bonus: ORDER_BONUS,

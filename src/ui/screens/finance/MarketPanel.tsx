@@ -1,14 +1,14 @@
 import type { GameState } from '../../../game/types';
-import { CATEGORIES_BY_STAGE, CATEGORY_LABEL } from '../../../game/catalog';
+import { CATEGORY_LABEL, categoriesFor } from '../../../game/catalog';
 import { marketChange, marketIndex } from '../../../game/market';
 import { Change, Spark } from '../../components/Spark';
 
 export function MarketPanel({ state }: { state: GameState }) {
   return (
     <section aria-label="Piyasa">
-      <p className="hint">Fiyatlar her gün değişir. Endeks yüksekken sat, düşükken al. Fuar günleri piyasayı ısıtır, durgun günler soğutur.</p>
+      <p className="hint">Fiyatlar her hafta değişir. Endeks yüksekken sat, düşükken al. Fuar haftaları piyasayı ısıtır, durgun haftalar soğutur.</p>
       <div className="panel">
-        {[...new Set(([1, 2, 3, 4] as const).filter((st) => st <= state.stage).flatMap((st) => CATEGORIES_BY_STAGE[st]))].reverse().map((c) => {
+        {[...categoriesFor(state)].reverse().map((c) => {
           const idx = marketIndex(state.market, c);
           return (
             <div className="row market-row" key={c}>

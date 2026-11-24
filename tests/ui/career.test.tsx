@@ -10,7 +10,7 @@ test('ilanlarda kişilik rozeti, olay kartı ve görevler görünür', () => {
   seedSave(makeState({ event: 'fuar', quests: [quest], listings: [makeListing({ personality: 'acele' })] }));
   renderGame();
   expect(screen.getByText('Acelesi var')).toBeInTheDocument();
-  expect(screen.getByText('Fuar günü')).toBeInTheDocument();
+  expect(screen.getByText('Fuar haftası')).toBeInTheDocument();
   const q = screen.getByRole('region', { name: 'Görevler' });
   expect(within(q).getByText('2 satış yap')).toBeInTheDocument();
   expect(within(q).getByText('1/2')).toBeInTheDocument();
@@ -63,10 +63,12 @@ test('modelin görseli varsa o, yoksa kategori görseli kullanılır', async () 
   expect(itemImageUrl(known)).not.toBe(categoryImageUrl('bisiklet'));
 });
 
-test('katalogdaki her modelin çizimi var', async () => {
-  const { hasModelArt } = await import('../../src/ui/components/ItemCard');
+test('katalogdaki her modelin çizimi var (4. parti görselleri gelmemiş yeni türler hariç)', async () => {
+  const { hasModelArt, categoryImageUrl } = await import('../../src/ui/components/ItemCard');
   const { CATALOG } = await import('../../src/game/catalog');
-  for (const t of Object.values(CATALOG)) for (const [brand, model] of t.models) expect(hasModelArt({ brand, model }), `${brand} ${model}`).toBe(true);
+  const art = ['bisiklet', 'guvercin', 'konsol', 'telefon', 'motor', 'araba'] as const;
+  for (const c of art) for (const [brand, model] of CATALOG[c].models) expect(hasModelArt({ brand, model }), `${brand} ${model}`).toBe(true);
+  for (const c of Object.keys(CATALOG) as (keyof typeof CATALOG)[]) expect(categoryImageUrl(c), c).toBeTruthy();
   expect(hasModelArt({ brand: 'Doruk', model: 'Klasik 1972' })).toBe(true);
   expect(hasModelArt({ brand: 'Marmara', model: 'Klasik Coupe 1968' })).toBe(true);
 });

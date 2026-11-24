@@ -52,7 +52,7 @@ export const CAPACITY = [1, 2, 4, 8] as const;
 
 export function storageLimit(state: GameState): number {
   if (state.stage === 1) return 3;
-  if (state.stage === 2) return 2;
+  if (state.stage === 2) return 3;
   return CAPACITY[state.capacityLevel];
 }
 

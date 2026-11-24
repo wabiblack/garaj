@@ -13,7 +13,7 @@ const EVENT_PUSH: Partial<Record<GameEventId, number>> = { fuar: 0.04, durgun: -
 const NEWS_CHANCE = 0.1;
 const NEWS_SHOCK = 0.12;
 
-const CATEGORIES: Category[] = ['bisiklet', 'guvercin', 'konsol', 'telefon', 'motor', 'araba'];
+const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[];
 
 export function initialMarket(): Market {
   return Object.fromEntries(CATEGORIES.map((c) => [c, [1]])) as Market;

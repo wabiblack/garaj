@@ -10,6 +10,7 @@ import { initialMarket } from './market';
 import { FAMILY_START } from './family';
 import { initialStocks } from './stocks';
 import { initialTalents } from './talents';
+import { seasonForDay } from './pricing';
 
 /** Zor modda başlangıç parası. */
 export const HARD_START_MONEY = STAGE_RESTART_MONEY[1] / 2;
@@ -25,7 +26,7 @@ export function newGame(seed: number, opts: { hard?: boolean; achievements?: Ach
   const money = hard ? STAGE_RESTART_MONEY[stage] / 2 : STAGE_RESTART_MONEY[stage];
   const rng = createRng(seed);
   const base: GameState = {
-    version: 3, rngState: 0, day: 1, phase: 'day', stage, age: START_AGE[stage], money, season: 'ilkbahar',
+    version: 3, rngState: 0, day: 1, phase: 'day', stage, age: START_AGE[stage], money, season: seasonForDay(1), used: 0,
     inventory: [], listings: [], forSale: [], offers: [], reputation: 50, skill: 0,
     capacityLevel: 0, locationLevel: 0, employees: { usta: false, boyaci: false, satis: false, cirak: false }, loan: null,
     pendingCatch: [], summary: emptySummary(1), pendingTransition: null, won: false, wonSeen: false,

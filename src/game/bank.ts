@@ -2,13 +2,13 @@
 import type { GameState, Loan, Stage } from './types';
 import { formatTL } from './format';
 
-/** Birikimin günlük faizi. */
-export const SAVINGS_RATE = 0.003;
+/** Birikimin haftalık faizi. */
+export const SAVINGS_RATE = 0.005;
 export const ADULT_AGE = 18;
 export const CREDIT_MIN_REP = 40;
 export const CREDIT_MIN_SALES = 5;
-/** Kredi bu kadar günde, günlük eşit taksitle ödenir. */
-export const LOAN_DAYS = 10;
+/** Kredi bu kadar haftada, haftalık eşit taksitle ödenir. */
+export const LOAN_DAYS = 12;
 /** Vadenin toplam faizi. */
 export const LOAN_INTEREST = 0.1;
 /** Ödenmeyen taksitin borca eklenen cezası. */

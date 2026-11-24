@@ -4,7 +4,7 @@ import type { Employees } from '../../game/types';
 import {
   CAPACITY, CAPACITY_COST, LOCATION_COST, LOCATIONS, ROLE_LABEL, ROLE_STAGE, SALARY, dailySalaries,
 } from '../../game/growth';
-import { CATEGORIES_BY_STAGE, CATEGORY_LABEL } from '../../game/catalog';
+import { CATEGORY_LABEL, categoriesFor } from '../../game/catalog';
 import { EXPERT_DISCOUNT, EXPERT_MAX, EXPERT_STEP, expertLevel } from '../../game/expertise';
 import { shareRecordCard } from '../shareCard';
 import { extraImage } from '../images';
@@ -33,7 +33,7 @@ const ROLE_HELP: Record<keyof Employees, string> = {
   cirak: 'Teklif gelmeyen mala müşteri bulur',
   usta: 'Tamirler %20 ucuz',
   boyaci: 'Boya %30 ucuz',
-  satis: 'Her gün +1 alıcı',
+  satis: 'Her hafta +1 alıcı',
 };
 
 export function ProfileScreen({ view, dispatch, onMenu, onEditLook }: { view: GameView; dispatch(a: Action): void; onMenu(): void; onEditLook(): void }) {
@@ -48,7 +48,7 @@ export function ProfileScreen({ view, dispatch, onMenu, onEditLook }: { view: Ga
         <img className="avatar" src={portraitUrl(state.age, state.player.look)} alt="" />
         <div>
           <h1>{state.player.name}</h1>
-          <div className="muted">{state.age} yaş · {STAGE_LABEL[state.stage]} · Gün {state.day}{state.hard ? ' · Zor mod' : ''}</div>
+          <div className="muted">{state.age} yaş · {STAGE_LABEL[state.stage]} · Hafta {state.day}{state.hard ? ' · Zor mod' : ''}</div>
           <Button small variant="ghost" className="mt8" onClick={onEditLook}>Görünümü değiştir</Button>
         </div>
       </div>
@@ -68,10 +68,10 @@ export function ProfileScreen({ view, dispatch, onMenu, onEditLook }: { view: Ga
           <div className="stat"><span>Toplam kâr</span><strong>{formatTL(stats.profit)}</strong></div>
           <div className="stat"><span>En kârlı satış</span><strong>{formatTL(stats.bestProfit)}</strong></div>
           <div className="stat"><span>Hangi parça</span><strong className="ellipsis">{stats.bestItem ?? '—'}</strong></div>
-          <div className="stat"><span>Motora geçiş</span><strong>{stats.stageDay[2] ? `Gün ${stats.stageDay[2]}` : '—'}</strong></div>
-          <div className="stat"><span>Galeriye geçiş</span><strong>{stats.stageDay[3] ? `Gün ${stats.stageDay[3]}` : '—'}</strong></div>
+          <div className="stat"><span>Motora geçiş</span><strong>{stats.stageDay[2] ? `Hafta ${stats.stageDay[2]}` : '—'}</strong></div>
+          <div className="stat"><span>Galeriye geçiş</span><strong>{stats.stageDay[3] ? `Hafta ${stats.stageDay[3]}` : '—'}</strong></div>
           <div className="stat"><span>{RIVAL}’in kaptığı</span><strong>{stats.rivalTaken}</strong></div>
-          <div className="stat"><span>Holding</span><strong>{stats.stageDay[4] ? `Gün ${stats.stageDay[4]}` : '—'}</strong></div>
+          <div className="stat"><span>Holding</span><strong>{stats.stageDay[4] ? `Hafta ${stats.stageDay[4]}` : '—'}</strong></div>
         </div>
         <Button small onClick={() => void shareRecordCard(state).then(setShareMsg)}>Rekor kartını paylaş</Button>
         {shareMsg ? <p className="hint" role="status">{shareMsg}</p> : null}
@@ -80,7 +80,7 @@ export function ProfileScreen({ view, dispatch, onMenu, onEditLook }: { view: Ga
       <h2 className="h2">Uzmanlık</h2>
       <div className="panel">
         <p className="hint">Aynı türden her {EXPERT_STEP} satış bir seviye. Her seviyede satıcılar %{EXPERT_DISCOUNT * 100} daha aşağı iner.</p>
-        {[...new Set(Object.values(CATEGORIES_BY_STAGE).flat())].filter((c) => (stats.categorySales[c] ?? 0) > 0 || CATEGORIES_BY_STAGE[state.stage].includes(c)).map((c) => {
+        {(Object.keys(CATEGORY_LABEL) as (keyof typeof CATEGORY_LABEL)[]).filter((c) => (stats.categorySales[c] ?? 0) > 0 || categoriesFor(state).includes(c)).map((c) => {
           const level = expertLevel(state, c);
           return (
             <div className="row" key={c}>
@@ -120,7 +120,7 @@ export function ProfileScreen({ view, dispatch, onMenu, onEditLook }: { view: Ga
               <div className="row" key={b.city}>
                 <div>
                   <div className="row__title">{b.city} şubesi</div>
-                  <div className="row__sub">Günlük {formatTL(b.income)} gelir · her gün +1 alıcı</div>
+                  <div className="row__sub">Haftalık {formatTL(b.income)} gelir · her hafta +1 alıcı</div>
                 </div>
                 {i < state.branches ? <span className="tag tag--accent">Açık</span>
                   : i === state.branches ? (
@@ -134,13 +134,13 @@ export function ProfileScreen({ view, dispatch, onMenu, onEditLook }: { view: Ga
 
       {state.stage >= 2 ? (
         <>
-          <h2 className="h2">Çalışanlar <span className="muted">· günlük {formatTL(dailySalaries(state.employees))}</span></h2>
+          <h2 className="h2">Çalışanlar <span className="muted">· haftalık {formatTL(dailySalaries(state.employees))}</span></h2>
           <div className="panel">
             {(Object.keys(SALARY) as (keyof Employees)[]).filter((role) => ROLE_STAGE[role] <= state.stage).map((role) => (
               <div className="row" key={role}>
                 <div>
                   <div className="row__title">{ROLE_LABEL[role]}</div>
-                  <div className="row__sub">{ROLE_HELP[role]} · {formatTL(SALARY[role])}/gün</div>
+                  <div className="row__sub">{ROLE_HELP[role]} · {formatTL(SALARY[role])}/hafta</div>
                 </div>
                 {state.employees[role] ? (
                   <Button small variant="ghost" aria-label={`${ROLE_LABEL[role]}: Çıkar`} onClick={() => dispatch({ type: 'fire', role })}>Çıkar</Button>

@@ -1,14 +1,13 @@
 import type { GameState } from './types';
 import { createRng } from './rng';
-import { marketValue, round10 } from './pricing';
 import { generateListings, listingsFor } from './day';
 import { generateQuests } from './career';
-import { marketIndex } from './market';
 import { creditCheck } from './bank';
 
 /** 3 → 4 geçişi için ayrıca şehrin en büyük galericisi olmak gerekir. */
 export const STAGE_GOALS: Record<1 | 2 | 3, number> = { 1: 50000, 2: 500000, 3: 20_000_000 };
-const STAGE_AGE = { 2: 16, 3: 18, 4: 25 } as const;
+/** Aşamaya geçmek için gereken en küçük yaş: motor 16, galeri 18, holding 22. */
+export const STAGE_MIN_AGE = { 2: 16, 3: 18, 4: 22 } as const;
 
 export function hasWon(state: GameState): boolean {
   return state.stage >= 3 && state.locationLevel === 2 && state.reputation >= 90;
@@ -17,9 +16,10 @@ export function hasWon(state: GameState): boolean {
 export function checkProgress(state: GameState): GameState {
   if (state.pendingTransition !== null) return state;
   if ((state.stage === 1 || state.stage === 2) && state.money >= STAGE_GOALS[state.stage]) {
-    return { ...state, pendingTransition: state.stage === 1 ? 2 : 3 };
+    const next = state.stage === 1 ? 2 : 3;
+    if (state.age >= STAGE_MIN_AGE[next]) return { ...state, pendingTransition: next };
   }
-  if (state.stage === 3 && state.won && state.money >= STAGE_GOALS[3]) return { ...state, pendingTransition: 4 };
+  if (state.stage === 3 && state.won && state.money >= STAGE_GOALS[3] && state.age >= STAGE_MIN_AGE[4]) return { ...state, pendingTransition: 4 };
   if (!state.won && hasWon(state)) return { ...state, won: true };
   return state;
 }
@@ -31,29 +31,21 @@ export function completeTransition(state: GameState): GameState {
     const rng4 = createRng(state.rngState);
     const listings4 = generateListings({ ...state, stage }, rng4);
     return {
-      ...state, stage, age: STAGE_AGE[4], listings: listings4, pendingTransition: null, event: null, orders: [],
+      ...state, stage, listings: listings4, pendingTransition: null, event: null, orders: [],
       quests: generateQuests({ ...state, stage }, rng4), rngState: rng4.state(),
     };
   }
-  const sellOff = state.inventory.reduce((sum, i) => sum + round10(marketValue(i, state.season, marketIndex(state.market, i.category)) * 0.8), 0);
-  const notes = state.inventory.length > 0 ? [...state.summary.notes, `${state.player.name} eski eşyalarını elden çıkardı`] : state.summary.notes;
   const rng = createRng(state.rngState);
   const listings = generateListings({ ...state, stage }, rng);
   const quests = generateQuests({ ...state, stage }, rng);
   return {
     ...state,
     stage,
-    age: STAGE_AGE[stage],
-    money: state.money + sellOff,
-    inventory: [],
-    forSale: [],
-    offers: [],
     listings,
     pendingTransition: null,
     quests,
     orders: [],
     event: null,
-    summary: { ...state.summary, notes },
     rngState: rng.state(),
   };
 }

@@ -2,7 +2,10 @@ import type { Player } from './player';
 
 export type Stage = 1 | 2 | 3 | 4;
 export type Season = 'ilkbahar' | 'yaz' | 'sonbahar' | 'kis';
-export type Category = 'bisiklet' | 'guvercin' | 'konsol' | 'telefon' | 'motor' | 'araba';
+export type Category =
+  | 'bisiklet' | 'guvercin' | 'konsol' | 'telefon' | 'motor' | 'araba'
+  | 'kaykay' | 'scooter' | 'kulaklik' | 'kart' | 'kus' | 'balik' | 'kopek'
+  | 'escooter' | 'bilgisayar' | 'kamera' | 'gitar' | 'karavan' | 'tekne' | 'ismakinesi';
 export type Tag = '4x4' | 'cabrio' | 'klasik' | 'nadir';
 export type Personality = 'normal' | 'acele' | 'inatci' | 'kurnaz';
 export type GameEventId = 'fuar' | 'durgun' | 'firsat' | 'hediye' | 'ceza';
@@ -161,6 +164,8 @@ export interface GameState {
   family: { trust: number; task: FamilyTask | null; debt: number; debtDays: number };
   stocks: Stocks;
   talents: Talents;
+  /** Bu hafta kullanılan iş hakkı (okul haftalarında sınırlı). */
+  used: number;
   /** Son alımlar ve satışlar (en çok LEDGER_MAX). */
   ledger: LedgerEntry[];
 }

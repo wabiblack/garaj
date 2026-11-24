@@ -60,7 +60,7 @@ describe('respondToOffer', () => {
 describe('depo ve alım engeli', () => {
   test('storageLimit aşamaya göre', () => {
     expect(storageLimit(makeState({ stage: 1 }))).toBe(3);
-    expect(storageLimit(makeState({ stage: 2 }))).toBe(2);
+    expect(storageLimit(makeState({ stage: 2 }))).toBe(3);
     expect(storageLimit(makeState({ stage: 3, capacityLevel: 0 }))).toBe(1);
     expect(storageLimit(makeState({ stage: 3, capacityLevel: 3 }))).toBe(8);
   });

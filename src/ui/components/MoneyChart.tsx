@@ -4,7 +4,7 @@ const W = 320, H = 120, PAD = 8;
 
 /** Gün sonu paralarının çizgi grafiği. */
 export function MoneyChart({ points }: { points: { day: number; money: number }[] }) {
-  if (points.length < 2) return <p className="hint">Grafik için birkaç gün oyna.</p>;
+  if (points.length < 2) return <p className="hint">Grafik için birkaç hafta oyna.</p>;
   const max = Math.max(...points.map((p) => p.money), 1);
   const x = (i: number) => PAD + (i / (points.length - 1)) * (W - PAD * 2);
   const y = (m: number) => H - PAD - (m / max) * (H - PAD * 2);
@@ -13,9 +13,9 @@ export function MoneyChart({ points }: { points: { day: number; money: number }[
   const first = points[0], last = points[points.length - 1];
   const change = last.money - first.money;
   return (
-    <figure className="chart" aria-label={`Gün ${first.day}–${last.day} arası para: ${formatTL(first.money)} → ${formatTL(last.money)}`}>
+    <figure className="chart" aria-label={`Hafta ${first.day}–${last.day} arası para: ${formatTL(first.money)} → ${formatTL(last.money)}`}>
       <div className="chart__head">
-        <span className="muted">Gün {first.day}–{last.day}</span>
+        <span className="muted">Hafta {first.day}–{last.day}</span>
         <strong className={change >= 0 ? 'pos' : 'neg'}>{change >= 0 ? '+' : '−'}{formatTL(Math.abs(change))}</strong>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="chart__svg" role="img" aria-hidden="true" preserveAspectRatio="none">

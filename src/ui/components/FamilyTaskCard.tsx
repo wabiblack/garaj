@@ -15,11 +15,11 @@ export function FamilyTaskCard({ state, dispatch }: { state: GameState; dispatch
     <section className="family-task" aria-label="Aile görevi">
       {face ? <img className="family-task__face" src={face} alt="" /> : <span className="family-task__icon" aria-hidden="true">🏠</span>}
       <div className="family-task__body">
-        <div className="family-task__who">{WHO[task.from]} · {task.title} · {task.daysLeft} gün</div>
+        <div className="family-task__who">{WHO[task.from]} · {task.title} · {task.daysLeft} hafta</div>
         <p className="family-task__text">{task.text}</p>
         {task.amount !== undefined ? (
           <Button small variant="primary" disabled={state.money < task.amount} onClick={() => dispatch({ type: 'familyPay' })}>{`Ver: ${formatTL(task.amount)}`}</Button>
-        ) : <p className="hint">Gün sonunda kontrol edilir.</p>}
+        ) : <p className="hint">Hafta sonunda kontrol edilir.</p>}
       </div>
     </section>
   );

@@ -35,8 +35,11 @@ export function hasModelArt(item: Pick<Item, 'brand' | 'model'>): boolean {
   return MODELS.has(modelSlug(item));
 }
 
+/** Görseli henüz gelmemiş tür için sade bir kutu çizimi. */
+const PLACEHOLDER = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80"><rect x="38" y="22" width="44" height="38" rx="4" fill="#8a6a3f"/><path d="M38 34h44M60 22v12" stroke="#6b5030" stroke-width="3"/><ellipse cx="60" cy="66" rx="30" ry="4" fill="#000" opacity=".2"/></svg>');
+
 export function categoryImageUrl(category: Item['category']): string {
-  return CATEGORIES.get(category) ?? '';
+  return CATEGORIES.get(category) ?? PLACEHOLDER;
 }
 
 export function itemImageUrl(item: Item): string {

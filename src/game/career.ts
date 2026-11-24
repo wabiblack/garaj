@@ -1,6 +1,6 @@
 import type { AchievementId, GameState, Item, LedgerEntry, Listing, Quest, QuestKind, Stage, Stats } from './types';
 import type { RNG } from './rng';
-import { CATEGORIES_BY_STAGE, CATEGORY_LABEL } from './catalog';
+import { CATEGORY_LABEL, categoriesFor } from './catalog';
 import { formatTL } from './format';
 import { itemName } from './selling';
 
@@ -27,7 +27,7 @@ export const PRICE_MEMORY = 5;
 const PROFIT_TARGET: Record<Stage, number> = { 1: 1500, 2: 20000, 3: 200000, 4: 800000 };
 
 export function emptyStats(): Stats {
-  return { sales: 0, profit: 0, bestProfit: 0, bestItem: null, disclosedSales: 0, rivalTaken: 0, categorySales: { bisiklet: 0, guvercin: 0, konsol: 0, telefon: 0, motor: 0, araba: 0 }, stageDay: { 2: null, 3: null, 4: null } };
+  return { sales: 0, profit: 0, bestProfit: 0, bestItem: null, disclosedSales: 0, rivalTaken: 0, categorySales: Object.fromEntries(Object.keys(CATEGORY_LABEL).map((c) => [c, 0])) as Stats['categorySales'], stageDay: { 2: null, 3: null, 4: null } };
 }
 
 function makeQuest(kind: QuestKind, state: GameState, rng: RNG): Quest {
@@ -39,7 +39,7 @@ function makeQuest(kind: QuestKind, state: GameState, rng: RNG): Quest {
       return { ...base, target: n, title: `${n} satış yap` };
     }
     case 'kategori': {
-      const category = rng.pick(CATEGORIES_BY_STAGE[state.stage]);
+      const category = rng.pick(categoriesFor(state));
       return { ...base, target: 2, category, title: `2 ${CATEGORY_LABEL[category].toLocaleLowerCase('tr-TR')} sat` };
     }
     case 'kar':

@@ -22,7 +22,7 @@ export function LedgerPanel({ state }: { state: GameState }) {
               <span className={'tag ' + (e.kind === 'al' ? 'tag--accent' : 'tag--good')}>{e.kind === 'al' ? 'Alış' : 'Satış'}</span>
               <div className="ledger__main">
                 <div className="row__title ellipsis">{e.name}</div>
-                <div className="row__sub">Gün {e.day}</div>
+                <div className="row__sub">Hafta {e.day}</div>
               </div>
               <div className="ledger__side">
                 <div>{formatTL(e.price)}</div>

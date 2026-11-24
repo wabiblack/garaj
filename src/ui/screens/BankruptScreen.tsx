@@ -7,7 +7,7 @@ export function BankruptScreen({ state, onRestart }: { state: GameState; onResta
   return (
     <div className="overlay overlay--center" role="dialog" aria-modal="true" aria-label="İflas">
       <div className="overlay__inner overlay__inner--center">
-        <p className="overlay__kicker">Gün {state.day}</p>
+        <p className="overlay__kicker">Hafta {state.day}</p>
         <h1 className="transition__title">İflas ettin</h1>
         <p className="muted">
           Elinde satacak bir şey yok ve paran hiçbir ilana yetmiyor.

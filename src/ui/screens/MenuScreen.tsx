@@ -59,7 +59,7 @@ export function MenuScreen({ state, dispatch, onPlay, onNewGame }: {
           {progress ? (
             <button type="button" className="menu-btn menu-btn--primary" style={rise()} onClick={onPlay}>
               <span className="menu-btn__label">Devam et</span>
-              <span className="menu-btn__sub">Gün {state.day} · {formatTL(state.money)} · {STAGE_LABEL[state.stage]}{state.hard ? ' · Zor' : ''}</span>
+              <span className="menu-btn__sub">Hafta {state.day} · {formatTL(state.money)} · {STAGE_LABEL[state.stage]}{state.hard ? ' · Zor' : ''}</span>
             </button>
           ) : null}
           <button

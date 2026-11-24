@@ -1,15 +1,15 @@
 import { newGame } from '../../src/game/newGame';
 import { generateListings, endDay, startNextDay } from '../../src/game/day';
-import { CATEGORIES_BY_STAGE } from '../../src/game/catalog';
+import { categoriesFor } from '../../src/game/catalog';
 import { createRng } from '../../src/game/rng';
 import { makeItem, makeState } from '../helpers';
 
 test('newGame başlangıç değerleri', () => {
   const s = newGame(123);
-  expect(s).toMatchObject({ age: 12, money: 2000, stage: 1, day: 1, phase: 'day', reputation: 50, skill: 0, season: 'ilkbahar' });
+  expect(s).toMatchObject({ age: 12, money: 2000, stage: 1, day: 1, phase: 'day', reputation: 50, skill: 0, season: 'yaz' });
   expect(s.listings.length).toBeGreaterThanOrEqual(4);
   expect(s.listings.length).toBeLessThanOrEqual(6);
-  for (const l of s.listings) expect(CATEGORIES_BY_STAGE[1]).toContain(l.item.category);
+  for (const l of s.listings) expect(categoriesFor(s)).toContain(l.item.category);
   expect(newGame(123)).toEqual(s);
 });
 
@@ -21,7 +21,7 @@ describe('generateListings', () => {
       const normal = ls.filter((l) => l.special === null);
       expect(normal.length).toBeGreaterThanOrEqual(4);
       expect(normal.length).toBeLessThanOrEqual(6);
-      for (const l of ls) expect(l.item.category).toBe('motor');
+      for (const l of ls) expect(categoriesFor({ stage: 2 })).toContain(l.item.category);
       expect(ls.every((l) => l.special === null || l.special === 'mezat')).toBe(true);
     }
   });

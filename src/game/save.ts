@@ -96,6 +96,7 @@ function fillV3(s: GameState): GameState {
     family: s.family && typeof s.family.trust === 'number' ? s.family : FAMILY_START,
     stocks: fillStocks(s.stocks),
     talents: s.talents?.ranks ? s.talents : retroTalents(s),
+    used: typeof s.used === 'number' ? s.used : 0,
   };
 }
 

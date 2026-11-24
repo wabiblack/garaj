@@ -70,9 +70,9 @@ export function NegotiationSheet({ listingId, view, dispatch, onClose, onGoGarag
       <dl className="kv">
         <div><dt>İstenen</dt><dd><Money value={listing.askPrice} className="money--accent" /></dd></div>
         <div><dt>Piyasa değeri</dt><dd><Money value={marketValue(item, state.season, marketIndex(state.market, item.category))} /></dd></div>
-        <div><dt>Piyasa bugün</dt><dd><Change value={marketChange(state.market, item.category)} /></dd></div>
+        <div><dt>Piyasa bu hafta</dt><dd><Change value={marketChange(state.market, item.category)} /></dd></div>
         {state.prices[itemName(item)]?.length ? (
-          <div><dt>Son sattıkların</dt><dd className="price-history">{state.prices[itemName(item)].slice(-3).map((p) => `${formatTL(p.price)} (Gün ${p.day})`).join(' · ')}</dd></div>
+          <div><dt>Son sattıkların</dt><dd className="price-history">{state.prices[itemName(item)].slice(-3).map((p) => `${formatTL(p.price)} (Hafta ${p.day})`).join(' · ')}</dd></div>
         ) : null}
         <div><dt>Satıcının sabrı</dt><dd><Patience value={listing.patience} /></dd></div>
       </dl>

@@ -1,9 +1,9 @@
+import { seasonOfWeek } from './calendar';
 import type { Item, Season } from './types';
 
-const SEASONS: Season[] = ['ilkbahar', 'yaz', 'sonbahar', 'kis'];
-
+/** Turun (haftanın) mevsimi; takvim: calendar.ts. */
 export function seasonForDay(day: number): Season {
-  return SEASONS[Math.floor((day - 1) / 10) % 4];
+  return seasonOfWeek(day);
 }
 
 export function round10(x: number): number {
