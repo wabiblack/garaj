@@ -70,7 +70,8 @@ export interface Order {
 export interface SaleListing { itemId: string; price: number; disclosed: boolean }
 export interface BuyerOffer { id: string; itemId: string; amount: number; buyerName: string }
 export interface Employees { usta: boolean; boyaci: boolean; satis: boolean; cirak: boolean }
-export interface Loan { principal: number; dailyRate: number }
+/** Taksitli kredi: kalan borç, günlük taksit, kalan gün, geciken taksit sayısı. */
+export interface Loan { debt: number; installment: number; daysLeft: number; late: number }
 export interface Quest {
   id: string;
   kind: QuestKind;
@@ -144,6 +145,8 @@ export interface GameState {
   /** Oyuncunun karakteri (isim, görünüm). */
   player: Player;
   market: Market;
+  /** Birikim hesabı. */
+  bank: { savings: number };
   /** Son alımlar ve satışlar (en çok LEDGER_MAX). */
   ledger: LedgerEntry[];
 }

@@ -154,15 +154,16 @@ describe('fix I1: aynı reddedilen teklif tekrar sabır yemez', () => {
 
 describe('fix I3: iflas', () => {
   test('eşyasız, parası en ucuz ilana yetmeyen ve kredi alamayan oyuncu iflas eder', () => {
-    expect(isBankrupt(makeState({ stage: 3, money: 1000, loan: { principal: 1e6, dailyRate: 0.01 }, listings: [makeListing({ minPrice: 90000 })] }))).toBe(true);
-    expect(isBankrupt(makeState({ stage: 3, money: 1000, loan: null, listings: [makeListing({ minPrice: 90000 })] }))).toBe(false);
+    const credible = { age: 18, reputation: 80, stats: { ...makeState().stats, sales: 10 } };
+    expect(isBankrupt(makeState({ stage: 3, money: 1000, ...credible, loan: { debt: 1e6, installment: 1e5, daysLeft: 10, late: 0 }, listings: [makeListing({ minPrice: 90000 })] }))).toBe(true);
+    expect(isBankrupt(makeState({ stage: 3, money: 1000, ...credible, loan: null, listings: [makeListing({ minPrice: 90000 })] }))).toBe(false);
     expect(isBankrupt(makeState({ stage: 2, money: 1000, listings: [makeListing({ minPrice: 9000 })] }))).toBe(true);
     expect(isBankrupt(makeState({ stage: 2, money: 1000, inventory: [makeItem()], listings: [makeListing({ minPrice: 9000 })] }))).toBe(false);
     expect(isBankrupt(makeState({ stage: 2, money: 9000, listings: [makeListing({ minPrice: 9000 })] }))).toBe(false);
     expect(isBankrupt(makeState({ stage: 1, money: 2000, listings: [makeListing()] }))).toBe(false);
   });
   test('restartStage aşamanın başlangıç parasıyla devam ettirir, borç ve çalışanlar silinir', () => {
-    const v = gameReducer(view({ stage: 3, age: 18, money: 10, day: 40, loan: { principal: 2e6, dailyRate: 0.01 }, employees: { usta: true, boyaci: false, satis: false, cirak: false }, listings: [makeListing({ minPrice: 90000 })] }), { type: 'restartStage' });
+    const v = gameReducer(view({ stage: 3, age: 18, money: 10, day: 40, loan: { debt: 2e6, installment: 2e5, daysLeft: 10, late: 0 }, employees: { usta: true, boyaci: false, satis: false, cirak: false }, listings: [makeListing({ minPrice: 90000 })] }), { type: 'restartStage' });
     expect(v.state).toMatchObject({ stage: 3, age: 18, money: 500000, loan: null, employees: { usta: false, boyaci: false, satis: false, cirak: false }, day: 40 });
     expect(v.state.listings.every((l) => l.item.category === 'araba')).toBe(true);
   });
@@ -182,7 +183,7 @@ describe('kariyer entegrasyonu', () => {
     expect(v.state.achievements).toContain('ilk-satis');
   });
   test('kredi kapatmak borçsuz başarımı verir', () => {
-    const v = gameReducer(view({ stage: 3, money: 2e6, loan: { principal: 1e6, dailyRate: 0.01 } }), { type: 'repayLoan' });
+    const v = gameReducer(view({ stage: 3, money: 2e6, loan: { debt: 1e6, installment: 1e5, daysLeft: 10, late: 0 } }), { type: 'repayLoan' });
     expect(v.state.achievements).toContain('borcsuz');
   });
 });

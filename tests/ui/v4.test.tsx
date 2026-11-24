@@ -180,3 +180,28 @@ test('Finans sekmesinde piyasa endeksi ve al-sat defteri görünür', async () =
   expect(within(defter).getAllByText('Kanat BMX')).toHaveLength(2);
   expect(within(defter).getByText('+600 TL')).toBeInTheDocument();
 });
+
+test('Finans > Banka: reşit olmayan kredi göremez, birikim yapabilir', async () => {
+  seedSave(makeState({ money: 2000 }));
+  renderGame();
+  await userEvent.click(screen.getByRole('tab', { name: 'Finans' }));
+  await userEvent.click(screen.getByRole('tab', { name: 'Banka' }));
+  const bank = screen.getByRole('region', { name: 'Banka' });
+  expect(within(bank).getByText(/18 yaşından önce/)).toBeInTheDocument();
+  expect(within(bank).queryByRole('button', { name: /kredi çek/ })).toBeNull();
+  await userEvent.click(within(bank).getByRole('button', { name: 'Yatır: 1.000 TL' }));
+  expect(within(bank).getByText('Birikim: 1.000 TL')).toBeInTheDocument();
+});
+
+test('Finans > Banka: koşulları sağlayan kredi çeker ve kapatır', async () => {
+  seedSave(makeState({ stage: 3, age: 18, money: 500_000, reputation: 100, stats: { ...makeState().stats, sales: 20 } }));
+  renderGame();
+  await userEvent.click(screen.getByRole('tab', { name: 'Finans' }));
+  await userEvent.click(screen.getByRole('tab', { name: 'Banka' }));
+  const bank = screen.getByRole('region', { name: 'Banka' });
+  expect(within(bank).getByText('Kredi limitin: 3.000.000 TL')).toBeInTheDocument();
+  await userEvent.click(within(bank).getByRole('button', { name: '750.000 TL kredi çek' }));
+  expect(within(bank).getByText('Borç: 825.000 TL')).toBeInTheDocument();
+  await userEvent.click(within(bank).getByRole('button', { name: /Borcu kapat/ }));
+  expect(within(bank).getByText('Kredi limitin: 3.000.000 TL')).toBeInTheDocument();
+});

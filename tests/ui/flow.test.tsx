@@ -113,7 +113,7 @@ describe('Profil', () => {
     expect(screen.getByText('Tamir becerisi')).toBeInTheDocument();
     expect(screen.queryByText('Büyüme')).toBeNull();
   });
-  test('aşama 3te büyüme: yükseltme, işe alma, kredi', async () => {
+  test('aşama 3te büyüme: yükseltme, işe alma', async () => {
     seedSave(makeState({ stage: 3, age: 18, money: 500_000 }));
     renderGame();
     await userEvent.click(screen.getByRole('tab', { name: 'Profil' }));
@@ -123,8 +123,6 @@ describe('Profil', () => {
     expect(screen.getByText(/2 araç/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /Usta.*İşe al/ }));
     expect(screen.getByRole('button', { name: /Usta.*Çıkar/ })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: /1.000.000 TL kredi al/ }));
-    expect(screen.getByRole('button', { name: /Krediyi öde/ })).toBeInTheDocument();
   });
 });
 

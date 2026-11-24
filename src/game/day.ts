@@ -7,6 +7,7 @@ import { formatTL } from './format';
 import { generateQuests } from './career';
 import { generateOffers } from './selling';
 import { applyDailyCosts } from './growth';
+import { settleBank } from './bank';
 import { updateOrders } from './orders';
 import { markRivalTarget } from './rival';
 import { pickStory } from './story';
@@ -94,7 +95,7 @@ export function startNextDay(state: GameState): GameState {
   const moved = stepMarket(state.market, createRng(state.rngState ^ 0x5bd1e995), state.event);
   if (moved.note) notes.push(moved.note);
   const repLoss = state.pendingCatch.reduce((sum, c) => sum + (c.knowing === false ? 5 : 15), 0);
-  const next: GameState = applyDailyCosts({
+  const next: GameState = settleBank(applyDailyCosts({
     ...state,
     day,
     phase: 'day',
@@ -113,7 +114,7 @@ export function startNextDay(state: GameState): GameState {
       };
     }),
     summary: { ...emptySummary(day), notes: season !== state.season ? [...notes, SEASON_NOTE[season]] : notes },
-  });
+  }));
   const rng = createRng(state.rngState);
   let listings = listingsFor(next, rng);
   let money = next.money;

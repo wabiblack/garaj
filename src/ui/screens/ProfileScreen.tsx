@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Action, GameView } from '../../game/reducer';
 import type { Employees } from '../../game/types';
 import {
-  CAPACITY, CAPACITY_COST, LOAN_OPTIONS, LOCATION_COST, LOCATIONS, ROLE_LABEL, ROLE_STAGE, SALARY, dailySalaries,
+  CAPACITY, CAPACITY_COST, LOCATION_COST, LOCATIONS, ROLE_LABEL, ROLE_STAGE, SALARY, dailySalaries,
 } from '../../game/growth';
 import { CATEGORIES_BY_STAGE, CATEGORY_LABEL } from '../../game/catalog';
 import { EXPERT_DISCOUNT, EXPERT_MAX, EXPERT_STEP, expertLevel } from '../../game/expertise';
@@ -178,34 +178,10 @@ export function ProfileScreen({ view, dispatch, onMenu, onEditLook }: { view: Ga
               ) : <span className="tag tag--accent">En üst</span>}
             </div>
           </div>
-
-          <h2 className="h2">Banka</h2>
-          <div className="panel">
-            {state.loan ? (
-              <div className="row">
-                <div>
-                  <div className="row__title">Borç: {formatTL(state.loan.principal)}</div>
-                  <div className="row__sub">Günlük faiz %1 · {formatTL(Math.round(state.loan.principal * state.loan.dailyRate))}</div>
-                </div>
-                <Button small variant="primary" disabled={state.money < state.loan.principal} onClick={() => dispatch({ type: 'repayLoan' })}>
-                  {`Krediyi öde · ${formatTL(state.loan.principal)}`}
-                </Button>
-              </div>
-            ) : (
-              <>
-                <p className="hint">Günlük %1 faiz. Ödeyemediğin faiz borca eklenir.</p>
-                <div className="chips">
-                  {LOAN_OPTIONS.map((a) => (
-                    <Button key={a} small onClick={() => dispatch({ type: 'takeLoan', amount: a })}>{`${formatTL(a)} kredi al`}</Button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
         </>
       ) : (
         <div className="panel panel--muted">
-          <p className="muted">{state.stage === 1 ? 'Çırak motor işinde; garajı büyütme, usta ve kredi galerici olunca açılır.' : 'Garajı büyütme, usta ve kredi galerici olunca açılır.'}</p>
+          <p className="muted">{state.stage === 1 ? 'Çırak motor işinde; garajı büyütme ve usta galerici olunca açılır.' : 'Garajı büyütme ve usta galerici olunca açılır.'}</p>
         </div>
       )}
 

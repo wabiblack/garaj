@@ -4,6 +4,7 @@ import { marketValue, round10 } from './pricing';
 import { generateListings, listingsFor } from './day';
 import { generateQuests } from './career';
 import { marketIndex } from './market';
+import { creditCheck } from './bank';
 
 /** 3 → 4 geçişi için ayrıca şehrin en büyük galericisi olmak gerekir. */
 export const STAGE_GOALS: Record<1 | 2 | 3, number> = { 1: 50000, 2: 500000, 3: 20_000_000 };
@@ -67,8 +68,8 @@ export const BANKRUPT_FLOOR: Record<1 | 2 | 3 | 4, number> = { 1: 300, 2: 5000, 
 export function isBankrupt(state: GameState): boolean {
   if (state.phase !== 'day' || state.pendingTransition !== null) return false;
   if (state.inventory.length > 0 || state.forSale.length > 0) return false;
-  if (state.stage >= 3 && state.loan === null) return false;
-  return state.money < BANKRUPT_FLOOR[state.stage];
+  if (state.loan === null && creditCheck(state).ok) return false;
+  return state.money + state.bank.savings < BANKRUPT_FLOOR[state.stage];
 }
 
 export function restartStage(state: GameState): GameState {

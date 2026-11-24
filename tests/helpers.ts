@@ -25,7 +25,7 @@ export function makeState(over: Partial<GameState> = {}): GameState {
     event: null, quests: [], achievements: [],
     stats: { sales: 0, profit: 0, bestProfit: 0, bestItem: null, disclosedSales: 0, rivalTaken: 0, categorySales: { bisiklet: 0, guvercin: 0, konsol: 0, telefon: 0, motor: 0, araba: 0 }, stageDay: { 2: null, 3: null, 4: null } },
     orders: [], story: { seen: [], pending: null }, history: [], branches: 0, finalSeen: false, hard: false, prices: {}, player: { name: 'Kerem', look: { skin: 1, hair: 0, color: 0, glasses: false } },
-    market: initialMarket(), ledger: [],
+    market: initialMarket(), ledger: [], bank: { savings: 0 },
     ...over,
   };
 }

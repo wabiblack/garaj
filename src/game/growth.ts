@@ -8,8 +8,6 @@ export const SALARY: Record<keyof Employees, number> = { cirak: 400, usta: 3000,
 /** Çırak motor işinde (2. aşama) açılır, diğerleri galeride. */
 export const ROLE_STAGE: Record<keyof Employees, Stage> = { cirak: 2, usta: 3, boyaci: 3, satis: 3 };
 export const ROLE_LABEL: Record<keyof Employees, string> = { cirak: 'Çırak', usta: 'Usta', boyaci: 'Boyacı', satis: 'Satış elemanı' };
-export const LOAN_OPTIONS = [1_000_000, 3_000_000] as const;
-const LOAN_RATE = 0.01;
 /** 4. aşama şubeleri: sırayla açılır, her biri günlük gelir ve +1 alıcı getirir. */
 export const BRANCHES = [
   { city: 'İzmir', cost: 15_000_000, income: 150_000 },
@@ -35,7 +33,7 @@ function spent(s: GameState, cost: number): GameState['summary'] {
   return { ...s.summary, spent: s.summary.spent + cost };
 }
 
-export type GrowthBlock = 'asama-2-degil' | 'asama-3-degil' | 'asama-4-degil' | 'yetersiz-para' | 'en-ust-seviye' | 'zaten-var' | 'kredi-var' | null;
+export type GrowthBlock = 'asama-2-degil' | 'asama-3-degil' | 'asama-4-degil' | 'yetersiz-para' | 'en-ust-seviye' | 'zaten-var' | null;
 
 export function upgradeCapacity(s: GameState): GameState | GrowthBlock {
   if (s.stage < 3) return 'asama-3-degil';
@@ -64,19 +62,6 @@ export function fire(s: GameState, role: keyof Employees): GameState {
   return { ...s, employees: { ...s.employees, [role]: false } };
 }
 
-export function takeLoan(s: GameState, amount: number): GameState | GrowthBlock {
-  if (s.stage < 3) return 'asama-3-degil';
-  if (s.loan) return 'kredi-var';
-  if (!(LOAN_OPTIONS as readonly number[]).includes(amount)) return 'yetersiz-para';
-  return { ...s, money: s.money + amount, loan: { principal: amount, dailyRate: LOAN_RATE } };
-}
-
-export function repayLoan(s: GameState): GameState | GrowthBlock {
-  if (!s.loan) return null;
-  if (s.money < s.loan.principal) return 'yetersiz-para';
-  return { ...s, money: s.money - s.loan.principal, loan: null };
-}
-
 export function dailySalaries(e: Employees): number {
   return (Object.keys(SALARY) as (keyof Employees)[]).reduce((sum, r) => sum + (e[r] ? SALARY[r] : 0), 0);
 }
@@ -94,17 +79,6 @@ export function applyDailyCosts(s: GameState): GameState {
   const salaries = dailySalaries(employees);
   const income = branchIncome(s.branches);
   if (income > 0) notes.push(`Şubelerden gelir: ${income.toLocaleString('tr-TR')} TL`);
-  let money = s.money + income - salaries;
-  let loan = s.loan;
-  if (loan) {
-    const interest = Math.round(loan.principal * loan.dailyRate);
-    const paid = Math.min(money, interest);
-    money -= paid;
-    if (paid < interest) {
-      loan = { ...loan, principal: loan.principal + interest - paid };
-      notes.push('Faiz ödenemedi, borca eklendi');
-    }
-  }
-  const paid = s.money + income - money;
-  return { ...s, money, employees, loan, summary: { ...s.summary, notes, spent: s.summary.spent + paid, earned: s.summary.earned + income } };
+  const money = s.money + income - salaries;
+  return { ...s, money, employees, summary: { ...s.summary, notes, spent: s.summary.spent + salaries, earned: s.summary.earned + income } };
 }

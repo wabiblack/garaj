@@ -1,8 +1,9 @@
-import type { GameState, Listing } from './types';
+import type { GameState, Listing, Loan } from './types';
 import { createRng } from './rng';
 import { emptyStats, generateQuests } from './career';
 import { cleanPlayer } from './player';
 import { fillMarket } from './market';
+import { newLoan } from './bank';
 
 export const SAVE_KEY = 'garaj.save';
 export type LoadResult = { kind: 'ok'; state: GameState } | { kind: 'empty' } | { kind: 'broken' };
@@ -87,7 +88,17 @@ function fillV3(s: GameState): GameState {
     player: cleanPlayer(s.player),
     market: fillMarket(s.market),
     ledger: Array.isArray(s.ledger) ? s.ledger : [],
+    bank: { savings: typeof s.bank?.savings === 'number' ? s.bank.savings : 0 },
+    loan: migrateLoan(s.loan),
   };
+}
+
+/** Eski kredi (anapara + günlük faiz) yeni taksitli krediye çevrilir. */
+function migrateLoan(loan: unknown): Loan | null {
+  if (!loan || typeof loan !== 'object') return null;
+  const l = loan as Partial<Loan> & { principal?: number };
+  if (typeof l.debt === 'number') return l as Loan;
+  return typeof l.principal === 'number' ? newLoan(l.principal) : null;
 }
 
 /** Sürüm 1 kaydını (kariyer özellikleri öncesi) sürüm 2'ye taşır. */
