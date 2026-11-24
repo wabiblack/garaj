@@ -12,6 +12,7 @@ import { endDay, startNextDay } from './day';
 import { checkProgress, completeTransition, isBankrupt, restartStage } from './progression';
 import { fire, hire, openBranch, upgradeCapacity, upgradeLocation, type GrowthBlock } from './growth';
 import { deposit, repayLoan, takeLoan, withdraw, type BankBlock } from './bank';
+import { familyBorrow, familyPay, familyRepay, type FamilyBlock } from './family';
 import { newGame, type StartStage } from './newGame';
 import { checkAchievements, recordPurchase, recordSale, unlockAchievement } from './career';
 import type { RNG } from './rng';
@@ -35,6 +36,7 @@ export type Action =
   | { type: 'hire' | 'fire'; role: keyof Employees }
   | { type: 'takeLoan'; amount: number } | { type: 'repayLoan' }
   | { type: 'deposit' | 'withdraw'; amount: number }
+  | { type: 'familyPay' } | { type: 'familyBorrow'; amount: number } | { type: 'familyRepay' }
   | { type: 'restartStage' }
   | { type: 'fulfillOrder'; orderId: string; itemId: string }
   | { type: 'storyChoice'; index: number }
@@ -48,7 +50,7 @@ export type Action =
 
 export interface GameView { state: GameState; message: string | null; lastOffer: OfferResult | null }
 
-const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock>, string> = {
+const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | FamilyBlock>, string> = {
   'yetersiz-para': 'Paran yetmiyor',
   'depo-dolu': 'Depon dolu',
   'asama-2-degil': 'Çırak motor işine girince alınır',
@@ -59,7 +61,10 @@ const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock>, str
   'resit-degil': '18 yaşından önce bankadan kredi çekemezsin',
   'itibar-dusuk': 'İtibarın düşük: banka kredi vermiyor',
   'gecmis-yok': 'Banka en az 5 satışlık geçmiş istiyor',
-  'limit-asimi': 'Bu tutar kredi limitini aşıyor',
+  'limit-asimi': 'Bu tutar limiti aşıyor',
+  'resit': 'Artık reşitsin: borç için bankaya git',
+  'guven-dusuk': 'Ailenin sana güveni az: önce verdiğin sözleri tut',
+  'borc-var': 'Önce aileye olan borcunu öde',
   'asama-4-degil': 'Şubeler holding kurunca açılır',
 };
 
@@ -191,7 +196,10 @@ function step(view: GameView, action: Action): GameView {
     case 'takeLoan':
     case 'repayLoan':
     case 'deposit':
-    case 'withdraw': {
+    case 'withdraw':
+    case 'familyPay':
+    case 'familyBorrow':
+    case 'familyRepay': {
       const res =
         action.type === 'upgradeCapacity' ? upgradeCapacity(s)
         : action.type === 'upgradeLocation' ? upgradeLocation(s)
@@ -199,6 +207,9 @@ function step(view: GameView, action: Action): GameView {
         : action.type === 'takeLoan' ? takeLoan(s, Math.round(action.amount))
         : action.type === 'deposit' ? deposit(s, Math.round(action.amount))
         : action.type === 'withdraw' ? withdraw(s, Math.round(action.amount))
+        : action.type === 'familyPay' ? familyPay(s)
+        : action.type === 'familyBorrow' ? familyBorrow(s, Math.round(action.amount))
+        : action.type === 'familyRepay' ? familyRepay(s)
         : repayLoan(s);
       if (res === null) return same();
       if (typeof res === 'string') return same(BLOCK_MESSAGE[res]);

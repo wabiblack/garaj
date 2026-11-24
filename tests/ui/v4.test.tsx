@@ -205,3 +205,19 @@ test('Finans > Banka: koşulları sağlayan kredi çeker ve kapatır', async () 
   await userEvent.click(within(bank).getByRole('button', { name: /Borcu kapat/ }));
   expect(within(bank).getByText('Kredi limitin: 3.000.000 TL')).toBeInTheDocument();
 });
+
+test('aile görevi ilanlarda görünür, Finans > Aile’den ödenir', async () => {
+  const task = { kind: 'katki' as const, from: 'baba' as const, title: 'Eve katkı', text: 'Eve 200 TL katkı verebilir misin?', amount: 200, daysLeft: 2 };
+  seedSave(makeState({ money: 1000, family: { trust: 60, task, debt: 0, debtDays: 0 } }));
+  renderGame();
+  const card = screen.getByRole('region', { name: 'Aile görevi' });
+  expect(within(card).getByText(/Eve 200 TL katkı/)).toBeInTheDocument();
+  await userEvent.click(within(card).getByRole('button', { name: 'Ver: 200 TL' }));
+  expect(screen.queryByRole('region', { name: 'Aile görevi' })).toBeNull();
+  await userEvent.click(screen.getByRole('tab', { name: 'Finans' }));
+  await userEvent.click(screen.getByRole('tab', { name: 'Aile' }));
+  const aile = screen.getByRole('region', { name: 'Aile' });
+  expect(within(aile).getByText('Güven 68/100')).toBeInTheDocument();
+  await userEvent.click(within(aile).getByRole('button', { name: /Aileden borç al/ }));
+  expect(within(aile).getByText(/Aileye borcun/)).toBeInTheDocument();
+});

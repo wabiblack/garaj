@@ -8,6 +8,7 @@ import { generateQuests } from './career';
 import { generateOffers } from './selling';
 import { applyDailyCosts } from './growth';
 import { settleBank } from './bank';
+import { settleFamily } from './family';
 import { updateOrders } from './orders';
 import { markRivalTarget } from './rival';
 import { pickStory } from './story';
@@ -84,8 +85,12 @@ export function endDay(state: GameState): GameState {
   return { ...state, phase: 'evening', offers, rngState: rng.state() };
 }
 
-export function startNextDay(state: GameState): GameState {
-  if (state.phase !== 'evening') return state;
+export function startNextDay(evening: GameState): GameState {
+  if (evening.phase !== 'evening') return evening;
+  // Aile, biten günün durumuna bakar (alım sayısı, depo); ayrı zar akışı kullanır.
+  const family = settleFamily(evening, createRng(evening.rngState ^ 0x2545f491));
+  const familyNotes = family.summary.notes.slice(evening.summary.notes.length);
+  const state = { ...family, summary: evening.summary };
   const day = state.day + 1;
   const season = seasonForDay(day);
   const notes = state.pendingCatch.map((c) =>
@@ -94,6 +99,7 @@ export function startNextDay(state: GameState): GameState {
   // Piyasa ayrı bir zar akışıyla oynar; böylece günün ilan/olay zarları değişmez.
   const moved = stepMarket(state.market, createRng(state.rngState ^ 0x5bd1e995), state.event);
   if (moved.note) notes.push(moved.note);
+  notes.push(...familyNotes);
   const repLoss = state.pendingCatch.reduce((sum, c) => sum + (c.knowing === false ? 5 : 15), 0);
   const next: GameState = settleBank(applyDailyCosts({
     ...state,

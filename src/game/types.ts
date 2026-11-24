@@ -97,6 +97,9 @@ export interface Stats {
 export type Market = Record<Category, number[]>;
 /** Al-sat defteri satırı. */
 export interface LedgerEntry { day: number; kind: 'al' | 'sat'; name: string; category: Category; price: number; profit?: number }
+export type FamilyTaskKind = 'katki' | 'kardes' | 'ders' | 'duzen';
+/** Anne ya da babanın verdiği görev; amount varsa para ister, yoksa gün sonunda kontrol edilir. */
+export interface FamilyTask { kind: FamilyTaskKind; from: 'anne' | 'baba'; title: string; text: string; amount?: number; daysLeft: number }
 export interface DaySummary { day: number; bought: number; sold: number; spent: number; earned: number; notes: string[] }
 
 export interface GameState {
@@ -147,6 +150,8 @@ export interface GameState {
   market: Market;
   /** Birikim hesabı. */
   bank: { savings: number };
+  /** Aile: güven (0–100), açık görev, aileye borç ve kalan gün. */
+  family: { trust: number; task: FamilyTask | null; debt: number; debtDays: number };
   /** Son alımlar ve satışlar (en çok LEDGER_MAX). */
   ledger: LedgerEntry[];
 }

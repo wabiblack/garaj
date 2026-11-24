@@ -1,3 +1,5 @@
+import type { Action } from '../../game/reducer';
+import { FamilyTaskCard } from '../components/FamilyTaskCard';
 import { useState } from 'react';
 import type { GameState, Quest } from '../../game/types';
 import { ItemCard } from '../components/ItemCard';
@@ -60,9 +62,10 @@ function Quests({ quests }: { quests: Quest[] }) {
   );
 }
 
-export function ListingsScreen({ state, onOpen }: { state: GameState; onOpen(id: string): void }) {
+export function ListingsScreen({ state, onOpen, dispatch }: { state: GameState; onOpen(id: string): void; dispatch(a: Action): void }) {
   return (
     <section>
+      <FamilyTaskCard state={state} dispatch={dispatch} />
       {state.event ? (
         <div className="event">
           <div className="event__title">{EVENT_INFO[state.event].title}</div>

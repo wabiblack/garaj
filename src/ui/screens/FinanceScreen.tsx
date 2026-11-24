@@ -4,12 +4,14 @@ import { extraImage } from '../images';
 import { MarketPanel } from './finance/MarketPanel';
 import { LedgerPanel } from './finance/LedgerPanel';
 import { BankPanel } from './finance/BankPanel';
+import { FamilyPanel } from './finance/FamilyPanel';
 
-type Part = 'piyasa' | 'defter' | 'banka';
+type Part = 'piyasa' | 'defter' | 'banka' | 'aile';
 const PARTS: { id: Part; label: string; image: string }[] = [
   { id: 'piyasa', label: 'Piyasa', image: 'ui/piyasa' },
   { id: 'defter', label: 'Defter', image: 'ui/piyasa' },
   { id: 'banka', label: 'Banka', image: 'ui/banka' },
+  { id: 'aile', label: 'Aile', image: 'ui/aile' },
 ];
 
 /** Para işleri: piyasa, al-sat defteri (sonra banka, borsa, aile). */
@@ -28,6 +30,7 @@ export function FinanceScreen({ view, dispatch }: { view: GameView; dispatch(a: 
       {part === 'piyasa' ? <MarketPanel state={state} /> : null}
       {part === 'defter' ? <LedgerPanel state={state} /> : null}
       {part === 'banka' ? <BankPanel state={state} dispatch={dispatch} /> : null}
+      {part === 'aile' ? <FamilyPanel state={state} dispatch={dispatch} /> : null}
     </div>
   );
 }

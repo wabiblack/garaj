@@ -109,6 +109,7 @@ function Game() {
         {tab === 'ilanlar' ? (
           <ListingsScreen
             state={state}
+            dispatch={dispatch}
             onOpen={(id) => {
               const l = state.listings.find((x) => x.id === id);
               if (l?.special === 'mezat' && l.auctionMax !== undefined) setAuction(l);

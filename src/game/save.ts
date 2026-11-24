@@ -4,6 +4,7 @@ import { emptyStats, generateQuests } from './career';
 import { cleanPlayer } from './player';
 import { fillMarket } from './market';
 import { newLoan } from './bank';
+import { FAMILY_START } from './family';
 
 export const SAVE_KEY = 'garaj.save';
 export type LoadResult = { kind: 'ok'; state: GameState } | { kind: 'empty' } | { kind: 'broken' };
@@ -90,6 +91,7 @@ function fillV3(s: GameState): GameState {
     ledger: Array.isArray(s.ledger) ? s.ledger : [],
     bank: { savings: typeof s.bank?.savings === 'number' ? s.bank.savings : 0 },
     loan: migrateLoan(s.loan),
+    family: s.family && typeof s.family.trust === 'number' ? s.family : FAMILY_START,
   };
 }
 
