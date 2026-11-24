@@ -20,6 +20,7 @@ test('para isteyen görev ödenince güven artar', () => {
   const s = ok(familyPay(makeState({ money: 500, family: fam({ task: pay }) })));
   expect(s.money).toBe(300);
   expect(s.family).toMatchObject({ task: null, trust: FAMILY_START.trust + TRUST_GAIN });
+  expect(s.talents.xp).toBe(10);
   expect(familyPay(makeState({ money: 100, family: fam({ task: pay }) }))).toBe('yetersiz-para');
 });
 

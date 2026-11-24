@@ -1,10 +1,11 @@
+import { TALENT_EFFECT, talentRank } from './talents';
 import type { Defect, GameState, Item } from './types';
 import { round10 } from './pricing';
 
 type PrepResult = { item: Item; cost: number } | null;
 
 export function repairCost(defect: Defect, state: GameState): number {
-  return round10(defect.repairCost * (1 - state.skill / 200) * (state.employees.usta ? 0.8 : 1));
+  return round10(defect.repairCost * (1 - state.skill / 200) * (state.employees.usta ? 0.8 : 1) * (1 - TALENT_EFFECT.tamir * talentRank(state, 'tamir')));
 }
 
 export function repair(item: Item, defectId: string, state: GameState): PrepResult {

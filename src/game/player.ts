@@ -1,4 +1,5 @@
-// Oyuncunun karakteri: isim ve görünüm. Görünüm yalnız seçenek sırası tutar; renkler UI'da.
+// Oyuncunun karakteri: isim, görünüm ve kişilik. Görünüm yalnız seçenek sırası tutar; renkler UI'da.
+import type { TraitId } from './types';
 export interface Look {
   /** SKIN_TONES sırası */
   skin: number;
@@ -8,7 +9,7 @@ export interface Look {
   color: number;
   glasses: boolean;
 }
-export interface Player { name: string; look: Look }
+export interface Player { name: string; look: Look; /** Kişilik: oyun başında seçilir. */ trait?: TraitId }
 
 export const NAME_MAX = 14;
 export const DEFAULT_NAME = 'Kerem';

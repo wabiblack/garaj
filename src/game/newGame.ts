@@ -9,6 +9,7 @@ import { STAGE_RESTART_MONEY } from './progression';
 import { initialMarket } from './market';
 import { FAMILY_START } from './family';
 import { initialStocks } from './stocks';
+import { initialTalents } from './talents';
 
 /** Zor modda başlangıç parası. */
 export const HARD_START_MONEY = STAGE_RESTART_MONEY[1] / 2;
@@ -30,7 +31,7 @@ export function newGame(seed: number, opts: { hard?: boolean; achievements?: Ach
     pendingCatch: [], summary: emptySummary(1), pendingTransition: null, won: false, wonSeen: false,
     event: null, quests: [], stats: emptyStats(), achievements: opts.achievements ?? [],
     orders: [], story: { seen: [], pending: null }, history: [], branches: 0, finalSeen: false, hard, prices: {}, player: opts.player ?? DEFAULT_PLAYER,
-    market: initialMarket(), ledger: [], bank: { savings: 0 }, family: FAMILY_START, stocks: initialStocks(),
+    market: initialMarket(), ledger: [], bank: { savings: 0 }, family: FAMILY_START, stocks: initialStocks(), talents: initialTalents(opts.player?.trait),
   };
   const listings = listingsFor(base, rng);
   const quests = generateQuests(base, rng);

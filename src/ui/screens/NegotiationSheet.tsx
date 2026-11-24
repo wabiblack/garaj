@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { Action, GameView } from '../../game/reducer';
 import type { Listing } from '../../game/types';
 import { inspectionCost } from '../../game/negotiation';
+import { talentRank } from '../../game/talents';
 import { marketValue, round10 } from '../../game/pricing';
 import { marketChange, marketIndex } from '../../game/market';
 import { Change } from '../components/Spark';
@@ -42,7 +43,7 @@ export function NegotiationSheet({ listingId, view, dispatch, onClose, onGoGarag
   const { item } = listing;
   const result = submitted ? view.lastOffer : null;
   const done = result?.kind === 'accepted' || result?.kind === 'walked';
-  const cost = inspectionCost(listing, state.stage, state.season);
+  const cost = inspectionCost(listing, state.stage, state.season, talentRank(state, 'goz'));
   const inspectLabel = state.stage === 1 ? 'Bir bakayım' : `Ekspertiz (${formatTL(cost)})`;
   const allKnown = item.defects.every((d) => d.known);
   const cantInspect = state.money < cost;

@@ -253,3 +253,16 @@ test('alt menü sekme sayısı kadar sütun', async () => {
   renderGame();
   expect(screen.getAllByRole('tab').filter((t) => t.closest('.tabbar'))).toHaveLength(cols);
 });
+
+test('Profil > Yetenekler: puan varsa sekmede rozet, geliştir düğmesi çalışır', async () => {
+  const { initialTalents } = await import('../../src/game/talents');
+  seedSave(makeState({ talents: { ...initialTalents(), xp: 60, level: 2, points: 1 } }));
+  renderGame();
+  expect(screen.getByRole('tab', { name: /Profil/ })).toHaveTextContent('1');
+  await userEvent.click(screen.getByRole('tab', { name: /Profil/ }));
+  const panel = screen.getByRole('region', { name: 'Yetenekler' });
+  expect(within(panel).getByText('Seviye 2')).toBeInTheDocument();
+  await userEvent.click(within(panel).getByRole('button', { name: 'Karizma geliştir' }));
+  expect(within(panel).getByLabelText('Karizma 1/3')).toBeInTheDocument();
+  expect(within(panel).queryByRole('button', { name: /geliştir/ })).toBeNull();
+});

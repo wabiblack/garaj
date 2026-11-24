@@ -18,6 +18,7 @@ import { BRANCHES } from '../../game/growth';
 import { RIVAL } from '../../game/rival';
 import { portraitUrl } from '../art';
 import { MoneyChart } from '../components/MoneyChart';
+import { TalentsPanel } from '../components/TalentsPanel';
 
 function Meter({ label, value }: { label: string; value: number }) {
   return (
@@ -55,6 +56,7 @@ export function ProfileScreen({ view, dispatch, onMenu, onEditLook }: { view: Ga
         <Meter label="İtibar" value={state.reputation} />
         <Meter label="Tamir becerisi" value={state.skill} />
       </div>
+      <TalentsPanel state={state} dispatch={dispatch} />
 
       <h2 className="h2">Kasa</h2>
       <div className="panel"><MoneyChart points={[...state.history, { day: state.day, money: state.money }]} /></div>

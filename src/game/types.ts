@@ -103,6 +103,10 @@ export interface FamilyTask { kind: FamilyTaskKind; from: 'anne' | 'baba'; title
 export type StockId = 'lastik' | 'parca' | 'galeri' | 'lojistik';
 /** Borsa: fiyat geçmişi (son değer bugünkü), sahip olunan hisse, toplam maliyet. */
 export interface Stocks { prices: Record<StockId, number[]>; owned: Record<StockId, number>; cost: Record<StockId, number> }
+export type TalentId = 'pazarlik' | 'goz' | 'tamir' | 'karizma';
+export type TraitId = 'hesapli' | 'dikkatli' | 'tamirci' | 'girisken' | 'caliskan';
+/** Karakter gelişimi: tecrübe, seviye, harcanmamış puan, yetenek seviyeleri (0–3). */
+export interface Talents { xp: number; level: number; points: number; ranks: Record<TalentId, number> }
 export interface DaySummary { day: number; bought: number; sold: number; spent: number; earned: number; notes: string[] }
 
 export interface GameState {
@@ -156,6 +160,7 @@ export interface GameState {
   /** Aile: güven (0–100), açık görev, aileye borç ve kalan gün. */
   family: { trust: number; task: FamilyTask | null; debt: number; debtDays: number };
   stocks: Stocks;
+  talents: Talents;
   /** Son alımlar ve satışlar (en çok LEDGER_MAX). */
   ledger: LedgerEntry[];
 }

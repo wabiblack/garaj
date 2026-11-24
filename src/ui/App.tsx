@@ -122,7 +122,7 @@ function Game() {
         {tab === 'finans' ? <FinanceScreen view={view} dispatch={dispatch} /> : null}
         {tab === 'profil' ? <ProfileScreen view={view} dispatch={dispatch} onMenu={() => setInMenu(true)} onEditLook={() => setCreator('edit')} /> : null}
       </main>
-      <TabBar active={tab} onChange={setTab} hint={hint?.tab} badges={{ satis: state.forSale.length }} />
+      <TabBar active={tab} onChange={setTab} hint={hint?.tab} badges={{ satis: state.forSale.length, profil: state.talents.points }} />
       {listingId ? (
         <NegotiationSheet
           key={listingId}

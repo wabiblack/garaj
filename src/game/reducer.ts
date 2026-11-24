@@ -14,7 +14,8 @@ import { fire, hire, openBranch, upgradeCapacity, upgradeLocation, type GrowthBl
 import { deposit, repayLoan, takeLoan, withdraw, type BankBlock } from './bank';
 import { familyBorrow, familyPay, familyRepay, type FamilyBlock } from './family';
 import { buyStock, sellStock, type StockBlock } from './stocks';
-import type { StockId } from './types';
+import type { StockId, TalentId } from './types';
+import { XP, gainXp, learnTalent, talentRank } from './talents';
 import { newGame, type StartStage } from './newGame';
 import { checkAchievements, recordPurchase, recordSale, unlockAchievement } from './career';
 import type { RNG } from './rng';
@@ -39,6 +40,7 @@ export type Action =
   | { type: 'takeLoan'; amount: number } | { type: 'repayLoan' }
   | { type: 'deposit' | 'withdraw'; amount: number }
   | { type: 'buyStock' | 'sellStock'; id: StockId; shares: number }
+  | { type: 'learnTalent'; id: TalentId }
   | { type: 'familyPay' } | { type: 'familyBorrow'; amount: number } | { type: 'familyRepay' }
   | { type: 'restartStage' }
   | { type: 'fulfillOrder'; orderId: string; itemId: string }
@@ -89,7 +91,7 @@ function buy(s: GameState, listing: Listing, price: number): GameState {
     price,
   );
   const counted = { ...bought, summary: { ...bought.summary, bought: bought.summary.bought + 1 } };
-  const recorded = recordPurchase(counted, listing, price);
+  const recorded = gainXp(recordPurchase(counted, listing, price), XP.buy);
   return listing.rivalEye ? unlockAchievement(recorded, 'rakip') : recorded;
 }
 
@@ -104,7 +106,8 @@ function sell(s: GameState, itemId: string, amount: number, rng: RNG): GameState
   const item = s.inventory.find((i) => i.id === itemId);
   if (!item) return s;
   const disclosed = s.forSale.find((f) => f.itemId === itemId)?.disclosed ?? false;
-  return recordSale(settleSale(s, itemId, amount, rng), item, amount, disclosed);
+  const honest = disclosed && item.defects.some((d) => d.known);
+  return gainXp(recordSale(settleSale(s, itemId, amount, rng), item, amount, disclosed), XP.sale + (honest ? XP.honest : 0));
 }
 
 function step(view: GameView, action: Action): GameView {
@@ -134,9 +137,10 @@ function step(view: GameView, action: Action): GameView {
     case 'inspect': {
       const listing = s.listings.find((l) => l.id === action.listingId);
       if (!day || !listing || listing.inspected) return same();
-      if (s.money < inspectionCost(listing, s.stage, s.season)) return same(BLOCK_MESSAGE['yetersiz-para']);
+      const eye = talentRank(s, 'goz');
+      if (s.money < inspectionCost(listing, s.stage, s.season, eye)) return same(BLOCK_MESSAGE['yetersiz-para']);
       const rng = createRng(s.rngState);
-      const res = inspect(listing, s.stage, rng, s.season);
+      const res = inspect(listing, s.stage, rng, s.season, eye);
       const next = spend({ ...s, listings: s.listings.map((l) => (l.id === listing.id ? res.listing : l)), rngState: rng.state() }, res.cost);
       return withRival(to(next), listing.id);
     }
@@ -156,6 +160,7 @@ function step(view: GameView, action: Action): GameView {
       if (s.money < cost) return same(BLOCK_MESSAGE['yetersiz-para']);
       let next = spend(replaceItem(s, res.item), cost);
       if (action.type === 'repair' && s.stage >= 2) next = { ...next, skill: Math.min(100, s.skill + 2) };
+      if (action.type === 'repair') next = gainXp(next, XP.repair);
       return to(next);
     }
     case 'listForSale': {
@@ -251,6 +256,10 @@ function step(view: GameView, action: Action): GameView {
         rngState: rng.state(),
       };
       return to(unlockAchievement(next, 'siparisci'), `${order.buyerName} çok memnun kaldı`);
+    }
+    case 'learnTalent': {
+      const next = learnTalent(s, action.id);
+      return next ? to(next) : same();
     }
     case 'storyChoice': {
       const next = applyStoryChoice(s, action.index);

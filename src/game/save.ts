@@ -6,6 +6,7 @@ import { fillMarket } from './market';
 import { newLoan } from './bank';
 import { FAMILY_START } from './family';
 import { fillStocks } from './stocks';
+import { XP, initialTalents, levelFor } from './talents';
 
 export const SAVE_KEY = 'garaj.save';
 export type LoadResult = { kind: 'ok'; state: GameState } | { kind: 'empty' } | { kind: 'broken' };
@@ -94,7 +95,15 @@ function fillV3(s: GameState): GameState {
     loan: migrateLoan(s.loan),
     family: s.family && typeof s.family.trust === 'number' ? s.family : FAMILY_START,
     stocks: fillStocks(s.stocks),
+    talents: s.talents?.ranks ? s.talents : retroTalents(s),
   };
+}
+
+/** Yetenek sistemi öncesi kayıt: geçmiş satışlar tecrübe sayılır. */
+function retroTalents(s: GameState): GameState['talents'] {
+  const xp = (s.stats?.sales ?? 0) * XP.sale;
+  const level = levelFor(xp);
+  return { ...initialTalents(), xp, level, points: level - 1 };
 }
 
 /** Eski kredi (anapara + günlük faiz) yeni taksitli krediye çevrilir. */

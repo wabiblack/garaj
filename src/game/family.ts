@@ -4,6 +4,7 @@ import type { FamilyTask, FamilyTaskKind, GameState, Stage } from './types';
 import type { RNG } from './rng';
 import { formatTL } from './format';
 import { ADULT_AGE } from './bank';
+import { XP, gainXp } from './talents';
 
 export const FAMILY_START: GameState['family'] = { trust: 60, task: null, debt: 0, debtDays: 0 };
 export const TRUST_GAIN = 8;
@@ -51,11 +52,11 @@ export function familyPay(s: GameState): GameState | FamilyBlock {
   const task = s.family.task;
   if (!task || task.amount === undefined) return null;
   if (s.money < task.amount) return 'yetersiz-para';
-  return {
+  return gainXp({
     ...s, money: s.money - task.amount,
     family: { ...s.family, task: null, trust: clampTrust(s.family.trust + TRUST_GAIN) },
     summary: { ...s.summary, spent: s.summary.spent + task.amount },
-  };
+  }, XP.family);
 }
 
 export function familyBorrow(s: GameState, amount: number): GameState | FamilyBlock {
@@ -78,12 +79,14 @@ export function settleFamily(s: GameState, rng: RNG): GameState {
   let { trust, task, debt, debtDays } = s.family;
   let money = s.money;
   const hadTask = task !== null;
+  let earned = false;
 
   if (task) {
     const done = (task.kind === 'ders' && s.summary.bought <= 1) || (task.kind === 'duzen' && s.inventory.length <= 1);
     if (done) {
       trust += TRUST_GAIN;
       notes.push(`${WHO[task.from]} memnun: “${task.title}” tamam`);
+      earned = true;
       task = null;
     } else if (task.daysLeft <= 1) {
       trust -= TRUST_LOSS;
@@ -118,5 +121,6 @@ export function settleFamily(s: GameState, rng: RNG): GameState {
     notes.push(`${WHO[task.from]} bir şey istiyor: ${task.title}`);
   }
 
-  return { ...s, money, family: { trust: clampTrust(trust), task, debt, debtDays }, summary: { ...s.summary, notes } };
+  const next = { ...s, money, family: { trust: clampTrust(trust), task, debt, debtDays }, summary: { ...s.summary, notes } };
+  return earned ? gainXp(next, XP.family) : next;
 }

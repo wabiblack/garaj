@@ -64,16 +64,17 @@ export function canBuy(state: GameState, price: number): BuyBlock {
   return null;
 }
 
-export function inspectionCost(listing: Listing, stage: Stage, season: Season): number {
+/** eye: Göz yeteneği seviyesi; her seviye ekspertizi %25 ucuzlatır. */
+export function inspectionCost(listing: Listing, stage: Stage, season: Season, eye = 0): number {
   if (stage === 1) return 0;
-  return Math.max(200, round10(marketValue(listing.item, season) * 0.02));
+  return round10(Math.max(200, round10(marketValue(listing.item, season) * 0.02)) * (1 - 0.25 * eye));
 }
 
-export function inspect(listing: Listing, stage: Stage, rng: RNG, season: Season): { listing: Listing; cost: number } {
+export function inspect(listing: Listing, stage: Stage, rng: RNG, season: Season, eye = 0): { listing: Listing; cost: number } {
   if (listing.inspected) return { listing, cost: 0 };
-  const cost = inspectionCost(listing, stage, season);
+  const cost = inspectionCost(listing, stage, season, eye);
   const defects = listing.item.defects.map((d) =>
-    d.known ? d : { ...d, known: stage === 1 ? rng.chance(0.5) : true },
+    d.known ? d : { ...d, known: stage === 1 ? rng.chance(0.5 + 0.15 * eye) : true },
   );
   return { listing: { ...listing, inspected: true, item: { ...listing.item, defects } }, cost };
 }

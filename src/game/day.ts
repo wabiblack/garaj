@@ -46,7 +46,7 @@ export const SEASON_NOTE: Record<Season, string> = {
   kis: 'Kış geldi: bisiklet ve motor ucuzladı, 4x4 aranıyor.',
 };
 
-export type ListingContext = Pick<GameState, 'stage' | 'season'> & Partial<Pick<GameState, 'stats' | 'hard' | 'market'>>;
+export type ListingContext = Pick<GameState, 'stage' | 'season'> & Partial<Pick<GameState, 'stats' | 'hard' | 'market' | 'talents'>>;
 
 export function generateListings(state: ListingContext, rng: RNG): Listing[] {
   const cats = CATEGORIES_BY_STAGE[state.stage];
