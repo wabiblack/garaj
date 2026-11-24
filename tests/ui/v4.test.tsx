@@ -244,3 +244,12 @@ test('Finans > Borsa reşit olmayana kapalı', async () => {
   expect(within(borsa).getByText(/18 yaşında açılır/)).toBeInTheDocument();
   expect(within(borsa).queryByRole('button', { name: /^Al:/ })).toBeNull();
 });
+
+test('alt menü sekme sayısı kadar sütun', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync('src/ui/theme.css', 'utf8');
+  const cols = Number(/\n\.tabbar \{[^}]*?repeat\((\d+), 1fr\)/.exec(css)![1]);
+  seedSave(makeState());
+  renderGame();
+  expect(screen.getAllByRole('tab').filter((t) => t.closest('.tabbar'))).toHaveLength(cols);
+});

@@ -8,7 +8,7 @@ export function MarketPanel({ state }: { state: GameState }) {
     <section aria-label="Piyasa">
       <p className="hint">Fiyatlar her gün değişir. Endeks yüksekken sat, düşükken al. Fuar günleri piyasayı ısıtır, durgun günler soğutur.</p>
       <div className="panel">
-        {CATEGORIES_BY_STAGE[state.stage].map((c) => {
+        {[...new Set(([1, 2, 3, 4] as const).filter((st) => st <= state.stage).flatMap((st) => CATEGORIES_BY_STAGE[st]))].reverse().map((c) => {
           const idx = marketIndex(state.market, c);
           return (
             <div className="row market-row" key={c}>
