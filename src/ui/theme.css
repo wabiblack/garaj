@@ -790,3 +790,6 @@ input, textarea { -webkit-user-select: text; user-select: text; }
 .trait__name { font-weight: 800; font-size: 15px; }
 .trait__story { font-size: 13px; color: var(--muted); }
 .trait__perk { font-size: 12px; font-weight: 700; color: var(--good); }
+/* Resimli sahnede yazı altta durur; resmin önemli kısmı (üst %55) açık kalır. */
+.overlay--scene .overlay__inner--center { margin: auto auto 0; }
+.intro__skip { position: fixed; top: calc(12px + env(safe-area-inset-top)); right: 16px; z-index: 1; }

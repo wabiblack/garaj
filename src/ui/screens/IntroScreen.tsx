@@ -78,8 +78,8 @@ export function IntroScreen({ state, onStart }: { state: GameState; onStart(): v
       style={bg ? ({ '--scene': `url("${bg}")` } as CSSProperties) : undefined}
       role="dialog" aria-modal="true" aria-label="Hikâye"
     >
+      {last ? null : <button type="button" className="intro__skip" onClick={onStart}>Atla</button>}
       <div className="overlay__inner overlay__inner--center intro" key={i}>
-        {last ? null : <button type="button" className="intro__skip" onClick={onStart}>Atla</button>}
         {bg && !last ? null : scene.art}
         <p className="overlay__kicker">{scene.kicker}</p>
         <h1 className="transition__title">{scene.title}</h1>
