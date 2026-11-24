@@ -140,3 +140,25 @@ test('tamir oyunu: Vur! parmak değdiği anda sayılır, bir basış tek deneme'
   fireEvent.click(vur, { detail: 1 });
   expect(within(dialog).getAllByText(/[✓✗]/)).toHaveLength(1);
 });
+
+test('alttan açılan pencereler ana menünün ve karakter ekranının üstünde kalır', async () => {
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync('src/ui/theme.css', 'utf8');
+  const z = (sel: string) => Number(new RegExp(`\\n\\${sel} \\{[^}]*?z-index: (\\d+)`).exec(css)![1]);
+  expect(z('.sheet-backdrop')).toBeGreaterThan(z('.menu'));
+  expect(z('.sheet-backdrop')).toBeGreaterThan(z('.creator'));
+  expect(z('.toast')).toBeGreaterThan(z('.sheet-backdrop'));
+});
+
+test('karakter ekranında seçilen yaş, oyunun başlangıç yaşı olur', async () => {
+  render(<App />);
+  await userEvent.click(screen.getByRole('button', { name: 'Oyuna başla' }));
+  const creator = screen.getByRole('dialog', { name: 'Karakter' });
+  const ages = within(creator).getByRole('radiogroup', { name: 'Başlangıç yaşı' });
+  expect(within(ages).queryByLabelText('25 yaş')).toBeNull();
+  await userEvent.click(within(ages).getByLabelText('16 yaş'));
+  await userEvent.click(within(creator).getByRole('button', { name: 'Hikâyeye başla' }));
+  expect(screen.getByRole('heading', { name: /16 yaşında/ })).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Başla' }));
+  expect(screen.getByText(/· 16 yaş/)).toBeInTheDocument();
+});

@@ -26,6 +26,7 @@ import { StoryScreen } from './screens/StoryScreen';
 import { MenuScreen, hasProgress } from './screens/MenuScreen';
 import { CharacterScreen } from './screens/CharacterScreen';
 import type { Player } from '../game/player';
+import type { StartStage } from '../game/newGame';
 import type { Listing } from '../game/types';
 
 export default function App() {
@@ -48,9 +49,9 @@ function Game() {
   const achievement = useFeedback(view);
   useDailyStreak(view !== null, dispatch);
 
-  const newGame = (hard: boolean, player?: Player) => {
+  const newGame = (hard: boolean, player?: Player, stage?: StartStage) => {
     setCreator(null);
-    reset(hard, player);
+    reset(hard, player, stage);
     setIntroDone(false);
     setTab('ilanlar');
     setInMenu(false);
@@ -64,9 +65,9 @@ function Game() {
         initial={state.player}
         editing={editing}
         onCancel={() => setCreator(null)}
-        onDone={(player) => {
+        onDone={(player, stage) => {
           if (creator === 'edit') { dispatch({ type: 'setPlayer', player }); setCreator(null); }
-          else newGame(creator.hard, player);
+          else newGame(creator.hard, player, stage);
         }}
       />
     );
@@ -82,7 +83,7 @@ function Game() {
     );
   }
   const overlay = fresh && !introDone && state.day === 1 && state.stats.sales === 0
-    ? <IntroScreen name={state.player.name} money={state.money} onStart={() => setIntroDone(true)} />
+    ? <IntroScreen name={state.player.name} age={state.age} money={state.money} onStart={() => setIntroDone(true)} />
     : state.pendingTransition !== null
     ? <TransitionScreen to={state.pendingTransition} player={state.player} onContinue={() => dispatch({ type: 'completeTransition' })} />
     : state.phase === 'evening'

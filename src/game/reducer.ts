@@ -11,7 +11,7 @@ import { counterOffer, settleSale } from './selling';
 import { endDay, startNextDay } from './day';
 import { checkProgress, completeTransition, isBankrupt, restartStage } from './progression';
 import { fire, hire, openBranch, repayLoan, takeLoan, upgradeCapacity, upgradeLocation, type GrowthBlock } from './growth';
-import { newGame } from './newGame';
+import { newGame, type StartStage } from './newGame';
 import { checkAchievements, recordPurchase, recordSale, unlockAchievement } from './career';
 import type { RNG } from './rng';
 import { streakBonus } from './streak';
@@ -41,7 +41,7 @@ export type Action =
   | { type: 'load'; state: GameState }
   | { type: 'streakBonus'; days: number }
   | { type: 'setPlayer'; player: Player }
-  | { type: 'newGame'; seed: number; hard?: boolean; player?: Player };
+  | { type: 'newGame'; seed: number; hard?: boolean; player?: Player; stage?: StartStage };
 
 export interface GameView { state: GameState; message: string | null; lastOffer: OfferResult | null }
 
@@ -198,7 +198,7 @@ function step(view: GameView, action: Action): GameView {
     case 'restartStage':
       return isBankrupt(s) ? { state: restartStage(s), message: null, lastOffer: null } : same();
     case 'newGame':
-      return { state: newGame(action.seed, { ...(action.hard ? { hard: true, achievements: s.achievements } : {}), player: action.player }), message: null, lastOffer: null };
+      return { state: newGame(action.seed, { ...(action.hard ? { hard: true, achievements: s.achievements } : {}), player: action.player, stage: action.stage }), message: null, lastOffer: null };
     case 'setPlayer':
       return to({ ...s, player: cleanPlayer(action.player) });
     case 'streakBonus': {

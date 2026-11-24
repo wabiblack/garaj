@@ -9,24 +9,24 @@ const art = (category: Item['category'], brand: string, model: string): Item => 
 });
 
 const STEPS = [
-  { item: art('bisiklet', 'Serçe', 'Şehir 26'), age: '12 yaş', text: 'Bisiklet, güvercin, eski telefon' },
-  { item: art('motor', 'Kartal', 'K125'), age: '16 yaş', text: 'İkinci el motorlar' },
-  { item: art('araba', 'Marmara', 'GT Coupe'), age: '18 yaş', text: 'Arabalar ve kendi galerin' },
+  { item: art('bisiklet', 'Serçe', 'Şehir 26'), age: 12, text: 'Bisiklet, güvercin, eski telefon' },
+  { item: art('motor', 'Kartal', 'K125'), age: 16, text: 'İkinci el motorlar' },
+  { item: art('araba', 'Marmara', 'GT Coupe'), age: 18, text: 'Arabalar ve kendi galerin' },
 ];
 
-export function IntroScreen({ name, money, onStart }: { name: string; money: number; onStart(): void }) {
+export function IntroScreen({ name, age, money, onStart }: { name: string; age: number; money: number; onStart(): void }) {
   return (
     <div className="overlay overlay--center" role="dialog" aria-modal="true" aria-label="Hikâye">
       <div className="overlay__inner overlay__inner--center intro">
         <p className="overlay__kicker">Garaj</p>
-        <h1 className="transition__title">{name} 12 yaşında. Cebinde {formatTL(money)} var.</h1>
+        <h1 className="transition__title">{name} {age} yaşında. Cebinde {formatTL(money)} var.</h1>
         <p className="muted">Ucuza al, temizle, tamir et, kârla sat. Biriktirdikçe büyü: mahalleden şehrin en büyük galerisine.</p>
         <ol className="intro__steps">
-          {STEPS.map((s) => (
+          {STEPS.filter((s) => s.age >= age).map((s) => (
             <li key={s.age} className="intro__step">
               <div className="intro__art"><ItemImage item={s.item} /></div>
               <div>
-                <div className="intro__age">{s.age}</div>
+                <div className="intro__age">{s.age} yaş</div>
                 <div className="intro__text">{s.text}</div>
               </div>
             </li>

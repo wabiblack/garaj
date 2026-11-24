@@ -5,16 +5,23 @@ import { emptyStats, generateQuests } from './career';
 
 import type { AchievementId } from './types';
 import { DEFAULT_PLAYER, type Player } from './player';
+import { STAGE_RESTART_MONEY } from './progression';
 
 /** Zor modda başlangıç parası. */
-export const HARD_START_MONEY = 1000;
+export const HARD_START_MONEY = STAGE_RESTART_MONEY[1] / 2;
 
-/** Yeni oyun. Zor mod (Yeni Oyun+) başarımları korur. */
-export function newGame(seed: number, opts: { hard?: boolean; achievements?: AchievementId[]; player?: Player } = {}): GameState {
+/** Oyuncunun seçebildiği başlangıç aşamaları ve yaşları. 25 yaş (holding) oyunun sonu, başlangıç değil. */
+export type StartStage = 1 | 2 | 3;
+export const START_AGE: Record<StartStage, number> = { 1: 12, 2: 16, 3: 18 };
+
+/** Yeni oyun. Zor mod (Yeni Oyun+) başarımları korur ve başlangıç parasını yarıya indirir. */
+export function newGame(seed: number, opts: { hard?: boolean; achievements?: AchievementId[]; player?: Player; stage?: StartStage } = {}): GameState {
   const hard = opts.hard ?? false;
+  const stage = opts.stage ?? 1;
+  const money = hard ? STAGE_RESTART_MONEY[stage] / 2 : STAGE_RESTART_MONEY[stage];
   const rng = createRng(seed);
   const base: GameState = {
-    version: 3, rngState: 0, day: 1, phase: 'day', stage: 1, age: 12, money: hard ? HARD_START_MONEY : 2000, season: 'ilkbahar',
+    version: 3, rngState: 0, day: 1, phase: 'day', stage, age: START_AGE[stage], money, season: 'ilkbahar',
     inventory: [], listings: [], forSale: [], offers: [], reputation: 50, skill: 0,
     capacityLevel: 0, locationLevel: 0, employees: { usta: false, boyaci: false, satis: false, cirak: false }, loan: null,
     pendingCatch: [], summary: emptySummary(1), pendingTransition: null, won: false, wonSeen: false,

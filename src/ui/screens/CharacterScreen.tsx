@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { FAV_COLORS, HAIR_COLORS, NAME_MAX, SKIN_TONES, cleanName, type Look, type Player } from '../../game/player';
 import { Button } from '../components/Button';
+import { START_AGE, type StartStage } from '../../game/newGame';
 import { portraitUrl } from '../portrait';
 
 const AGES = [12, 16, 18, 25] as const;
 type Age = (typeof AGES)[number];
+/** Yeni oyunda yaş seçimi başlangıç yaşıdır; görünüm düzenlerken yalnız önizlemedir. */
+const START_STAGES = (Object.keys(START_AGE).map(Number) as StartStage[]);
 const SKIN_NAMES = ['Açık', 'Buğday', 'Esmer', 'Koyu'];
 type Part = 'ten' | 'sac' | 'renk' | 'gozluk';
 const PARTS: { id: Part; label: string }[] = [
@@ -37,12 +40,18 @@ function Options({ part, look, age, onPick }: { part: Part; look: Look; age: Age
   );
 }
 
+const START_HINT: Partial<Record<Age, string>> = {
+  12: 'Bisikletle, en baştan başlarsın.',
+  16: 'Motorlarla başlarsın, cebinde daha çok para olur.',
+  18: 'Arabalarla başlarsın; kendi galerine en yakın yaş.',
+};
+
 const pick = (n: number) => Math.floor(Math.random() * n);
 
 export function CharacterScreen({ initial, editing, onDone, onCancel }: {
   initial: Player;
   editing?: boolean;
-  onDone(p: Player): void;
+  onDone(p: Player, stage: StartStage): void;
   onCancel(): void;
 }) {
   const [name, setName] = useState(initial.name);
@@ -73,11 +82,28 @@ export function CharacterScreen({ initial, editing, onDone, onCancel }: {
       <section className="creator__stage" aria-label="Önizleme">
         <img key={spin} className="creator__face" src={portraitUrl(age, look)} alt={`${shown} ${age} yaşında`} />
         <div className="creator__name">{shown}</div>
-        <div className="seg" role="group" aria-label="Yaşa göre önizle">
-          {AGES.map((a) => (
-            <button key={a} type="button" className={'seg__btn' + (a === age ? ' seg__btn--on' : '')} aria-pressed={a === age} onClick={() => setAge(a)}>{a} yaş</button>
-          ))}
-        </div>
+        {editing ? (
+          <div className="seg" role="group" aria-label="Yaşa göre önizle">
+            {AGES.map((a) => (
+              <button key={a} type="button" className={'seg__btn' + (a === age ? ' seg__btn--on' : '')} aria-pressed={a === age} onClick={() => setAge(a)}>{a} yaş</button>
+            ))}
+          </div>
+        ) : (
+          <div className="creator__start">
+            <div className="seg" role="radiogroup" aria-label="Başlangıç yaşı">
+              {START_STAGES.map((st) => {
+                const a = START_AGE[st] as Age;
+                return (
+                  <label key={st} className={'seg__btn' + (a === age ? ' seg__btn--on' : '')}>
+                    <input type="radio" name="baslangic" aria-label={`${a} yaş`} checked={a === age} onChange={() => setAge(a)} />
+                    {a} yaş
+                  </label>
+                );
+              })}
+            </div>
+            <p className="creator__hint">{START_HINT[age]}</p>
+          </div>
+        )}
       </section>
 
       <section className="creator__panel">
@@ -94,7 +120,7 @@ export function CharacterScreen({ initial, editing, onDone, onCancel }: {
       </section>
 
       <footer className="creator__foot">
-        <Button variant="primary" block onClick={() => onDone({ name: shown, look })}>{editing ? 'Kaydet' : 'Hikâyeye başla'}</Button>
+        <Button variant="primary" block onClick={() => onDone({ name: shown, look }, START_STAGES.find((st) => START_AGE[st] === age) ?? 1)}>{editing ? 'Kaydet' : 'Hikâyeye başla'}</Button>
       </footer>
     </div>
   );
