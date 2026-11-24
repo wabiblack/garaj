@@ -14,7 +14,7 @@ import { fire, hire, openBranch, upgradeCapacity, upgradeLocation, type GrowthBl
 import { deposit, repayLoan, takeLoan, withdraw, type BankBlock } from './bank';
 import { familyBorrow, familyPay, familyRepay, type FamilyBlock } from './family';
 import { buyStock, sellStock, type StockBlock } from './stocks';
-import type { PartSource, StockId, TalentId } from './types';
+import type { CareerId, PartSource, StockId, TalentId } from './types';
 import { installPart, orderPart, scrap, treat, type WorkshopBlock } from './workshop';
 import { adoptCat, feedPets, keepPet, type PetBlock } from './pets';
 import { XP, gainXp, learnTalent, talentRank } from './talents';
@@ -25,6 +25,8 @@ import { streakBonus } from './streak';
 import { cleanPlayer, type Player } from './player';
 import { formatTL } from './format';
 import { marketIndex } from './market';
+import { inTransit, notaryFee } from './realism';
+import { chooseCareer, failExam } from './life';
 import { actionsLeft } from './calendar';
 
 export type Action =
@@ -46,6 +48,7 @@ export type Action =
   | { type: 'deposit' | 'withdraw'; amount: number }
   | { type: 'buyStock' | 'sellStock'; id: StockId; shares: number }
   | { type: 'learnTalent'; id: TalentId }
+  | { type: 'failExam' } | { type: 'chooseCareer'; id: CareerId }
   | { type: 'orderPart'; itemId: string; defectId: string; source: PartSource }
   | { type: 'installPart' | 'treat'; itemId: string; defectId: string; quality: number }
   | { type: 'familyPay' } | { type: 'familyBorrow'; amount: number } | { type: 'familyRepay' }
@@ -62,7 +65,7 @@ export type Action =
 
 export interface GameView { state: GameState; message: string | null; lastOffer: OfferResult | null }
 
-const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | FamilyBlock | StockBlock | WorkshopBlock | PetBlock> | 'okul', string> = {
+const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | FamilyBlock | StockBlock | WorkshopBlock | PetBlock> | 'okul' | 'kargo', string> = {
   'yetersiz-para': 'Paran yetmiyor',
   'depo-dolu': 'Depon dolu',
   'asama-2-degil': 'Çırak motor işine girince alınır',
@@ -82,6 +85,7 @@ const BLOCK_MESSAGE: Record<NonNullable<BuyBlock | GrowthBlock | BankBlock | Fam
   'parca-yok': 'Önce parçayı sipariş et',
   'asama-4-degil': 'Şubeler holding kurunca açılır',
   'okul': 'Bu hafta okul var: iş hakkın bitti. Haftayı bitir',
+  'kargo': 'Bu eşya kargoda; hafta sonu gelecek',
 };
 
 const validAmount = (n: number) => Number.isFinite(n) && n > 0;
@@ -96,9 +100,10 @@ function replaceItem(s: GameState, item: Item): GameState {
 
 /** İlanı satın alır: parayı düşer, malı depoya koyar, kariyere işler. */
 function buy(s: GameState, listing: Listing, price: number): GameState {
+  const arrives = listing.remote ? { arrives: s.day + 1 } : {};
   const bought = spend(
-    { ...s, inventory: [...s.inventory, { ...listing.item, boughtFor: price }], listings: s.listings.filter((l) => l.id !== listing.id) },
-    price,
+    { ...s, inventory: [...s.inventory, { ...listing.item, ...arrives, boughtFor: price }], listings: s.listings.filter((l) => l.id !== listing.id) },
+    price + notaryFee(listing.item, price),
   );
   const counted = { ...bought, used: bought.used + 1, summary: { ...bought.summary, bought: bought.summary.bought + 1 } };
   const recorded = gainXp(recordPurchase(counted, listing, price), XP.buy);
@@ -165,6 +170,7 @@ function step(view: GameView, action: Action): GameView {
     case 'care': {
       const item = s.inventory.find((i) => i.id === action.itemId);
       if (!day || !item) return same();
+      if (inTransit(item, s.day)) return same(BLOCK_MESSAGE.kargo);
       if (actionsLeft(s) <= 0) return same(BLOCK_MESSAGE.okul);
       const res =
         action.type === 'repair' ? repair(item, action.defectId, s)
@@ -180,7 +186,9 @@ function step(view: GameView, action: Action): GameView {
       return to(next);
     }
     case 'listForSale': {
-      if (!s.inventory.some((i) => i.id === action.itemId) || !validAmount(action.price)) return same();
+      const target = s.inventory.find((i) => i.id === action.itemId);
+      if (!target || !validAmount(action.price)) return same();
+      if (inTransit(target, s.day)) return same(BLOCK_MESSAGE.kargo);
       const entry = { itemId: action.itemId, price: Math.round(action.price), disclosed: action.disclosed };
       const exists = s.forSale.some((f) => f.itemId === action.itemId);
       return to({ ...s, forSale: exists ? s.forSale.map((f) => (f.itemId === action.itemId ? entry : f)) : [...s.forSale, entry] });
@@ -297,6 +305,12 @@ function step(view: GameView, action: Action): GameView {
       if (res === null) return same();
       if (typeof res === 'string') return same(BLOCK_MESSAGE[res]);
       return to(res);
+    }
+    case 'failExam':
+      return s.pendingTransition === null ? same() : to(failExam(s), 'Sınavı geçemedin. Haftaya tekrar girebilirsin.');
+    case 'chooseCareer': {
+      const next = chooseCareer(s, action.id);
+      return next ? to(next) : same();
     }
     case 'learnTalent': {
       const next = learnTalent(s, action.id);

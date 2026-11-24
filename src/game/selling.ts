@@ -6,6 +6,8 @@ import { TALENT_EFFECT, talentRank } from './talents';
 import { demand } from './realism';
 
 export const OFFER_LO = 0.94, OFFER_HI = 1.05;
+/** Ekspertiz raporlu araç alıcının gözünde bu kadar değerli. */
+export const REPORT_BONUS = 1.05;
 /** Alıcı, gözündeki değerin bu katından fazlasını asla teklif etmez. */
 export const OFFER_CAP = 1.1;
 const BUYERS = ['Ali', 'Burak', 'Can', 'Derya', 'Ece', 'Ferhat', 'Gül', 'İsmail', 'Kemal', 'Leyla', 'Nihat', 'Oya', 'Serkan', 'Tuğba', 'Volkan', 'Yasemin'];
@@ -33,7 +35,8 @@ function cirakOffer(state: GameState, offers: BuyerOffer[], rng: RNG): BuyerOffe
 
 /** Alıcının gözündeki değer: kusurlar belirtildiyse bilinenler düşülür, değilse kusursuz sanılır. */
 export function buyerValue(item: Item, disclosed: boolean, state: GameState): number {
-  return marketValue(disclosed ? item : { ...item, defects: [] }, state.season, marketIndex(state.market, item.category));
+  const value = marketValue(disclosed ? item : { ...item, defects: [] }, state.season, marketIndex(state.market, item.category));
+  return item.report ? round10(value * REPORT_BONUS) : value;
 }
 
 export function generateOffers(state: GameState, rng: RNG): BuyerOffer[] {

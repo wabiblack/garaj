@@ -15,6 +15,7 @@ export function hasWon(state: GameState): boolean {
 
 export function checkProgress(state: GameState): GameState {
   if (state.pendingTransition !== null) return state;
+  if (state.examRetry !== undefined && state.day < state.examRetry) return state;
   if ((state.stage === 1 || state.stage === 2) && state.money >= STAGE_GOALS[state.stage]) {
     const next = state.stage === 1 ? 2 : 3;
     if (state.age >= STAGE_MIN_AGE[next]) return { ...state, pendingTransition: next };

@@ -1,5 +1,5 @@
 // Oyuncunun karakteri: isim, görünüm ve kişilik. Görünüm yalnız seçenek sırası tutar; renkler UI'da.
-import type { TraitId } from './types';
+import type { CareerId, TraitId } from './types';
 export interface Look {
   /** SKIN_TONES sırası */
   skin: number;
@@ -19,7 +19,7 @@ export interface Look {
   /** ACCESSORIES sırası (0 = yok) */
   accessory: number;
 }
-export interface Player { name: string; look: Look; /** Kişilik: oyun başında seçilir. */ trait?: TraitId }
+export interface Player { name: string; look: Look; /** Kişilik: oyun başında seçilir. */ trait?: TraitId; /** 18 yaşta seçilen meslek. */ career?: CareerId }
 
 export const NAME_MAX = 14;
 export const DEFAULT_NAME = 'Kerem';
@@ -90,5 +90,6 @@ export function cleanPlayer(p: unknown): Player {
       accessory: clampIndex(look.accessory, ACCESSORIES.length, d.accessory),
     },
     ...((TRAIT_IDS as readonly string[]).includes(raw.trait as string) ? { trait: raw.trait } : {}),
+    ...(['otomotiv', 'isletme', 'iletisim', 'calis'].includes(raw.career as string) ? { career: raw.career } : {}),
   };
 }

@@ -10,6 +10,9 @@ const RULES: [title: string, text: string][] = [
   ['Gelişim', 'Alım, satış, tamir ve aile görevleri tecrübe verir. Her seviyede Profil’den bir yetenek geliştir: pazarlık, göz, tamircilik, karizma.'],
   ['Zaman', 'Her tur bir hafta. 52 hafta dolunca bir yaş büyürsün; yaşın büyüdükçe yeni eşyalar açılır: 13’te telefon, 14’te konsol ve köpek, 15’te bilgisayar, 16’da motor, 18’de araba. Okul haftalarında haftada 4 iş yapabilirsin, tatilde sınır yok.'],
   ['Finans', 'Piyasa her hafta değişir: endeks yüksekken sat, düşükken al. Defterde her alım-satımın kârı yazar. Banka kredisi ve borsa 18 yaşında açılır; öncesinde aileye danış.'],
+  ['Gerçek hayat', 'Araçların yaşı ve kilometresi fiyatı düşürür; elinde tuttuğun araca her hafta sigorta ve vergi ödersin, alırken noter masrafı vardır. Ucuz ilana dikkat: çalıntı ya da sahte olabilir, önce bak. İnternetten alınan mal hafta sonu kargoyla gelir. 16 ve 18 yaşta ehliyet sınavına girersin.'],
+  ['Okul', 'Okul haftalarında az iş yaparsan karnen iyi gelir, ailen sevinir. 18 yaşında meslek seçersin.'],
+  ['Hayvanlar', 'Hayvanlara bakarsan değerlenir. Bir köpeği yanında tutarsan garajı hırsızdan korur; kedi fareleri uzak tutar. Her hafta mama ver.'],
   ['Aile', 'Annenle baban arada senden bir şey ister. Yaparsan güvenleri artar; harçlık ve gerekirse borç verirler.'],
 ];
 

@@ -88,7 +88,7 @@ function Game() {
   const overlay = fresh && !introDone && state.day === 1 && state.stats.sales === 0
     ? <IntroScreen state={state} onStart={() => setIntroDone(true)} />
     : state.pendingTransition !== null
-    ? <TransitionScreen to={state.pendingTransition} player={state.player} age={state.age} onContinue={() => dispatch({ type: 'completeTransition' })} />
+    ? <TransitionScreen to={state.pendingTransition} player={state.player} age={state.age} day={state.day} onContinue={() => dispatch({ type: 'completeTransition' })} onFail={() => dispatch({ type: 'failExam' })} onCareer={(id) => dispatch({ type: 'chooseCareer', id })} />
     : state.phase === 'evening'
       ? <EveningScreen view={view} dispatch={dispatch} />
       : (state.won && !state.wonSeen) || (state.stage === 4 && state.branches >= 3 && !state.finalSeen)

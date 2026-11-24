@@ -3,6 +3,7 @@ import type { Action, GameView } from '../../game/reducer';
 import { storageLimit } from '../../game/negotiation';
 import { ANIMALS, PAINTABLE, careCost, cleanCost, MAX_CARE, paintCost, repairCost } from '../../game/prep';
 import { scrapValue } from '../../game/workshop';
+import { inTransit } from '../../game/realism';
 import { PaintSheet } from './PaintSheet';
 import { PetsPanel } from '../components/PetsPanel';
 import { marketValue } from '../../game/pricing';
@@ -52,6 +53,7 @@ export function GarageScreen({ view, dispatch }: { view: GameView; dispatch(a: A
             const sale = state.forSale.find((f) => f.itemId === item.id);
             const mv = marketValue(item, state.season, marketIndex(state.market, item.category));
             const profit = mv - item.boughtFor;
+            const transit = inTransit(item, state.day);
             return (
               <ItemCard
                 key={item.id}
@@ -59,8 +61,9 @@ export function GarageScreen({ view, dispatch }: { view: GameView; dispatch(a: A
                 price={mv}
                 priceLabel="Piyasa"
                 subtitle={<>Alış {formatTL(item.boughtFor)} · <span className={profit >= 0 ? 'pos' : 'neg'}>{profit >= 0 ? '+' : ''}{formatTL(profit)}</span></>}
-                badge={sale ? <span className="tag tag--accent">Satışta</span> : null}
+                badge={transit ? <span className="tag tag--info">Kargoda</span> : sale ? <span className="tag tag--accent">Satışta</span> : null}
               >
+                {transit ? <p className="hint">Kargoda: hafta sonu gelecek. Gelince hazırlayıp satabilirsin.</p> : <>
                 {item.defects.filter((d) => d.known).map((d) => {
                   const order = state.parts.find((p) => p.itemId === item.id && p.defectId === d.id);
                   const label = order
@@ -93,6 +96,7 @@ export function GarageScreen({ view, dispatch }: { view: GameView; dispatch(a: A
                   </Button>
                 ))}
                 <Button small variant="primary" onClick={() => setSelling(item.id)}>{sale ? 'Fiyatı değiştir' : 'Satışa koy'}</Button>
+                </>}
               </ItemCard>
             );
           })}

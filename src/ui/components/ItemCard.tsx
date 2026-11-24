@@ -64,10 +64,11 @@ const TAG_LABEL = { klasik: 'Klasik', cabrio: 'Üstü açık', '4x4': '4x4', nad
 
 export function TagRow({ item }: { item: Item }) {
   const known = item.defects.filter((d) => d.known);
-  if (known.length === 0 && item.tags.length === 0) return null;
+  if (known.length === 0 && item.tags.length === 0 && !item.report) return null;
   return (
     <div className="tags">
       {item.tags.map((t) => <span key={t} className={'tag ' + (t === 'nadir' || t === 'klasik' ? 'tag--accent' : 'tag--info')}>{TAG_LABEL[t]}</span>)}
+      {item.report ? <span className="tag tag--good">Raporlu</span> : null}
       {known.map((d) => <span key={d.id} className="tag tag--bad">{d.name}</span>)}
     </div>
   );

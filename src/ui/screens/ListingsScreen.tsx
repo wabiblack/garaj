@@ -107,7 +107,7 @@ export function ListingsScreen({ state, onOpen, dispatch }: { state: GameState; 
               key={l.id}
               item={l.item}
               price={l.askPrice}
-              subtitle={l.sellerName}
+              subtitle={l.remote ? `İnternet · ${l.remote.city} · ${'★'.repeat(l.remote.rating)}${'☆'.repeat(5 - l.remote.rating)}` : l.sellerName}
               badge={
                 <>
                   {l.special ? <span className="tag tag--accent">{SPECIAL_LABEL[l.special]}</span> : null}

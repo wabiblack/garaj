@@ -43,6 +43,10 @@ export interface Item {
   km?: number;
   /** Çalıntı mal: polis el koyabilir. */
   stolen?: boolean;
+  /** Ekspertiz raporlu araç: alıcı daha çok güvenir. */
+  report?: boolean;
+  /** İnternetten alındı: bu haftada kargodan gelir; o zamana kadar hazırlanamaz, satılamaz. */
+  arrives?: number;
 }
 
 export interface Listing {
@@ -63,6 +67,8 @@ export interface Listing {
   auctionMax?: number;
   /** Riskli ilan: çalıntı mal ya da kapora isteyen sahte ilan. */
   risk?: 'calinti' | 'sahte';
+  /** İkinci el sitesinden, başka şehirden: satıcı puanı 1–5, mal kargoyla gelir. */
+  remote?: { city: string; rating: number };
 }
 
 /** Müşteri siparişi: belirli bir türde mal arayan alıcı, piyasa değerinin üstünü öder. */
@@ -122,6 +128,7 @@ export type PartSource = 'orijinal' | 'muadil' | 'cikma';
 export interface PartOrder { itemId: string; defectId: string; source: PartSource; arrives: number }
 /** Evcil hayvan: mutluluk 0–100, bu hafta beslendi mi. */
 export interface Pet { name: string; brand?: string; model?: string; happiness: number; fed: boolean }
+export type CareerId = 'otomotiv' | 'isletme' | 'iletisim' | 'calis';
 export interface DaySummary { day: number; bought: number; sold: number; spent: number; earned: number; notes: string[] }
 
 export interface GameState {
@@ -181,6 +188,10 @@ export interface GameState {
   /** Sipariş edilmiş, takılmayı bekleyen parçalar. */
   parts: PartOrder[];
   pets: { dog: Pet | null; cat: Pet | null };
+  /** Ehliyet sınavında kalındıysa tekrar girilebilecek hafta. */
+  examRetry?: number;
+  /** Bu okul dönemi: okul haftası sayısı ve o haftalarda yapılan iş. */
+  term: { weeks: number; used: number };
   /** Son alımlar ve satışlar (en çok LEDGER_MAX). */
   ledger: LedgerEntry[];
 }

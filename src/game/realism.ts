@@ -99,3 +99,28 @@ export function settleRisks(s: GameState, rng: RNG): GameState {
     summary: { ...s.summary, notes },
   };
 }
+
+/** Noter devri: araç alırken fiyatın %1'i (araç değilse yok). */
+export function notaryFee(item: Item, price: number): number {
+  return VEHICLES.includes(item.category) ? round10(price * 0.01) : 0;
+}
+
+const CITIES = ['İzmir', 'Ankara', 'Bursa', 'Antalya', 'Eskişehir', 'Trabzon', 'Konya', 'Adana'];
+const REMOTE_CHANCE = 0.35;
+/** İkinci el sitesinde fiyatlar biraz daha ucuzdur (kargo bekleme bedeli). */
+const REMOTE_DISCOUNT = 0.9;
+
+/** Normal ilanın bir kısmı ikinci el sitesinden, başka şehirden gelir. Düşük puanlı satıcı daha riskli. */
+export function remoteListing(l: Listing, rng: RNG): Listing {
+  if (l.special || !rng.chance(REMOTE_CHANCE)) return l;
+  const r = rng.float();
+  const rating = r < 0.1 ? 1 : r < 0.25 ? 2 : r < 0.5 ? 3 : r < 0.8 ? 4 : 5;
+  return {
+    ...l, remote: { city: rng.pick(CITIES), rating },
+    askPrice: round10(l.askPrice * REMOTE_DISCOUNT), minPrice: round10(l.minPrice * REMOTE_DISCOUNT),
+    ...(rating <= 2 && !l.risk && rng.chance(0.3) ? { risk: 'sahte' as const } : {}),
+  };
+}
+
+/** Kargodaki mal: bu hafta gelmediyse hazırlanamaz ve satılamaz. */
+export const inTransit = (item: Item, day: number) => item.arrives !== undefined && item.arrives > day;

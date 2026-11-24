@@ -88,20 +88,41 @@ test('Hafta sonu: karşı teklif', async () => {
   expect(within(ev).getByText('Ali kabul etti')).toBeInTheDocument();
 });
 
-test('Geçiş ekranı', async () => {
-  seedSave(makeState({ money: 50000, age: 16, pendingTransition: 2 }));
+test('Geçiş ekranı: ehliyet sınavını geçince motor dönemine geçilir', async () => {
+  const { EXAMS, examFor } = await import('../../src/game/life');
+  seedSave(makeState({ money: 50000, age: 16, day: 7, pendingTransition: 2 }));
   renderGame();
   expect(screen.getByText('Motor ehliyeti')).toBeInTheDocument();
   expect(screen.getByText(/Kerem 16 yaşına girdi/)).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Ehliyet sınavına gir' }));
+  for (const q of examFor(2, 7)) await userEvent.click(screen.getByRole('button', { name: q.options[q.answer] }));
+  expect(EXAMS[2].length).toBeGreaterThan(0);
+  expect(screen.getByText('Tebrikler, ehliyetini aldın!')).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Devam' }));
   expect(screen.getByText(/16 yaş · Motorcu/)).toBeInTheDocument();
 });
 
-test('Geçiş ekranı: galerici', () => {
-  seedSave(makeState({ stage: 2, age: 18, money: 500000, pendingTransition: 3 }));
+test('Geçiş ekranı: sınavda kalınca haftaya ertelenir', async () => {
+  const { examFor } = await import('../../src/game/life');
+  seedSave(makeState({ money: 50000, age: 16, day: 7, pendingTransition: 2 }));
+  renderGame();
+  await userEvent.click(screen.getByRole('button', { name: 'Ehliyet sınavına gir' }));
+  for (const q of examFor(2, 7)) await userEvent.click(screen.getByRole('button', { name: q.options[(q.answer + 1) % q.options.length] }));
+  await userEvent.click(screen.getByRole('button', { name: 'Haftaya tekrar dene' }));
+  expect(screen.queryByRole('dialog', { name: 'Yeni dönem' })).toBeNull();
+  expect(screen.getByText(/Mahalle çocuğu/)).toBeInTheDocument();
+});
+
+test('Geçiş ekranı: galerici olurken sınav ve meslek seçimi', async () => {
+  const { examFor } = await import('../../src/game/life');
+  seedSave(makeState({ stage: 2, age: 18, day: 3, money: 500000, pendingTransition: 3 }));
   renderGame();
   expect(screen.getByText('Reşit oldu')).toBeInTheDocument();
-  expect(screen.getByText(/ehliyetini aldı/)).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Ehliyet sınavına gir' }));
+  for (const q of examFor(3, 3)) await userEvent.click(screen.getByRole('button', { name: q.options[q.answer] }));
+  await userEvent.click(screen.getByRole('button', { name: 'Devam' }));
+  await userEvent.click(screen.getByRole('button', { name: /Otomotiv bölümü/ }));
+  expect(screen.getByText(/18 yaş · Galerici/)).toBeInTheDocument();
 });
 
 describe('Profil', () => {

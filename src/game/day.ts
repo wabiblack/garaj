@@ -16,7 +16,8 @@ import { markRivalTarget } from './rival';
 import { pickStory } from './story';
 import { adjustListing } from './expertise';
 import { marketIndex, stepMarket } from './market';
-import { riskListing, settleRisks, settleVehicles, weekNote } from './realism';
+import { remoteListing, riskListing, settleRisks, settleVehicles, weekNote } from './realism';
+import { settleSchool } from './life';
 import { dropOrphanParts } from './workshop';
 import { settlePets } from './pets';
 
@@ -79,7 +80,7 @@ export function generateListings(state: ListingContext, rng: RNG): Listing[] {
     const item = generateItem('araba', rng, { ...(kind === 'mezat' ? {} : { special: kind }), ...(state.stage === 4 ? { scale: 2 } : {}) });
     listings.unshift(makeListing(item, state.season, rng, kind, 'normal', marketIndex(state.market, 'araba')));
   }
-  return listings.map((l) => adjustListing(riskListing(l, rng), state));
+  return listings.map((l) => adjustListing(remoteListing(riskListing(l, rng), rng), state));
 }
 
 /**
@@ -103,7 +104,8 @@ export function endDay(state: GameState): GameState {
 export function startNextDay(evening: GameState): GameState {
   if (evening.phase !== 'evening') return evening;
   // Aile, biten günün durumuna bakar (alım sayısı, depo); ayrı zar akışı kullanır.
-  const family = settleFamily(evening, createRng(evening.rngState ^ 0x2545f491));
+  const schooled = settleSchool(evening);
+  const family = settleFamily(schooled, createRng(evening.rngState ^ 0x2545f491));
   const familyNotes = family.summary.notes.slice(evening.summary.notes.length);
   const petted = settlePets(family, createRng(evening.rngState ^ 0x27d4eb2f));
   const risky = settleRisks({ ...petted, summary: evening.summary }, createRng(evening.rngState ^ 0x1b873593));

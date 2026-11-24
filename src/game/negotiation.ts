@@ -1,6 +1,7 @@
 import type { GameState, Item, Listing, Personality, Season, SpecialKind, Stage } from './types';
 import type { RNG } from './rng';
 import { marketValue, round10, trueValue } from './pricing';
+import { VEHICLES } from './realism';
 
 export type OfferResult =
   | { kind: 'accepted'; price: number }
@@ -76,5 +77,7 @@ export function inspect(listing: Listing, stage: Stage, rng: RNG, season: Season
   const defects = listing.item.defects.map((d) =>
     d.known ? d : { ...d, known: stage === 1 ? rng.chance(0.5 + 0.15 * eye) : true },
   );
-  return { listing: { ...listing, inspected: true, item: { ...listing.item, defects } }, cost };
+  // Araçlarda ekspertiz bir rapor da verir: raporlu araç alıcıya güven verir.
+  const report = stage >= 2 && VEHICLES.includes(listing.item.category);
+  return { listing: { ...listing, inspected: true, item: { ...listing.item, defects, ...(report ? { report: true } : {}) } }, cost };
 }
