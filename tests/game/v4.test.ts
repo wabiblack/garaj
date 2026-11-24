@@ -124,3 +124,11 @@ test('seçilen başlangıç yaşından başlanır: aşama, yaş, para ve ilanlar
   expect(newGame(7, { stage: 2, hard: true }).money).toBe(STAGE_RESTART_MONEY[2] / 2);
   expect(newGame(7)).toMatchObject({ stage: 1, age: 12, money: 2000 });
 });
+
+test('ceza olayı yaşa uygun: çocuk park cezası yemez', async () => {
+  const { eventInfo } = await import('../../src/game/day');
+  expect(eventInfo('ceza', 1).text).not.toMatch(/park|trafik/i);
+  expect(eventInfo('ceza', 2).title).toBe('Trafik cezası');
+  expect(eventInfo('ceza', 3).title).toBe('Park cezası');
+  expect(eventInfo('fuar', 1)).toEqual(eventInfo('fuar', 4));
+});

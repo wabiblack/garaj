@@ -7,6 +7,9 @@ const RULES: [title: string, text: string][] = [
   ['Dürüst ol', 'Gizlediğin kusur ortaya çıkarsa itibarın düşer. İtibar yüksekse daha çok alıcı gelir.'],
   ['Büyü', '12 yaşında bisikletle başlarsın. Para biriktikçe motora, sonra arabaya, galeriye ve holdinge geçersin.'],
   ['Dikkat', 'Rakip Cevdet iyi ilanlara göz koyar. Siparişler ve mezatlar fırsattır, kaçırma.'],
+  ['Gelişim', 'Alım, satış, tamir ve aile görevleri tecrübe verir. Her seviyede Profil’den bir yetenek geliştir: pazarlık, göz, tamircilik, karizma.'],
+  ['Finans', 'Piyasa her gün değişir: endeks yüksekken sat, düşükken al. Defterde her alım-satımın kârı yazar. Banka kredisi ve borsa 18 yaşında açılır; öncesinde aileye danış.'],
+  ['Aile', 'Annenle baban arada senden bir şey ister. Yaparsan güvenleri artar; harçlık ve gerekirse borç verirler.'],
 ];
 
 export function HowToPlay({ onClose }: { onClose(): void }) {

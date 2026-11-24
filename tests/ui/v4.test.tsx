@@ -100,8 +100,8 @@ test('karakter oluşturma: isim ve görünüm oyuna geçer, hikâyede doğru ekl
   await userEvent.click(within(creator).getByRole('tab', { name: 'Saç' }));
   await userEvent.click(within(creator).getByLabelText('Kızıl'));
   await userEvent.click(within(creator).getByRole('tab', { name: 'Gözlük' }));
-  await userEvent.click(within(creator).getByLabelText('Gözlüklü'));
-  expect(within(creator).getByLabelText('Gözlüklü')).toBeChecked();
+  await userEvent.click(within(creator).getByLabelText('Yuvarlak'));
+  expect(within(creator).getByLabelText('Yuvarlak')).toBeChecked();
   await userEvent.click(within(creator).getByRole('button', { name: 'Hikâyeye başla' }));
   expect(screen.getByRole('heading', { name: /Ali 12 yaşında/ })).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Atla' }));
@@ -109,7 +109,7 @@ test('karakter oluşturma: isim ve görünüm oyuna geçer, hikâyede doğru ekl
 });
 
 test('hikâye sahnesi oyuncunun adını ekle birlikte kullanır', () => {
-  seedSave(makeState({ story: { seen: [], pending: 'okul' }, player: { name: 'Ayşe', look: { skin: 0, hair: 0, color: 0, glasses: false } } }));
+  seedSave(makeState({ story: { seen: [], pending: 'okul' }, player: { name: 'Ayşe', look: { ...makeState().player.look, skin: 0 } } }));
   renderGame();
   const d = screen.getByRole('dialog', { name: 'Hikâye' });
   expect(d).toHaveTextContent('Ayşe’ye:');
@@ -265,4 +265,32 @@ test('Profil > Yetenekler: puan varsa sekmede rozet, geliştir düğmesi çalı�
   await userEvent.click(within(panel).getByRole('button', { name: 'Karizma geliştir' }));
   expect(within(panel).getByLabelText('Karizma 1/3')).toBeInTheDocument();
   expect(within(panel).queryByRole('button', { name: /geliştir/ })).toBeNull();
+});
+
+test('karakter ekranında görünüm ayrıntıları ve kişilik seçilir; kişilik yeteneğe yansır', async () => {
+  render(<App />);
+  await userEvent.click(screen.getByRole('button', { name: 'Oyuna başla' }));
+  const creator = screen.getByRole('dialog', { name: 'Karakter' });
+  for (const t of ['Kişilik', 'Ten', 'Saç', 'Model', 'Göz', 'Yüz', 'Renk', 'Gözlük', 'Aksesuar']) {
+    expect(within(creator).getByRole('tab', { name: t })).toBeInTheDocument();
+  }
+  await userEvent.click(within(creator).getByRole('tab', { name: 'Model' }));
+  await userEvent.click(within(creator).getByLabelText('Kıvırcık'));
+  await userEvent.click(within(creator).getByRole('tab', { name: 'Aksesuar' }));
+  await userEvent.click(within(creator).getByLabelText('Küpe'));
+  await userEvent.click(within(creator).getByRole('tab', { name: 'Kişilik' }));
+  await userEvent.click(within(creator).getByLabelText('Tamirci ruhlu'));
+  await userEvent.click(within(creator).getByRole('button', { name: 'Hikâyeye başla' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Atla' }));
+  await userEvent.click(screen.getByRole('tab', { name: /Profil/ }));
+  expect(screen.getByLabelText('Tamircilik 1/3')).toBeInTheDocument();
+  expect(screen.getByText(/Dedesinin tezgâhının başında/)).toBeInTheDocument();
+});
+
+test('görünüm düzenlenirken kişilik sekmesi yok', async () => {
+  seedSave(makeState());
+  renderGame();
+  await userEvent.click(screen.getByRole('tab', { name: /Profil/ }));
+  await userEvent.click(screen.getByRole('button', { name: 'Görünümü değiştir' }));
+  expect(screen.queryByRole('tab', { name: 'Kişilik' })).toBeNull();
 });

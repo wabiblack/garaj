@@ -7,13 +7,24 @@ export interface Look {
   hair: number;
   /** FAV_COLORS sırası: şapka, ceket, tulum, kravat */
   color: number;
-  glasses: boolean;
+  /** GLASSES sırası (0 = yok) */
+  glasses: number;
+  /** HAIR_STYLES sırası */
+  style: number;
+  /** EYE_COLORS sırası */
+  eyes: number;
+  /** BROWS sırası */
+  brows: number;
+  freckles: boolean;
+  /** ACCESSORIES sırası (0 = yok) */
+  accessory: number;
 }
 export interface Player { name: string; look: Look; /** Kişilik: oyun başında seçilir. */ trait?: TraitId }
 
 export const NAME_MAX = 14;
 export const DEFAULT_NAME = 'Kerem';
-export const DEFAULT_PLAYER: Player = { name: DEFAULT_NAME, look: { skin: 1, hair: 0, color: 0, glasses: false } };
+export const DEFAULT_LOOK: Look = { skin: 1, hair: 0, color: 0, glasses: 0, style: 0, eyes: 0, brows: 0, freckles: false, accessory: 0 };
+export const DEFAULT_PLAYER: Player = { name: DEFAULT_NAME, look: DEFAULT_LOOK };
 
 export const SKIN_TONES: readonly [string, string][] = [
   ['#f3cfb3', '#dcae8e'],
@@ -37,6 +48,19 @@ export const FAV_COLORS: readonly { name: string; hex: string }[] = [
   { name: 'Siyah', hex: '#2b2f36' },
 ];
 
+export const HAIR_STYLES = ['Kısa', 'Kıvırcık', 'Uzun', 'Asker tıraşı'] as const;
+export const EYE_COLORS: readonly { name: string; hex: string }[] = [
+  { name: 'Kahve', hex: '#3b2516' },
+  { name: 'Ela', hex: '#7a5523' },
+  { name: 'Yeşil', hex: '#3f7a45' },
+  { name: 'Mavi', hex: '#3a6db0' },
+  { name: 'Gri', hex: '#5d6670' },
+];
+export const BROWS = ['İnce kaş', 'Kalın kaş'] as const;
+export const GLASSES = ['Gözlüksüz', 'Yuvarlak', 'Köşeli', 'Güneş gözlüğü'] as const;
+export const ACCESSORIES = ['Aksesuarsız', 'Küpe', 'Kulaklık', 'Yara bandı'] as const;
+export const TRAIT_IDS = ['hesapli', 'dikkatli', 'tamirci', 'girisken', 'caliskan'] as const;
+
 /** İsmi temizler: harf ve boşluk, en çok 14 karakter, ilk harf büyük. Boşsa Kerem. */
 export function cleanName(raw: string): string {
   const s = raw.replace(/[^\p{L} ]/gu, '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX).trim();
@@ -58,7 +82,13 @@ export function cleanPlayer(p: unknown): Player {
       skin: clampIndex(look.skin, SKIN_TONES.length, d.skin),
       hair: clampIndex(look.hair, HAIR_COLORS.length, d.hair),
       color: clampIndex(look.color, FAV_COLORS.length, d.color),
-      glasses: look.glasses === true,
+      glasses: typeof look.glasses === 'boolean' ? (look.glasses ? 1 : 0) : clampIndex(look.glasses, GLASSES.length, d.glasses),
+      style: clampIndex(look.style, HAIR_STYLES.length, d.style),
+      eyes: clampIndex(look.eyes, EYE_COLORS.length, d.eyes),
+      brows: clampIndex(look.brows, BROWS.length, d.brows),
+      freckles: look.freckles === true,
+      accessory: clampIndex(look.accessory, ACCESSORIES.length, d.accessory),
     },
+    ...((TRAIT_IDS as readonly string[]).includes(raw.trait as string) ? { trait: raw.trait } : {}),
   };
 }

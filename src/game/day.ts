@@ -32,6 +32,16 @@ export const EVENT_INFO: Record<GameEventId, { title: string; text: string }> = 
   hediye: { title: 'Hediye', text: 'Komşun yardımların için para verdi' },
   ceza: { title: 'Park cezası', text: 'Park cezası yedin' },
 };
+
+/** Ceza yaşa göre değişir: çocuk park cezası yemez. */
+const CEZA_BY_STAGE: Partial<Record<Stage, { title: string; text: string }>> = {
+  1: { title: 'Kırık cam', text: 'Top oynarken komşunun camını kırdın, parasını sen ödedin' },
+  2: { title: 'Trafik cezası', text: 'Motorla kaskı unuttun, trafik cezası yedin' },
+};
+
+export function eventInfo(event: GameEventId, stage: Stage): { title: string; text: string } {
+  return (event === 'ceza' && CEZA_BY_STAGE[stage]) || EVENT_INFO[event];
+}
 export const EVENT_MONEY: Record<Stage, number> = { 1: 500, 2: 5000, 3: 50000, 4: 200000 };
 const HISTORY_DAYS = 60;
 const EVENT_CHANCE = 0.3;
@@ -134,7 +144,7 @@ export function startNextDay(evening: GameState): GameState {
     if (event === 'hediye') money += amount;
     if (event === 'ceza') money -= Math.min(money, amount);
     const extra = event === 'hediye' || event === 'ceza' ? `: ${formatTL(amount)}` : '';
-    dayNotes.push(EVENT_INFO[event].text + extra);
+    dayNotes.push(eventInfo(event, next.stage).text + extra);
   }
   // Ceza parayı düşürdüyse elinde eşyası olmayan oyuncu yine en az bir ilanı alabilmeli.
   if (next.inventory.length === 0 && !listings.some((l) => l.minPrice <= money)) listings = listingsFor({ ...next, money }, rng);

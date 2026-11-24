@@ -31,8 +31,15 @@ test('isim temizlenir: harf dışı atılır, 14 karakter, ilk harf büyük, bo�
 
 test('bozuk karakter verisi varsayılana döner; eski kayıt Kerem olur', () => {
   expect(cleanPlayer({ name: 'Ayşe', look: { skin: 9, hair: 2, color: -1, glasses: 'evet' } }))
-    .toEqual({ name: 'Ayşe', look: { skin: DEFAULT_PLAYER.look.skin, hair: 2, color: DEFAULT_PLAYER.look.color, glasses: false } });
+    .toEqual({ name: 'Ayşe', look: { ...DEFAULT_PLAYER.look, hair: 2 } });
   const old = { ...makeState() } as Partial<GameState>;
   delete old.player;
   expect(importSave(exportSave(old as GameState))!.player).toEqual(DEFAULT_PLAYER);
+});
+
+test('eski kayıttaki gözlük (true/false) yeni seçeneğe çevrilir; kişilik doğrulanır', () => {
+  expect(cleanPlayer({ name: 'Ali', look: { glasses: true } }).look.glasses).toBe(1);
+  expect(cleanPlayer({ name: 'Ali', look: { glasses: false } }).look.glasses).toBe(0);
+  expect(cleanPlayer({ name: 'Ali', trait: 'tamirci' }).trait).toBe('tamirci');
+  expect(cleanPlayer({ name: 'Ali', trait: 'uyduruk' }).trait).toBeUndefined();
 });

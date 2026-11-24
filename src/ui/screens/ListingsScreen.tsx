@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { GameState, Quest } from '../../game/types';
 import { ItemCard } from '../components/ItemCard';
 import { PERSONALITY_LABEL, storageLimit } from '../../game/negotiation';
-import { EVENT_INFO } from '../../game/day';
+import { eventInfo } from '../../game/day';
 import { formatTL } from '../../game/format';
 import { orderTitle } from '../../game/orders';
 import { RIVAL } from '../../game/rival';
@@ -68,8 +68,8 @@ export function ListingsScreen({ state, onOpen, dispatch }: { state: GameState; 
       <FamilyTaskCard state={state} dispatch={dispatch} />
       {state.event ? (
         <div className="event">
-          <div className="event__title">{EVENT_INFO[state.event].title}</div>
-          <div className="event__text">{EVENT_INFO[state.event].text}</div>
+          <div className="event__title">{eventInfo(state.event, state.stage).title}</div>
+          <div className="event__text">{eventInfo(state.event, state.stage).text}</div>
         </div>
       ) : null}
       {state.summary.notes.length > 0 ? (
