@@ -2,7 +2,7 @@ import { Sheet } from '../components/Sheet';
 
 const RULES: [title: string, text: string][] = [
   ['Al', 'İlanlardan bir şeye dokun, istenenin altında teklif ver. Satıcının sabrı biterse vazgeçer. Önce bakarsan gizli kusurları görürsün.'],
-  ['Hazırla', 'Garaj’da temizle, boya, kusurları tamir et. Tamirde ibre yeşildeyken “Vur!”a basarsan ucuza gelir.'],
+  ['Hazırla', 'Garaj’da temizle, boya, kusurları tamir et. Tamiri ustaya yaptırabilir ya da kendin yapabilirsin: arızalı parçayı bul, vidaları doğru aletle sök, parçayı sipariş et ve tork ayarıyla tak.'],
   ['Sat', 'Fiyatını koy, kusurunu belirtip belirtmeyeceğine karar ver. Haftayı bitirince hafta sonu alıcılar teklif getirir.'],
   ['Dürüst ol', 'Gizlediğin kusur ortaya çıkarsa itibarın düşer. İtibar yüksekse daha çok alıcı gelir.'],
   ['Büyü', '12 yaşında bisikletle başlarsın. Para biriktikçe motora, sonra arabaya, galeriye ve holdinge geçersin.'],

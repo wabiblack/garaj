@@ -128,19 +128,6 @@ test('Profil’den görünüm değiştirilir', async () => {
   expect(screen.getByRole('heading', { name: 'Umut' })).toBeInTheDocument();
 });
 
-test('tamir oyunu: Vur! parmak değdiği anda sayılır, bir basış tek deneme', () => {
-  const d = { id: 'd1', name: 'Zincir paslı', repairCost: 300, valueHit: 0.1, known: true };
-  seedSave(makeState({ day: 5, money: 2000, inventory: [makeItem({ defects: [d] })] }));
-  renderGame();
-  fireEvent.click(screen.getByRole('tab', { name: 'Garaj' }));
-  fireEvent.click(screen.getByRole('button', { name: /Tamir et: Zincir paslı/ }));
-  const dialog = screen.getByRole('dialog', { name: 'Tamir' });
-  const vur = within(dialog).getByRole('button', { name: 'Vur!' });
-  fireEvent.pointerDown(vur);
-  fireEvent.click(vur, { detail: 1 });
-  expect(within(dialog).getAllByText(/[✓✗]/)).toHaveLength(1);
-});
-
 test('alttan açılan pencereler ana menünün ve karakter ekranının üstünde kalır', async () => {
   const { readFileSync } = await import('node:fs');
   const css = readFileSync('src/ui/theme.css', 'utf8');
@@ -303,4 +290,41 @@ test('pazarlıkta araç yaşı/kilometresi ve incelenmiş riskli ilanın uyarıs
   const sheet = screen.getByRole('dialog', { name: 'Pazarlık' });
   expect(within(sheet).getByText('8 yıllık · 120.000 km')).toBeInTheDocument();
   expect(within(sheet).getByRole('alert')).toHaveTextContent(/çalıntı/);
+});
+
+test('kendin yap tamiri: teşhis, söküm, orijinal parça, montaj (tork)', async () => {
+  const d = { id: 'd1', name: 'Zincir paslı', repairCost: 1000, valueHit: 0.1, known: true };
+  seedSave(makeState({ money: 5000, inventory: [makeItem({ defects: [d] })] }));
+  renderGame();
+  fireEvent.click(screen.getByRole('tab', { name: 'Garaj' }));
+  fireEvent.click(screen.getByRole('button', { name: /Tamir et: Zincir paslı/ }));
+  const dialog = screen.getByRole('dialog', { name: 'Tamir' });
+  fireEvent.click(within(dialog).getByRole('button', { name: /Kendin yap/ }));
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Fan' }));
+  expect(within(dialog).getByRole('status')).toHaveTextContent(/sağlam/);
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Zincir' }));
+  fireEvent.click(within(dialog).getByLabelText('İngiliz anahtarı'));
+  for (const screw of within(dialog).getAllByRole('button', { name: /^Vida/ })) for (let k = 0; k < 3; k++) fireEvent.click(screw);
+  fireEvent.click(within(dialog).getByRole('button', { name: /Orijinal/ }));
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Parçayı yerine tak' }));
+  const sik = within(dialog).getByRole('button', { name: 'Sık!' });
+  for (let k = 0; k < 3; k++) fireEvent.pointerDown(sik);
+  expect(screen.queryByRole('button', { name: /Zincir paslı/ })).toBeNull();
+});
+
+test('muadil parça kargoda bekler; hayvan kendin tedavi edilir', async () => {
+  const d = { id: 'd1', name: 'Fren tutmuyor', repairCost: 1000, valueHit: 0.1, known: true };
+  const sick = { id: 'd2', name: 'Hasta', repairCost: 600, valueHit: 0.3, known: true };
+  seedSave(makeState({ money: 5000, inventory: [makeItem({ id: 'a', defects: [d] }), makeItem({ id: 'b', category: 'guvercin', brand: 'Taklacı', model: 'Ankara', defects: [sick] })], parts: [{ itemId: 'a', defectId: 'd1', source: 'muadil', arrives: 2 }] }));
+  renderGame();
+  fireEvent.click(screen.getByRole('tab', { name: 'Garaj' }));
+  expect(screen.getByRole('button', { name: 'Kargoda: Fren tutmuyor' })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: /Tedavi et: Hasta/ }));
+  const dialog = screen.getByRole('dialog', { name: 'Bakım' });
+  fireEvent.click(within(dialog).getByRole('button', { name: /Kendin bak/ }));
+  fireEvent.click(within(dialog).getByLabelText('İlaç'));
+  fireEvent.click(within(dialog).getByLabelText('Temiz su'));
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Uygula' }));
+  for (let k = 0; k < 8; k++) fireEvent.click(within(dialog).getByRole('button', { name: 'Fırçala' }));
+  expect(screen.queryByRole('button', { name: /Hasta/ })).toBeNull();
 });

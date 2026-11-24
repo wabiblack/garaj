@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import App from '../../src/ui/App';
 import { makeItem, makeListing, makeState } from '../helpers';
 import { renderGame, seedSave } from './uiHelpers';
-import { needleAt } from '../../src/ui/screens/RepairSheet';
+import { needleAt } from '../../src/ui/screens/WorkshopSheet';
 import { exportSave } from '../../src/game/save';
 
 test('hikâye sahnesi seçimle kapanır ve etkisi uygulanır', async () => {
@@ -41,7 +41,7 @@ test('tamir oyunu: ibre gidip gelir, ustaya bırakınca normal fiyat', async () 
   await userEvent.click(screen.getByRole('tab', { name: 'Garaj' }));
   await userEvent.click(screen.getByRole('button', { name: /Tamir et: Zincir paslı/ }));
   const dialog = screen.getByRole('dialog', { name: 'Tamir' });
-  await userEvent.click(within(dialog).getByRole('button', { name: /Ustaya bırak/ }));
+  await userEvent.click(within(dialog).getByRole('button', { name: /Ustaya yaptır/ }));
   expect(screen.queryByRole('button', { name: /Tamir et/ })).toBeNull();
 });
 

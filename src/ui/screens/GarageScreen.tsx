@@ -9,7 +9,8 @@ import { LOCATIONS } from '../../game/growth';
 import { ItemCard } from '../components/ItemCard';
 import { Button } from '../components/Button';
 import { SellSheet } from './SellSheet';
-import { RepairSheet } from './RepairSheet';
+import { WorkshopSheet } from './WorkshopSheet';
+import { defectInfo } from '../../game/workshop';
 import { orderMatches, orderPrice } from '../../game/orders';
 import { Place } from '../components/Place';
 import { genitive } from '../../game/turkish';
@@ -54,11 +55,17 @@ export function GarageScreen({ view, dispatch }: { view: GameView; dispatch(a: A
                 subtitle={<>Alış {formatTL(item.boughtFor)} · <span className={profit >= 0 ? 'pos' : 'neg'}>{profit >= 0 ? '+' : ''}{formatTL(profit)}</span></>}
                 badge={sale ? <span className="tag tag--accent">Satışta</span> : null}
               >
-                {item.defects.filter((d) => d.known).map((d) => (
-                  <Button key={d.id} small onClick={() => setFixing({ itemId: item.id, defectId: d.id })}>
-                    {`Tamir et: ${d.name} · ${formatTL(repairCost(d, state))}`}
-                  </Button>
-                ))}
+                {item.defects.filter((d) => d.known).map((d) => {
+                  const order = state.parts.find((p) => p.itemId === item.id && p.defectId === d.id);
+                  const label = order
+                    ? (order.arrives <= state.day ? `Parçayı tak: ${d.name}` : `Kargoda: ${d.name}`)
+                    : `${defectInfo(d.name).kind === 'hayvan' ? 'Tedavi et' : 'Tamir et'}: ${d.name} · ${formatTL(repairCost(d, state))}`;
+                  return (
+                    <Button key={d.id} small variant={order && order.arrives <= state.day ? 'primary' : undefined} onClick={() => setFixing({ itemId: item.id, defectId: d.id })}>
+                      {label}
+                    </Button>
+                  );
+                })}
                 {!item.cleaned ? (
                   <Button small onClick={() => dispatch({ type: 'clean', itemId: item.id })}>{`Temizle · ${formatTL(cleanCost(item))}`}</Button>
                 ) : null}
@@ -80,7 +87,7 @@ export function GarageScreen({ view, dispatch }: { view: GameView; dispatch(a: A
         </div>
       )}
       {fixItem && fixDefect ? (
-        <RepairSheet item={fixItem} defect={fixDefect} cost={repairCost(fixDefect, state)} money={state.money} dispatch={dispatch} onClose={() => setFixing(null)} />
+        <WorkshopSheet item={fixItem} defect={fixDefect} state={state} dispatch={dispatch} onClose={() => setFixing(null)} />
       ) : null}
       {sellItem ? <SellSheet item={sellItem} state={state} dispatch={dispatch} onClose={() => setSelling(null)} /> : null}
     </section>
